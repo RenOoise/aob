@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+<div class="container">
+    <div class="row">
+        <br>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-xs-12">
+            <h4>{{ _('Привет, %(username)s!', username=current_user.username) }}</h4>
+        </div>
+    </div>
+
+    <br>
+
+    {% if form %}
+
+    {% endif %}
+
+</div>
+{% endblock %}

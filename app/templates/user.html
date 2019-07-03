@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row">
+    <table class="table table-hover">
+        <tr>
+            <td width="128px"><img src="{{ user.avatar(128) }}"></td>
+            <td>
+                <h2>{{ 'Пользователь' }}: {{ user.username }}</h2>
+                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+                {% if user.last_seen %}
+                <p>{{ _('Last seen on') }}: {{ moment(user.last_seen).format('LLL') }}</p>
+                {% endif %}
+                <p>{{ _('%(count)d подписчиков', count=user.followers.count()) }}, {{ _('%(count)d подписок', count=user.followed.count()) }}</p>
+                {% if user == current_user %}
+                <p><a href="{{ url_for('main.edit_profile') }}">{{ 'Редактировать профиль' }}</a></p>
+                {% elif not current_user.is_following(user) %}
+                <p><a href="{{ url_for('main.follow', username=user.username) }}">{{'Подписаться' }}</a></p>
+                {% else %}
+                <p><a href="{{ url_for('main.unfollow', username=user.username) }}">{{ 'Отписаться' }}</a></p>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        {% if user.id == current_user.id %}
+        <div class="row">
+            Вы заработали: {{income | safe}}
+        </div>
+        <div class="row">
+            Вы потратили: {{outcome | safe}}
+        </div>
+
+        {%else%}
+        <div class="row">
+            {{user.username}} заработал(a): {{income | safe}}
+        </div>
+        <div class="row">
+            {{user.username}} потратил(a): {{outcome | safe}}
+        </div>
+        {%endif%}
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'bootstrap/base.html' %}
+{% block head %}
+{{super()}}
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='brand.png') }}">
+{% endblock %}
+{% block title %}
+{% if title %}{{ title }} - ProjectName {% else %}{{ 'ProjectName' }}{% endif %}
+{% endblock %}
+
+{% block navbar %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('main.index') }}">
+        <img src="{{ url_for('static', filename='brand.png') }}" width="30" height="30" class="d-inline-block align-top" alt=""><h1 class="navbar-brand mb-0">Finance</h1>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item {%if index %} active {%endif%}">
+                <a class="nav-link" href="{{ url_for('main.index') }}">Главная<span class="sr-only">(current)</span></a>
+            </li>
+             <li class="nav-item {%if profile %} active {%endif%}">
+                <a class="nav-link" href="{{ url_for('main.user', username=current_user.username) }}">Профиль</a>
+            </li>
+            <li class="nav-item{%if settings %} active {%endif%}">
+                <a class="nav-link" href="{{ url_for('main.settings') }}">Настройки</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Статистика
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="{{ url_for('main.index')}}">Резерв</a>
+                    <a class="dropdown-item" href="{{ url_for('main.index')}}">Резерв2</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Резерв3</a>
+                </div>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            {% if current_user.is_anonymous %}
+                    <li><a class="nav-link" href="{{ url_for('auth.login') }}">Войти</a></li>
+                    {% else %}
+                    <li><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                    {% endif %}
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {# application content needs to be provided in the app_content block #}
+    <br>
+    {% block app_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }}
+{{ moment.lang(g.locale) }}
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+    $(function() {
+        $('#date').datepicker({ dateFormat: 'dd.mm.yy' }).val();
+    });
+</script>
+{% endblock %}
