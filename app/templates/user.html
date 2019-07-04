@@ -25,24 +25,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-12">
-        {% if user.id == current_user.id %}
-        <div class="row">
-            Вы заработали: {{income | safe}}
-        </div>
-        <div class="row">
-            Вы потратили: {{outcome | safe}}
-        </div>
 
-        {%else%}
-        <div class="row">
-            {{user.username}} заработал(a): {{income | safe}}
-        </div>
-        <div class="row">
-            {{user.username}} потратил(a): {{outcome | safe}}
-        </div>
-        {%endif%}
 
-    </div>
 </div>
 {% endblock %}

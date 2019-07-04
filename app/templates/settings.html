@@ -9,48 +9,5 @@
 
         </div>
     </div>
-    <div class="row">
-
-        <div class="col-lg-6 col-md-12">
-            <div class="title">
-                <h5>Добавить категорию</h5>
-            </div>
-
-            {% if category %}
-            {{ wtf.quick_form(category, button_map={'submit': 'success'}) }}
-            {% endif %}
-        </div>
-
-        <br>
-        {% if categories %}
-
-        <div class="col-lg-6 col-md-12">
-            <div class="title">
-                <h5>Ваши категории</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th>Категория</th>
-                        <th>Удалить</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {% for i in categories %}
-
-                    <tr>
-                        <td>{{ i.name }}</td>
-                        <td>{{ 'х' }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

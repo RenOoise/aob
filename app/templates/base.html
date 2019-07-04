@@ -4,24 +4,31 @@
 <link rel="icon" type="image/png" href="{{ url_for('static', filename='brand.png') }}">
 {% endblock %}
 {% block title %}
-{% if title %}{{ title }} - ProjectName {% else %}{{ 'ProjectName' }}{% endif %}
+{% if title %}{{ title }} - Автоматическая Отправка Бензовозов {% else %}{{ 'Автоматическая Отправка Бензовозов' }}{% endif %}
 {% endblock %}
 
 {% block navbar %}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="{{ url_for('main.index') }}">
-        <img src="{{ url_for('static', filename='brand.png') }}" width="30" height="30" class="d-inline-block align-top" alt=""><h1 class="navbar-brand mb-0">Finance</h1>
+        <img src="{{ url_for('static', filename='brand.png') }}" width="30" height="30" class="d-inline-block align-top" alt=""><h1 class="navbar-brand mb-0">АОБ</h1>
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
+
+
+
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
         <ul class="navbar-nav mr-auto">
+                    {% if current_user.is_anonymous %}
+
+        {% else %}
             <li class="nav-item {%if index %} active {%endif%}">
                 <a class="nav-link" href="{{ url_for('main.index') }}">Главная<span class="sr-only">(current)</span></a>
             </li>
-             <li class="nav-item {%if profile %} active {%endif%}">
+            <li class="nav-item {%if profile %} active {%endif%}">
                 <a class="nav-link" href="{{ url_for('main.user', username=current_user.username) }}">Профиль</a>
             </li>
             <li class="nav-item{%if settings %} active {%endif%}">
@@ -39,13 +46,15 @@
                     <a class="dropdown-item" href="#">Резерв3</a>
                 </div>
             </li>
+                    {% endif %}
         </ul>
+
         <ul class="nav navbar-nav navbar-right">
             {% if current_user.is_anonymous %}
-                    <li><a class="nav-link" href="{{ url_for('auth.login') }}">Войти</a></li>
-                    {% else %}
-                    <li><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
-                    {% endif %}
+            <li><a class="nav-link" href="{{ url_for('auth.login') }}">Войти</a></li>
+            {% else %}
+            <li><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+            {% endif %}
         </ul>
     </div>
 </nav>
