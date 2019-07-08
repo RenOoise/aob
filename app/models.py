@@ -96,8 +96,41 @@ class Post(db.Model):
 class AzsList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, unique=True)
+    active = db.Column(db.Boolean)
 
 
 class CfgDbConnection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    system_type = db.Column(db.String(140))
+    ip_address = db.Column(db.String(240))
+    port = db.Column(db.Integer)
+
+
+class Tanks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    fuel_type = db.Column(db.Integer)
+    capacity = db.Column(db.Float)
+
+
+# остатки в резервуарах
+class FuelResidue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    row_id = db.Column(db.Integer, index=True)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    value = db.Column(db.Float)
+    datetime = db.Column(db.DateTime)
+
+
+# реализация топлива на азс
+class FuelRealisation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    row_id = db.Column(db.Integer, index=True)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    product_code = db.Column(db.Integer)
+    fuel_level = db.Column(db.Float)
+    fuel_volume = db.Column(db.Float)
+    fuel_temperature = db.Column(db.Float)
+    value = db.Column(db.Float)
+    datetime = db.Column(db.DateTime)

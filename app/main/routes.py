@@ -6,8 +6,9 @@ from flask_login import current_user, login_required
 from flask_babel import get_locale
 from app import db
 from app.main.forms import EditProfileForm
-from app.models import User
+from app.models import User, FuelResidue, CfgDbConnection
 from app.main import bp
+import postgresql
 
 
 @bp.before_app_request
@@ -79,7 +80,7 @@ def unfollow(username):
 @login_required
 def settings():
 
-    return render_template('settings.html', title='Настройки', settings=True)
+    return render_template('settings.html', title='Настройки', settings=True, sql=sql)
 
 
 @bp.route('/user/<username>')

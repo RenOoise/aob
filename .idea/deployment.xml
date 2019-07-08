@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="administrator@195.135.214.35:220" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Copy of project-level server 'KNP-AOB-01'" autoUploadExternalChanges="true" showAutoUploadSettingsWarning="false">
     <serverData>
+      <paths name="Copy of project-level server 'KNP-AOB-01'">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/administrator/aob" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/home/administrator/aob/venv" />
+            <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="KNP-AOB-01">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/administrator/aob" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/home/administrator/aob/venv" />
+            <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="KNP-AOB-01 Local">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/administrator/aob" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
+            <excludedPath path="/home/administrator/aob/venv" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="administrator@195.135.214.35:220">
         <serverdata>
           <mappings>
@@ -21,6 +54,6 @@
         </serverdata>
       </paths>
     </serverData>
-    <option name="myAutoUpload" value="ON_EXPLICIT_SAVE" />
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
