@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="Copy of project-level server 'KNP-AOB-01'" autoUploadExternalChanges="true" showAutoUploadSettingsWarning="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="KNP-AOB-01 Local" autoUploadExternalChanges="true" showAutoUploadSettingsWarning="false">
     <serverData>
       <paths name="Copy of project-level server 'KNP-AOB-01'">
         <serverdata>
@@ -16,7 +16,7 @@
       <paths name="KNP-AOB-01">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/administrator/aob" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/administrator/aob-test" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
             <excludedPath path="/home/administrator/aob/venv" />
@@ -27,7 +27,7 @@
       <paths name="KNP-AOB-01 Local">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/administrator/aob" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/administrator/aob-test" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
