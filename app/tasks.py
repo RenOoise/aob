@@ -68,18 +68,34 @@ def download_tanks_info(user_id):
                                           password=password,
                                           host=host,
                                           port=port,
-                                          database=database)
+                                          database=database, connect_timeout=10)
             cursor = connection.cursor()
             print("Подключение к базе " + database + " на сервере " + host + " успешно")
-            sql = ("SELECT id_shop, tanknum, prodcod, lvl, volume, t, optime FROM pj_tanks WHERE optime > now() - interval '1 days';")
+            sql = ("SELECT DISTINCT ON (tanknum) id_shop, tanknum, prodcod, lvl, volume, t, optime FROM pj_tanks WHERE optime > now() - interval '20 minutes' ORDER BY tanknum LIMIT 3;")
             cursor.execute(sql)
             print("SQL запрос выполнен")
             query = cursor.fetchall()
             for row in query:
-                add = FuelRealisation(shop_id=row[0], tank_id=row[1], product_code=row[2], fuel_level=row[3],
-                                      fuel_volume=row[4],fuel_temperature=row[5], datetime=row[6])
-                db.session.add(add)
-                db.session.commit()
+                add = FuelResidue.query.filter_by(shop_id=row[0], tank_id=row[1]).first()
+                if add:
+                    add.fuel_level = row[3]
+                    add.fuel_volume = row[4]
+                    add.fuel_temperature = row[5]
+                    add.datetime = row[6]
+                    add.shop_id = row[0]
+                    add.tank_id = row[1]
+                    add.product_code = row[2]
+                    db.session.add(add)
+
+                    try:
+                        db.session.commit()
+                    except Exception as error:
+                        print("Данные по АЗС № " + row[0] + " не найдены", error)
+                else:
+                    add = FuelResidue(shop_id=row[0], tank_id=row[1], product_code=row[2], fuel_level=row[3],
+                                          fuel_volume=row[4], fuel_temperature=row[5], datetime=row[6])
+                    db.session.add(add)
+                    db.session.commit()
 
         except(Exception, psycopg2.Error) as error:
             print("Ошибка во время получения данных", error)

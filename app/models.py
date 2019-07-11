@@ -312,6 +312,7 @@ class Tanks(db.Model):
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     fuel_type = db.Column(db.Integer)
     capacity = db.Column(db.Float)
+    active = db.Column(db.Boolean)
 
 
 # остатки в резервуарах
