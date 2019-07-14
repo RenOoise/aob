@@ -6,7 +6,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm
-from app.models import User, Post, Message, Notification
+from app.models import User, Post, Message, Notification, FuelResidue
 from app.translate import translate
 from app.main import bp
 
@@ -211,7 +211,7 @@ def download_tanks_info():
     else:
         current_user.launch_task('download_tanks_info', _('Выгружаю данные...'))
         db.session.commit()
-    return redirect(url_for('main.user', username=current_user.username))
+    return redirect(url_for('main.online'))
 
 
 @bp.route('/notifications')
@@ -227,7 +227,10 @@ def notifications():
     } for n in notifications])
 
 
-@bp.route('/configuration')
+@bp.route('/online', methods=['POST', 'GET'])
 @login_required
-def configuration():
-    return 0
+def online():
+    online = FuelResidue.query.all()
+    return render_template('online.html', title='Online остатки', online_active=True,
+                           online=online)
+

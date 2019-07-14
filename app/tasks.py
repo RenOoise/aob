@@ -7,6 +7,7 @@ from app import create_app, db
 from app.models import User, Post, Task, FuelResidue, CfgDbConnection, FuelRealisation, AzsList
 from app.email import send_email
 import psycopg2
+from datetime import datetime
 
 app = create_app()
 app.app_context().push()
@@ -85,6 +86,7 @@ def download_tanks_info(user_id):
                     add.shop_id = row[0]
                     add.tank_id = row[1]
                     add.product_code = row[2]
+                    add.download_time = datetime.now()
                     db.session.add(add)
 
                     try:
@@ -93,7 +95,8 @@ def download_tanks_info(user_id):
                         print("Данные по АЗС № " + row[0] + " не найдены", error)
                 else:
                     add = FuelResidue(shop_id=row[0], tank_id=row[1], product_code=row[2], fuel_level=row[3],
-                                          fuel_volume=row[4], fuel_temperature=row[5], datetime=row[6])
+                                      fuel_volume=row[4], fuel_temperature=row[5], datetime=row[6],
+                                      download_time=datetime.now())
                     db.session.add(add)
                     db.session.commit()
 

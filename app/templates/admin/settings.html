@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+<div class="content">
+    <div class="container">
+        <div class="row py-4">
+            <div class="list-group">
+                <a href="/admin/azslist" class="list-group-item list-group-item-action">Список АЗС</a>
+                <a href="#" class="list-group-item list-group-item-action disabled">Список резервуаров</a>
+                <a href="#" class="list-group-item list-group-item-action disabled">Онлайн остатки</a>
+                <a href="#" class="list-group-item list-group-item-action disabled">Реализация</a>
+                <a href="/admin/users" class="list-group-item list-group-item-action">Пользователи</a>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

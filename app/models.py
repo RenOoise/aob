@@ -94,6 +94,7 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    role = db.Column(db.String(60))
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(32), index=True, unique=True)
@@ -325,6 +326,7 @@ class FuelResidue(db.Model):
     fuel_volume = db.Column(db.Float)
     fuel_temperature = db.Column(db.Float)
     datetime = db.Column(db.DateTime)
+    download_time = db.Column(db.DateTime)
 
 
 # реализация топлива на азс
@@ -337,3 +339,4 @@ class FuelRealisation(db.Model):
     fuel_volume = db.Column(db.Float)
     fuel_temperature = db.Column(db.Float)
     datetime = db.Column(db.DateTime)
+    download_time = db.Column(db.DateTime)
