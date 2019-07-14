@@ -12,12 +12,11 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-10">
-                                <h4>Online остатки топлива</h4>
+                                <h4>Список резервуаров</h4>
                             </div>
                             <div class="col-md-2">
-                                <a href="/download_tanks_info" type="button" class="btn btn-info btn-sm">Обновить</a>
+                                <a href="/admin/addtank" type="button" class="btn btn-primary btn-sm">Добавить резервуар</a>
                             </div>
-
                         </div>
                         <div class="row">
                             <div class="col-md-12">
@@ -28,25 +27,28 @@
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Вид топлива</th>
-                                            <th>Уровень (мм)</th>
-                                            <th>Текущий остаток (л)</th>
-                                            <th>Температура</th>
-                                            <th>Время замера</th>
-                                            <th>Время выгрузки</th>
+                                            <th>Паспортный объем</th>
+                                            <th>Реальный объем</th>
+                                            <th>Скорректированный объем</th>
+                                            <th>Время слива</th>
+                                            <th>Смешение</th>
+                                            <th>Активен</th>
 
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {% for i in online %}
+                                        {% for i in tank_list %}
                                         <tr>
-                                            <th scope="row">{{ i.shop_id }}</th>
-                                            <td>{{ i.tank_id}}</td>
-                                            <td>{{ i.product_code }}</td>
-                                            <td>{{ i.fuel_level }}</td>
-                                            <td>{{ i.fuel_volume }}</td>
-                                            <td>{{ i.fuel_temperature }}</td>
-                                            <td>{{ i.datetime }}</td>
-                                            <td>{{ i.download_time }}</td>
+                                            <th scope="row">{{ i.azs_id }}</th>
+                                            <td>{{ i.tank_number }}</td>
+                                            <td>{{ i.fuel_type }}</td>
+                                            <td>{{ i.nominal_capacity }}</td>
+                                            <td>{{ i.real_capacity }}</td>
+                                            <td>{{ i.corrected_capacity }}</td>
+                                            <td>{{ i.drain_time }}</td>
+                                            <td>{{ i.after_drain_time }}</td>
+                                            <td>{{ i.mixing }}</td>
+                                            <td>{{ i.active }}</td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>

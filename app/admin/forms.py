@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField
+from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
+    BooleanField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
@@ -25,3 +26,17 @@ class AddUserForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError(_('Пожалуйста введите другой почтовый адрес.'))
+
+
+class AddTankForm(FlaskForm):
+    azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
+    tank = IntegerField(_l('Номер резервуара'), validators=[DataRequired()])
+    fuel_type = IntegerField(_l('Тип топлива'), validators=[DataRequired()])
+    nominal_capacity = IntegerField(_l('Номинальная емкость'), validators=[DataRequired()])
+    real_capacity = IntegerField(_l('Реальная емкость'), validators=[DataRequired()])
+    corrected_capacity = IntegerField(_l('Скорректированная емкость'), validators=[DataRequired()])
+    drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
+    after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
+    mixing = BooleanField(_l('Смешение'))
+    active = BooleanField(_l('Активен'))
+    submit = SubmitField('Добавить')

@@ -310,10 +310,17 @@ class CfgDbConnection(db.Model):
 
 class Tanks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
-    fuel_type = db.Column(db.Integer)
-    capacity = db.Column(db.Float)
-    active = db.Column(db.Boolean)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айди АЗС из таблицы azs_list
+    tank_number = db.Column(db.Integer)  # номер резервуара
+    fuel_type = db.Column(db.Integer)  # вид топлива
+    nominal_capacity = db.Column(db.Float)  # емкость резервуара по паспорту
+    real_capacity = db.Column(db.Float)  # реальная емкость резервуара
+    corrected_capacity = db.Column(db.Float)  # корректированная емкость резервуара
+    capacity = db.Column(db.Float)  # емкость
+    drain_time = db.Column(db.Integer)  # время слива
+    after_drain_time = db.Column(db.Integer)  # время после слива
+    mixing = db.Column(db.Boolean)  # разрешено ли смешение топлива (для дизеля)
+    active = db.Column(db.Boolean)  # активен ли резервуар
 
 
 # остатки в резервуарах
