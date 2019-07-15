@@ -12,10 +12,10 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-10">
-                                <h4>Зарегистированные АЗС</h4>
+                                <h4>Конфиги для подключения к БД</h4>
                             </div>
                             <div class="col-md-2">
-                                <a href="/admin/addazs" type="button" class="btn btn-primary btn-sm">Добавить АЗС</a>
+                                <a href="/admin/add_db_config" type="button" class="btn btn-primary btn-sm">Добавить конфиг</a>
                             </div>
                         </div>
                         <div class="row">
@@ -26,16 +26,36 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Номер АЗС</th>
-                                            <th>Активна?</th>
+                                            <th>Система управления</th>
+                                            <th>База данных</th>
+                                            <th>IP-адрес</th>
+                                            <th>Порт</th>
+                                            <th>Логин</th>
+                                            <th>Пароль</th>
+
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {% for i in azs_list %}
+                                        {% for i in config_list %}
+
                                         <tr>
                                             <th scope="row">{{ i.id }}</th>
-                                            <td>{{ i.number}}</td>
-                                            <td>{{ i.active }}</td>
+                                            <td>
+                                                {% for x in azs_list %}
+                                                {% if x.id == i.azs_id %}
+                                                {{ x.number }}</td>
+
+                                            {% endif %}
+                                            {% endfor %}
+                                            <td>{{ i.system_type }}</td>
+                                            <td>{{ i.database }}</td>
+                                            <td>{{ i.ip_address }}</td>
+                                            <td>{{ i.port }}</td>
+                                            <td>{{ i.username }}</td>
+                                            <td>{{ i.password }}</td>
+
                                         </tr>
+
                                         {% endfor %}
                                         </tbody>
                                     </table>

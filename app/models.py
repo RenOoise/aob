@@ -300,12 +300,20 @@ class AzsList(db.Model):
     active = db.Column(db.Boolean)
 
 
+class AzsSystems(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(40), unique=True)
+
+
 class CfgDbConnection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
-    system_type = db.Column(db.String(140))
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'), unique=True)
+    system_type = db.Column(db.Integer, db.ForeignKey('azs_systems.id'))
     ip_address = db.Column(db.String(240))
     port = db.Column(db.Integer)
+    username = db.Column(db.String(120))
+    password = db.Column(db.String(120))
+    database = db.Column(db.String(120))
 
 
 class Tanks(db.Model):
@@ -321,14 +329,18 @@ class Tanks(db.Model):
     after_drain_time = db.Column(db.Integer)  # время после слива
     mixing = db.Column(db.Boolean)  # разрешено ли смешение топлива (для дизеля)
     active = db.Column(db.Boolean)  # активен ли резервуар
+    vedeeroot = db.Column(db.Boolean)
+
+    __table_args__ = (db.UniqueConstraint('azs_id', 'tank_number'),)
 
 
 # остатки в резервуарах
 class FuelResidue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shop_id = db.Column(db.Integer, index=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)
+    percent = db.Column(db.Integer)
     fuel_level = db.Column(db.Float)
     fuel_volume = db.Column(db.Float)
     fuel_temperature = db.Column(db.Float)
