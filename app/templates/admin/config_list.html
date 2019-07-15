@@ -24,7 +24,7 @@
                                     <table class="table table-striped">
                                         <thead>
                                         <tr>
-                                            <th>#</th>
+
                                             <th>Номер АЗС</th>
                                             <th>Система управления</th>
                                             <th>База данных</th>
@@ -32,6 +32,7 @@
                                             <th>Порт</th>
                                             <th>Логин</th>
                                             <th>Пароль</th>
+                                            <th>Редактировать конфиг</th>
 
                                         </tr>
                                         </thead>
@@ -39,20 +40,21 @@
                                         {% for i in config_list %}
 
                                         <tr>
-                                            <th scope="row">{{ i.id }}</th>
-                                            <td>
+
+                                            <th scope="row">
                                                 {% for x in azs_list %}
                                                 {% if x.id == i.azs_id %}
-                                                {{ x.number }}</td>
-
-                                            {% endif %}
-                                            {% endfor %}
+                                                {{ x.number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
                                             <td>{{ i.system_type }}</td>
                                             <td>{{ i.database }}</td>
                                             <td>{{ i.ip_address }}</td>
                                             <td>{{ i.port }}</td>
                                             <td>{{ i.username }}</td>
                                             <td>{{ i.password }}</td>
+                                            <td><a href="{{ url_for('admin.edit_db_config', azs_id=i.azs_id) }}">Редактировать</a></td>
 
                                         </tr>
 

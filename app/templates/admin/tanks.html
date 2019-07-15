@@ -27,20 +27,26 @@
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Вид топлива</th>
-                                            <th>Паспортный объем</th>
-                                            <th>Реальный объем</th>
-                                            <th>Скорректированный объем</th>
-                                            <th>Время слива</th>
-                                            <th>Время после слива</th>
+                                            <th>Паспортный объем (л)</th>
+                                            <th>Реальный объем (л)</th>
+                                            <th>Скорректированный объем (л)</th>
+                                            <th>Время слива (мин)</th>
+                                            <th>Время после слива (мин)</th>
                                             <th>Смешение</th>
                                             <th>Активен</th>
-
+                                            <th>Редактироваать</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {% for i in tank_list %}
                                         <tr>
-                                            <th scope="row">{{ i.azs_id }}</th>
+                                            <th scope="row">
+                                                {% for x in azs_list %}
+                                                {% if x.id == i.azs_id %}
+                                                {{ x.number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </th>
                                             <td>{{ i.tank_number }}</td>
                                             <td>{{ i.fuel_type }}</td>
                                             <td>{{ i.nominal_capacity }}</td>
@@ -50,6 +56,8 @@
                                             <td>{{ i.after_drain_time }}</td>
                                             <td>{{ i.mixing }}</td>
                                             <td>{{ i.active }}</td>
+                                            <td><a href="{{ url_for('admin.edit_tank', tank_id=i.id) }}">Редактировать</a></td>
+
                                         </tr>
                                         {% endfor %}
                                         </tbody>

@@ -120,3 +120,5 @@ def download_tanks_info(user_id):
                             connection.close()
                             print("Соединение закрыто")
                             _set_task_progress(100)
+            else:
+                print("FAIL")

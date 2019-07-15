@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
-from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm
+from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems
 from app.admin import bp
 "import jsonify"
@@ -112,9 +112,10 @@ def pick_line(number):
 @bp.route('/admin/tanks', methods=['POST', 'GET'])
 @login_required
 def tanks():
+    azs_list = AzsList.query.all()
     tank_list = Tanks.query.all()
     return render_template('admin/tanks.html', title='Список резервуаров', tanks=True, settings_active=True,
-                           tank_list=tank_list)
+                           tank_list=tank_list, azs_list=azs_list)
 
 
 @bp.route('/admin/config_list', methods=['POST', 'GET'])
@@ -158,3 +159,71 @@ def add_cfg():
         flash('Конфиг добавлен')
         return redirect(url_for('admin.config_lst'))
     return render_template('admin/add_db_config.html', title='Добавление параметров подключения к базе', form=form)
+
+
+@bp.route('/admin/<azs_id>/edit', methods=['POST', 'GET'])
+@login_required
+def edit_db_config(azs_id):
+    categories = [(c.id, c.number) for c in AzsList.query.all()]
+    systems = [(s.id, s.type) for s in AzsSystems.query.all()]
+    form = EditCfgForm(request.form)
+    form.azs_id.choices = categories
+    form.system.choices = systems
+    config = CfgDbConnection.query.filter_by(azs_id=azs_id).first()
+
+    if form.validate_on_submit():
+        config.azs_id = form.azs_id.data
+        config.ip_address = form.ip_address.data
+        config.port = form.port.data
+        config.database = form.database.data
+        config.username = form.username.data
+        config.password = form.password.data
+        config.system_type = form.system.data
+        db.session.commit()
+        flash('Конфиг обновлен!')
+        return redirect(url_for('admin.config_lst'))
+    elif request.method == 'GET':
+        form.azs_id.data = config.azs_id
+        form.ip_address.data = config.ip_address
+        form.port.data = config.port
+        form.database.data = config.database
+        form.username.data = config.username
+        form.password.data = config.password
+        form.system.data = config.system_type
+    return render_template('admin/edit_db_config.html', title='Редактирование конфига', edit_db_config=True, form=form,
+                           settings_active=True)
+
+
+@bp.route('/admin/tanks/<tank_id>/edit', methods=['POST', 'GET'])
+@login_required
+def edit_tank(tank_id):
+    categories = [(c.id, c.number) for c in AzsList.query.all()]
+    form = EditTankForm(request.form)
+    form.azs_id.choices = categories
+    tank = Tanks.query.filter_by(id=tank_id).first()
+
+    if form.validate_on_submit():
+        tank.azs_id = form.azs_id.data
+        tank.tank_number = form.tank.data
+        tank.fuel_type = form.fuel_type.data
+        tank.nominal_capacity = form.nominal_capacity.data
+        tank.real_capacity = form.real_capacity.data
+        tank.drain_time = form.drain_time.data
+        tank.after_drain_time = form.after_drain_time.data
+        tank.mixing = form.mixing.data
+        tank.active = form.active.data
+        db.session.commit()
+        flash('Данные резервуара обновлены!')
+        return redirect(url_for('admin.tanks'))
+    elif request.method == 'GET':
+        form.azs_id.data = tank.azs_id
+        form.tank.data = tank.tank_number
+        form.fuel_type.data = tank.fuel_type
+        form.nominal_capacity.data = tank.nominal_capacity
+        form.real_capacity.data = tank.real_capacity
+        form.drain_time.data = tank.drain_time
+        form.after_drain_time.data = tank.after_drain_time
+        form.mixing.data = tank.mixing
+        form.active.data = tank.active
+    return render_template('admin/edit_tank.html', title='Редактирование резервуара', edit_db_config=True, form=form,
+                           settings_active=True)

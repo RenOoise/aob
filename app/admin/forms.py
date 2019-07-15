@@ -32,8 +32,8 @@ class AddTankForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     tank = IntegerField(_l('Номер резервуара'), validators=[DataRequired()])
     fuel_type = IntegerField(_l('Тип топлива'), validators=[DataRequired()])
-    nominal_capacity = IntegerField(_l('Номинальная емкость'), validators=[DataRequired()])
-    real_capacity = IntegerField(_l('Реальная емкость'), validators=[DataRequired()])
+    nominal_capacity = FloatField(_l('Номинальная емкость'), validators=[DataRequired()])
+    real_capacity = FloatField(_l('Реальная емкость'), validators=[DataRequired()])
     # corrected_capacity = IntegerField(_l('Скорректированная емкость'), validators=[DataRequired()])
     drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
@@ -57,3 +57,28 @@ class AddCfgForm(FlaskForm):
     password = StringField(_l('Пароль БД'), validators=[DataRequired()])
     system = SelectField(_l('Система управления'), validators=[DataRequired()], choices=[], coerce=int)
     submit = SubmitField('Добавить')
+
+
+class EditCfgForm(FlaskForm):
+    azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
+    ip_address = StringField(_l('IP-адрес'), validators=[DataRequired()])
+    port = IntegerField(_l('Порт'), validators=[DataRequired()])
+    database = StringField(_l('База данных'), validators=[DataRequired()])
+    username = StringField(_l('Имя пользователя БД'), validators=[DataRequired()])
+    password = StringField(_l('Пароль БД'), validators=[DataRequired()])
+    system = SelectField(_l('Система управления'), validators=[DataRequired()], choices=[], coerce=int)
+    submit = SubmitField('Обновить')
+
+
+class EditTankForm(FlaskForm):
+    azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
+    tank = IntegerField(_l('Номер резервуара'), validators=[DataRequired()])
+    fuel_type = IntegerField(_l('Тип топлива'), validators=[DataRequired()])
+    nominal_capacity = FloatField(_l('Номинальная емкость'), validators=[DataRequired()])
+    real_capacity = FloatField(_l('Реальная емкость'), validators=[DataRequired()])
+    # corrected_capacity = IntegerField(_l('Скорректированная емкость'), validators=[DataRequired()])
+    drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
+    after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
+    mixing = BooleanField(_l('Смешение'))
+    active = BooleanField(_l('Активен'))
+    submit = SubmitField('Обновить')

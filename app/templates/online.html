@@ -28,6 +28,7 @@
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Вид топлива</th>
+                                            <th>Процент заполнения (%)</th>
                                             <th>Уровень (мм)</th>
                                             <th>Текущий остаток (л)</th>
                                             <th>Температура</th>
@@ -39,9 +40,28 @@
                                         <tbody>
                                         {% for i in online %}
                                         <tr>
-                                            <th scope="row">{{ i.shop_id }}</th>
-                                            <td>{{ i.tank_id}}</td>
+                                            <th scope="row">
+                                                {% for x in azs_list %}
+                                                {% if x.id == i.shop_id %}
+                                                {{ x.number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </th>
+                                            <td>
+                                                {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                {{ z.tank_number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
                                             <td>{{ i.product_code }}</td>
+                                            <td>
+                                                {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                {{ (100*(i.fuel_volume/z.real_capacity))|round(1) }}%
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
                                             <td>{{ i.fuel_level }}</td>
                                             <td>{{ i.fuel_volume }}</td>
                                             <td>{{ i.fuel_temperature }}</td>

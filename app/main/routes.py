@@ -6,7 +6,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm
-from app.models import User, Post, Message, Notification, FuelResidue
+from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks
 from app.translate import translate
 from app.main import bp
 
@@ -230,7 +230,9 @@ def notifications():
 @bp.route('/online', methods=['POST', 'GET'])
 @login_required
 def online():
+    azs_list = AzsList.query.all()
     online = FuelResidue.query.all()
+    tanks_list = Tanks.query.all()
     return render_template('online.html', title='Online остатки', online_active=True,
-                           online=online)
+                           online=online, azs_list=azs_list, tanks_list=tanks_list)
 
