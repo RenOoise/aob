@@ -39,11 +39,14 @@ class AddTankForm(FlaskForm):
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
     mixing = BooleanField(_l('Смешение'))
     active = BooleanField(_l('Активен'))
+    ams = BooleanField(_l('АИС'))
     submit = SubmitField('Добавить')
 
 
 class AddAzsForm(FlaskForm):
     number = IntegerField(_l('Номер АЗС'), validators=[DataRequired()])
+    address = StringField(_l('Адрес'), validators=[DataRequired()])
+    phone = StringField(_l('Телефон'), validators=[DataRequired()])
     active = BooleanField(_l('Активна?'), validators=[DataRequired()])
     submit = SubmitField('Добавить')
 
@@ -51,8 +54,8 @@ class AddAzsForm(FlaskForm):
 class AddCfgForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     ip_address = StringField(_l('IP-адрес'), validators=[DataRequired()])
-    port = IntegerField(_l('Порт'), validators=[DataRequired()])
-    database = StringField(_l('База данных'), validators=[DataRequired()])
+    port = IntegerField(_l('Порт'))
+    database = StringField(_l('База данных'))
     username = StringField(_l('Имя пользователя БД'), validators=[DataRequired()])
     password = StringField(_l('Пароль БД'), validators=[DataRequired()])
     system = SelectField(_l('Система управления'), validators=[DataRequired()], choices=[], coerce=int)
@@ -62,8 +65,8 @@ class AddCfgForm(FlaskForm):
 class EditCfgForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     ip_address = StringField(_l('IP-адрес'), validators=[DataRequired()])
-    port = IntegerField(_l('Порт'), validators=[DataRequired()])
-    database = StringField(_l('База данных'), validators=[DataRequired()])
+    port = IntegerField(_l('Порт'))
+    database = StringField(_l('База данных'))
     username = StringField(_l('Имя пользователя БД'), validators=[DataRequired()])
     password = StringField(_l('Пароль БД'), validators=[DataRequired()])
     system = SelectField(_l('Система управления'), validators=[DataRequired()], choices=[], coerce=int)
@@ -81,4 +84,5 @@ class EditTankForm(FlaskForm):
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
     mixing = BooleanField(_l('Смешение'))
     active = BooleanField(_l('Активен'))
+    ams = BooleanField(_l('АИС'))
     submit = SubmitField('Обновить')

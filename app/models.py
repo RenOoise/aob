@@ -297,6 +297,8 @@ class Task(db.Model):
 class AzsList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, unique=True)
+    address = db.Column(db.String(140))
+    phone = db.Column(db.String(140))
     active = db.Column(db.Boolean)
 
 
@@ -329,7 +331,7 @@ class Tanks(db.Model):
     after_drain_time = db.Column(db.Integer)  # время после слива
     mixing = db.Column(db.Boolean)  # разрешено ли смешение топлива (для дизеля)
     active = db.Column(db.Boolean)  # активен ли резервуар
-    vedeeroot = db.Column(db.Boolean)
+    ams = db.Column(db.Boolean)
 
     __table_args__ = (db.UniqueConstraint('azs_id', 'tank_number'),)
 

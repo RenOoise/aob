@@ -26,6 +26,8 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Номер АЗС</th>
+                                            <th>Адрес</th>
+                                            <th>Телефон</th>
                                             <th>Активна?</th>
                                         </tr>
                                         </thead>
@@ -34,6 +36,8 @@
                                         <tr>
                                             <th scope="row">{{ i.id }}</th>
                                             <td>{{ i.number}}</td>
+                                            <td>{{ i.address }}</td>
+                                            <td>{{ i.phone }}</td>
                                             <td>{{ i.active }}</td>
                                         </tr>
                                         {% endfor %}

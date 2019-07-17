@@ -85,7 +85,8 @@ def addtank():
             tank = Tanks(azs_id=form.azs_id.data, tank_number=form.tank.data, fuel_type=form.fuel_type.data,
                          nominal_capacity=form.nominal_capacity.data, real_capacity=form.real_capacity.data,
                          corrected_capacity=form.real_capacity.data/100*95, drain_time=form.drain_time.data,
-                         after_drain_time=form.after_drain_time.data, mixing=form.mixing.data, active=form.active.data)
+                         after_drain_time=form.after_drain_time.data, mixing=form.mixing.data, active=form.active.data,
+                         ams=form.ams.data)
             db.session.add(tank)
             db.session.commit()
             flash('Резервуар добавлен')
@@ -132,7 +133,7 @@ def config_lst():
 def add_azs():
     form = AddAzsForm()
     if form.validate_on_submit():
-        azs = AzsList(number=form.number.data, active=form.active.data)
+        azs = AzsList(number=form.number.data, active=form.active.data, adress=form.address.data, phone=form.phone.data)
         db.session.add(azs)
         db.session.commit()
         flash('АЗС добавлена')
@@ -210,6 +211,7 @@ def edit_tank(tank_id):
         tank.real_capacity = form.real_capacity.data
         tank.drain_time = form.drain_time.data
         tank.after_drain_time = form.after_drain_time.data
+        tank.ams = form.ams.data
         tank.mixing = form.mixing.data
         tank.active = form.active.data
         db.session.commit()
@@ -223,6 +225,7 @@ def edit_tank(tank_id):
         form.real_capacity.data = tank.real_capacity
         form.drain_time.data = tank.drain_time
         form.after_drain_time.data = tank.after_drain_time
+        form.ams.data = tank.ams
         form.mixing.data = tank.mixing
         form.active.data = tank.active
     return render_template('admin/edit_tank.html', title='Редактирование резервуара', edit_db_config=True, form=form,

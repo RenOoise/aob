@@ -32,6 +32,7 @@
                                             <th>Скорректированный объем (л)</th>
                                             <th>Время слива (мин)</th>
                                             <th>Время после слива (мин)</th>
+                                            <th>АИС</th>
                                             <th>Смешение</th>
                                             <th>Активен</th>
                                             <th>Редактироваать</th>
@@ -54,6 +55,7 @@
                                             <td>{{ i.corrected_capacity }}</td>
                                             <td>{{ i.drain_time }}</td>
                                             <td>{{ i.after_drain_time }}</td>
+                                            <td>{{ i.ams }}</td>
                                             <td>{{ i.mixing }}</td>
                                             <td>{{ i.active }}</td>
                                             <td><a href="{{ url_for('admin.edit_tank', tank_id=i.id) }}">Редактировать</a></td>
