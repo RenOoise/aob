@@ -299,6 +299,7 @@ class AzsList(db.Model):
     number = db.Column(db.Integer, unique=True)
     address = db.Column(db.String(140))
     phone = db.Column(db.String(140))
+    email = db.Column(db.String(120))
     active = db.Column(db.Boolean)
 
 

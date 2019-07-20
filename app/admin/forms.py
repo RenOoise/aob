@@ -47,8 +47,18 @@ class AddAzsForm(FlaskForm):
     number = IntegerField(_l('Номер АЗС'), validators=[DataRequired()])
     address = StringField(_l('Адрес'), validators=[DataRequired()])
     phone = StringField(_l('Телефон'), validators=[DataRequired()])
+    email = StringField(_l('Email'), Email())
     active = BooleanField(_l('Активна?'), validators=[DataRequired()])
     submit = SubmitField('Добавить')
+
+
+class EditAzsForm(FlaskForm):
+    number = IntegerField(_l('Номер АЗС'), validators=[DataRequired()])
+    address = StringField(_l('Адрес'), validators=[DataRequired()])
+    phone = StringField(_l('Телефон'), validators=[DataRequired()])
+    email = StringField(_l('Email'), validators=[Email("Неправильный E-mail адрес")])
+    active = BooleanField('Активна?')
+    submit = SubmitField('Обновить')
 
 
 class AddCfgForm(FlaskForm):

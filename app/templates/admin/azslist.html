@@ -12,7 +12,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-10">
-                                <h4>Зарегистированные АЗС</h4>
+                                <h4>Зарегистрированные АЗС</h4>
                             </div>
                             <div class="col-md-2">
                                 <a href="/admin/addazs" type="button" class="btn btn-primary btn-sm">Добавить АЗС</a>
@@ -24,21 +24,28 @@
                                     <table class="table table-striped">
                                         <thead>
                                         <tr>
-                                            <th>#</th>
                                             <th>Номер АЗС</th>
                                             <th>Адрес</th>
                                             <th>Телефон</th>
+                                            <th>E-mail</th>
                                             <th>Активна?</th>
+                                            <th>Редактировать</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {% for i in azs_list %}
                                         <tr>
-                                            <th scope="row">{{ i.id }}</th>
-                                            <td>{{ i.number}}</td>
+                                            <th scope="row">АЗС № {{ i.number}}</td>
                                             <td>{{ i.address }}</td>
                                             <td>{{ i.phone }}</td>
-                                            <td>{{ i.active }}</td>
+                                            <td>{{ i.email }}</td>
+                                            <td>{% if i.active == True %}
+                                                Да
+                                                {% else %}
+                                                Нет
+                                                {% endif %}
+                                            </td>
+                                            <td><a href="{{ url_for('admin.edit_azs', azs_id=i.id) }}">Редактировать</a></td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>

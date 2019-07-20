@@ -71,15 +71,18 @@ def download_tanks_info(user_id):
                                                       connect_timeout=10)
                         cursor = connection.cursor()
                         tanks = Tanks.query.filter_by(azs_id=i.id, active=True).all()  # получаем список резервуаров
-                        print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(azs_config.ip_address) + " успешно")
+                        print("Подключение к базе " + str(azs_config.database) + " на сервере " +
+                              str(azs_config.ip_address) + " успешно")
                         for id in tanks:  # перебераем резервуары
-                            if id.active:  # если активен, то строим запрос к базе
+                            if id.active and id.ams:  # если активен и есть система автоматического измерения,
+                                # то строим запрос к базе
                                 sql = ("SELECT id_shop, tanknum, prodcod, lvl, volume, t, optime "
                                        "FROM pj_tanks WHERE tanknum = "
                                        + str(id.tank_number) +
                                        " ORDER BY optime DESC LIMIT 1;")
                                 cursor.execute(sql)
-                                print("SQL запрос выполнен")
+
+                                print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(azs_config.ip_address) + " выполнен")
                                 query = cursor.fetchall()
                                 for row in query:
                                     azsid = AzsList.query.filter_by(number=row[0]).first()
@@ -106,6 +109,56 @@ def download_tanks_info(user_id):
                                                           download_time=datetime.now())
                                         db.session.add(add)
                                         db.session.commit()
+                            elif id.active and not id.ams:
+                                # если резервуар активен, но системы измерения нет, то получаем остаток
+                                sql = ("SELECT id_shop, tanknum, prodcod, lvl, volume, t, optime "
+                                       "FROM pj_tanks WHERE tanknum = "
+                                       + str(id.tank_number) +
+                                       " ORDER BY optime DESC LIMIT 1;")
+                                cursor.execute(sql)
+                                print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(azs_config.ip_address) + " выполнен")
+                                query = cursor.fetchall()
+
+                                # и делаем выборку по реализации с начала смены
+                                realisation = ("SELECT pj_td.id_shop, pj_td.product, pj_td.tank, sum(pj_td.volume) as volume "
+                                        "FROM pj_td, sj_tranz WHERE pj_td.id_shop=" + str(i.number) + " and pj_td.tank="
+                                        + str(id.tank_number) +
+                                        "and pj_td.begtime between current_TIMESTAMP - interval '1 day' "
+                                        "and current_TIMESTAMP and (pj_td.err=0 or pj_td.err=2) "
+                                        "and sj_tranz.id_shop=pj_td.id_shop "
+                                        "and pj_td.trannum=sj_tranz.trannum "
+                                        "and sj_tranz.shift=(select max(num) from sj_shifts where id_shop=" + str(i.number) +
+                                        "and begtime between current_TIMESTAMP - interval '1 day' "
+                                        "and current_TIMESTAMP ) GROUP BY pj_td.id_shop, pj_td.product, pj_td.tank")
+
+                                cursor.execute(realisation)
+                                realisation = cursor.fetchall()
+                                print(query[0][4]-realisation[0][3])
+                                for row in query:
+                                    azsid = AzsList.query.filter_by(number=row[0]).first()
+                                    tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
+                                    add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                    if add:
+                                        add.fuel_level = row[3]
+                                        add.fuel_volume = query[0][4]-realisation[0][3]
+                                        add.fuel_temperature = row[5]
+                                        add.datetime = row[6]
+                                        add.shop_id = azsid.id
+                                        add.tank_id = tankid.id
+                                        add.product_code = row[2]
+                                        add.download_time = datetime.now()
+                                        db.session.add(add)
+                                        try:
+                                            db.session.commit()
+                                        except Exception as error:
+                                            print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                    else:
+                                        add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
+                                                          fuel_level=row[3], fuel_volume=query[0][4]-realisation[0][3],
+                                                          fuel_temperature=row[5], datetime=row[6],
+                                                          download_time=datetime.now())
+                                        db.session.add(add)
+                                        db.session.commit()
                     except(Exception, psycopg2.Error) as error:
                         print("Ошибка во время получения данных", error)
                         pass
@@ -115,10 +168,16 @@ def download_tanks_info(user_id):
                             connection.close()
                             print("Соединение закрыто")
                             _set_task_progress(100)
-            elif test.system_type == 2:  # oilix
+
+            # если система oilix
+            elif test.system_type == 2:
+                # дергаем конфиги для подключения к БД на АЗС
                 azs_config = CfgDbConnection.query.filter_by(system_type=2, azs_id=i.id).first()
+                # дергаем список АЗС с фильтром по айдишнику
                 azs_list = AzsList.query.filter_by(id=i.id).first()
-                if azs_config:  # если есть конфиг
+
+                # если есть конфиг для данной азс
+                if azs_config:
                     try:
                         connection = psycopg2.connect(user=azs_config.username,
                                                       password=azs_config.password,
@@ -176,7 +235,9 @@ def download_tanks_info(user_id):
                             print("Соединение закрыто")
                             _set_task_progress(100)
 
-            elif test.system_type == 3:  # serviopump
+            # если система serviopump
+            elif test.system_type == 3:
+                print("SERVIOPUMP!!!!!!!!!!!!!!!!!!!!!")
                 azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                 if azs_config:  # если есть конфиг
                     try:
@@ -191,35 +252,54 @@ def download_tanks_info(user_id):
                             azs_config.ip_address) + " успешно")
                         for id in tanks:  # перебераем резервуары
                             if id.active:  # если активен, то строим запрос к базе
-                                sql = ("SELECT FIRST 1 id_shop, tanknum, prodcod, lvl, volume, t, optime "
-                                       "FROM pj_tanks WHERE tanknum = "
-                                       + str(id.tank_number) +
-                                       " ORDER BY optime DESC;")
+                                sql = "select td.fuel as prodcod,td.tank as tanknum,td.datetime " \
+                                      "as optime,td.fuelvolume as ost,3 " \
+                                      "as typ,tnk.volume_l - tnk.minost_l - td.fuelvolume as svob " \
+                                      "from tankdata td, tanks tnk, (select tank, max(datetime) as datetime " \
+                                      "from tankdata group by tank) tdm where td.tank = tdm.tank " \
+                                      "and td.datetime = tdm.datetime and tnk.num = td.tank and td.tank=" \
+                                      + str(id.tank_number)
                                 cursor.execute(sql)
                                 print("SQL запрос выполнен")
                                 query = cursor.fetchall()
                                 for row in query:
-                                    azsid = AzsList.query.filter_by(number=row[0]).first()
-                                    tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
+                                    azsid = AzsList.query.filter_by(number=i.number).first()
+                                    tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
                                     add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
                                     if add:
-                                        add.fuel_level = row[3]
-                                        add.fuel_volume = row[4]
-                                        add.fuel_temperature = row[5]
-                                        add.datetime = row[6]
+                                        # add.fuel_level =
+                                        add.fuel_volume = row[3]
+                                        # add.fuel_temperature = row[5]
+                                        add.datetime = row[2]
                                         add.shop_id = azsid.id
                                         add.tank_id = tankid.id
-                                        add.product_code = row[2]
+                                        if row[0] is 1:
+                                            add.product_code = 95
+                                        elif row[0] is 2:
+                                            add.product_code = 92
+                                        elif row[0] is 3:
+                                            add.product_code = 50
+                                        elif row[0] is 4:
+                                            add.product_code = 51
                                         add.download_time = datetime.now()
                                         db.session.add(add)
                                         try:
                                             db.session.commit()
                                         except Exception as error:
-                                            print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                            print("Данные по АЗС № " + str(azsid.number) + " не найдены", error)
                                     else:
-                                        add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
-                                                          fuel_level=row[3], fuel_volume=row[4],
-                                                          fuel_temperature=row[5], datetime=row[6],
+                                        product_code = 0
+                                        if row[0] is 1:
+                                            product_code = 95
+                                        elif row[0] is 2:
+                                            product_code = 92
+                                        elif row[0] is 3:
+                                            product_code = 50
+                                        elif row[0] is 4:
+                                            product_code = 51
+                                        add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=product_code,
+                                                          fuel_level=0, fuel_volume=row[3],
+                                                          fuel_temperature=0, datetime=row[2],
                                                           download_time=datetime.now())
                                         db.session.add(add)
                                         db.session.commit()

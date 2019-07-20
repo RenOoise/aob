@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
-from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm
+from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems
 from app.admin import bp
 "import jsonify"
@@ -26,7 +26,7 @@ def users():
 @bp.route('/admin/azslist', methods=['POST', 'GET'])
 @login_required
 def azslist():
-    azs_list = AzsList.query.all()
+    azs_list = AzsList.query.order_by("number").all()
     return render_template('admin/azslist.html', title='Список АЗС', azslist=True, settings_active=True,
                            azs_list=azs_list)
 
@@ -113,8 +113,8 @@ def pick_line(number):
 @bp.route('/admin/tanks', methods=['POST', 'GET'])
 @login_required
 def tanks():
-    azs_list = AzsList.query.all()
-    tank_list = Tanks.query.all()
+    azs_list = AzsList.query.order_by("number").all()
+    tank_list = Tanks.query.order_by("azs_id", "tank_number").all()
     return render_template('admin/tanks.html', title='Список резервуаров', tanks=True, settings_active=True,
                            tank_list=tank_list, azs_list=azs_list)
 
@@ -133,7 +133,7 @@ def config_lst():
 def add_azs():
     form = AddAzsForm()
     if form.validate_on_submit():
-        azs = AzsList(number=form.number.data, active=form.active.data, adress=form.address.data, phone=form.phone.data)
+        azs = AzsList(number=form.number.data, active=form.active.data, address=form.address.data, phone=form.phone.data)
         db.session.add(azs)
         db.session.commit()
         flash('АЗС добавлена')
@@ -229,4 +229,29 @@ def edit_tank(tank_id):
         form.mixing.data = tank.mixing
         form.active.data = tank.active
     return render_template('admin/edit_tank.html', title='Редактирование резервуара', edit_db_config=True, form=form,
+                           settings_active=True)
+
+
+@bp.route('/admin/azs/<azs_id>/edit', methods=['POST', 'GET'])
+@login_required
+def edit_azs(azs_id):
+    print(azs_id)
+    azs_list = AzsList.query.filter_by(id=azs_id).first()
+    form = EditAzsForm()
+    if form.validate_on_submit():
+        azs_list.number = form.number.data
+        azs_list.phone = form.phone.data
+        azs_list.address = form.address.data
+        azs_list.email = form.email.data
+        azs_list.active = form.active.data
+        db.session.commit()
+        flash('Конфиг обновлен!')
+        return redirect(url_for('admin.azslist'))
+    elif request.method == 'GET':
+        form.number.data = azs_list.number
+        form.phone.data = azs_list.phone
+        form.address.data = azs_list.address
+        form.email.data = azs_list.email
+        form.active.data = azs_list.active
+    return render_template('admin/edit_azs.html', title='Редактирование параметров АЗС', edit_azs=True, form=form,
                            settings_active=True)
