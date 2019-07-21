@@ -58,7 +58,8 @@
     {% for task in tasks %}
     <div class="alert alert-success" role="alert">
         {{ task.description }}
-        <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
+
+        <span id="{{ task.id }}-progress"><b>{{ task.get_progress() }} </b></span><b>% завершено.</b>
     </div>
     {% endfor %}
     {% endif %}

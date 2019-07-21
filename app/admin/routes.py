@@ -72,7 +72,7 @@ def adduser():
 @bp.route('/admin/addtank', methods=['GET', 'POST'])
 @login_required
 def addtank():
-    categories = [(c.id, c.number) for c in AzsList.query.all()]
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
     form = AddTankForm(request.form)
     form.azs_id.choices = categories
     if form.validate_on_submit():
@@ -86,7 +86,7 @@ def addtank():
                          nominal_capacity=form.nominal_capacity.data, real_capacity=form.real_capacity.data,
                          corrected_capacity=form.real_capacity.data/100*95, drain_time=form.drain_time.data,
                          after_drain_time=form.after_drain_time.data, mixing=form.mixing.data, active=form.active.data,
-                         ams=form.ams.data)
+                         ams=form.ams.data, dead_capacity=form.dead_capacity.data)
             db.session.add(tank)
             db.session.commit()
             flash('Резервуар добавлен')
@@ -114,7 +114,7 @@ def pick_line(number):
 @login_required
 def tanks():
     azs_list = AzsList.query.order_by("number").all()
-    tank_list = Tanks.query.order_by("azs_id", "tank_number").all()
+    tank_list = Tanks.query.outerjoin(AzsList).order_by(AzsList.number, "tank_number").all()
     return render_template('admin/tanks.html', title='Список резервуаров', tanks=True, settings_active=True,
                            tank_list=tank_list, azs_list=azs_list)
 
@@ -122,7 +122,7 @@ def tanks():
 @bp.route('/admin/config_list', methods=['POST', 'GET'])
 @login_required
 def config_lst():
-    config_list = CfgDbConnection.query.all()
+    config_list = CfgDbConnection.query.outerjoin(AzsList).order_by(AzsList.number).all()
     azs_list = AzsList.query.all()
     return render_template('admin/config_list.html', title='Список конфигов', db_configs=True, settings_active=True,
                            config_list=config_list, azs_list=azs_list)
@@ -144,7 +144,7 @@ def add_azs():
 @bp.route('/admin/add_db_config', methods=['GET', 'POST'])
 @login_required
 def add_cfg():
-    categories = [(c.id, c.number) for c in AzsList.query.all()]
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
     systems = [(s.id, s.type) for s in AzsSystems.query.all()]
     form = AddCfgForm(request.form)
     form.azs_id.choices = categories
@@ -209,6 +209,7 @@ def edit_tank(tank_id):
         tank.fuel_type = form.fuel_type.data
         tank.nominal_capacity = form.nominal_capacity.data
         tank.real_capacity = form.real_capacity.data
+        tank.dead_capacity = form.dead_capacity.data
         tank.drain_time = form.drain_time.data
         tank.after_drain_time = form.after_drain_time.data
         tank.ams = form.ams.data
@@ -223,6 +224,7 @@ def edit_tank(tank_id):
         form.fuel_type.data = tank.fuel_type
         form.nominal_capacity.data = tank.nominal_capacity
         form.real_capacity.data = tank.real_capacity
+        form.dead_capacity.data = tank.dead_capacity
         form.drain_time.data = tank.drain_time
         form.after_drain_time.data = tank.after_drain_time
         form.ams.data = tank.ams

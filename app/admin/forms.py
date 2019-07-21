@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
     BooleanField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
 
@@ -30,10 +30,14 @@ class AddUserForm(FlaskForm):
 
 class AddTankForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
-    tank = IntegerField(_l('Номер резервуара'), validators=[DataRequired()])
-    fuel_type = IntegerField(_l('Тип топлива'), validators=[DataRequired()])
-    nominal_capacity = FloatField(_l('Номинальная емкость'), validators=[DataRequired()])
-    real_capacity = FloatField(_l('Реальная емкость'), validators=[DataRequired()])
+    tank = SelectField(_l('Номер резервуара'), choices=[('1', 1), ('2', 2), ('3', 3), ('4', 4), ('5', 5), ('6', 6),
+                                                        ('7', 7), ('8', 8), ('9', 9), ('10', 10)],
+                        validators=[DataRequired()])
+    fuel_type = SelectField(_l('Тип топлива'), choices=[('95', 95), ('92', 92), ('50', 50), ('51', 51)],
+                            validators=[DataRequired()])
+    nominal_capacity = FloatField(_l('Номинальный объем (л)'), validators=[DataRequired()])
+    real_capacity = FloatField(_l('Действующий объем (л)'), validators=[DataRequired()])
+    dead_capacity = FloatField('Мервый остаток (л)')
     # corrected_capacity = IntegerField(_l('Скорректированная емкость'), validators=[DataRequired()])
     drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
@@ -63,7 +67,8 @@ class EditAzsForm(FlaskForm):
 
 class AddCfgForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
-    ip_address = StringField(_l('IP-адрес'), validators=[DataRequired()])
+    ip_address = StringField(_l('IP-адрес'), validators=[DataRequired(), IPAddress(ipv4=True, ipv6=False,
+                                                                                   message="Это точно IP-адрес?")])
     port = IntegerField(_l('Порт'))
     database = StringField(_l('База данных'))
     username = StringField(_l('Имя пользователя БД'), validators=[DataRequired()])
@@ -74,7 +79,8 @@ class AddCfgForm(FlaskForm):
 
 class EditCfgForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
-    ip_address = StringField(_l('IP-адрес'), validators=[DataRequired()])
+    ip_address = StringField(_l('IP-адрес'), validators=[DataRequired(), IPAddress(ipv4=True, ipv6=False,
+                                                                                   message="Это точно IP-адрес?")])
     port = IntegerField(_l('Порт'))
     database = StringField(_l('База данных'))
     username = StringField(_l('Имя пользователя БД'), validators=[DataRequired()])
@@ -87,8 +93,9 @@ class EditTankForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     tank = IntegerField(_l('Номер резервуара'), validators=[DataRequired()])
     fuel_type = IntegerField(_l('Тип топлива'), validators=[DataRequired()])
-    nominal_capacity = FloatField(_l('Номинальная емкость'), validators=[DataRequired()])
-    real_capacity = FloatField(_l('Реальная емкость'), validators=[DataRequired()])
+    nominal_capacity = FloatField(_l('Номинальный объем (л)'), validators=[DataRequired()])
+    real_capacity = FloatField(_l('Действующий объем (л)'), validators=[DataRequired()])
+    dead_capacity = FloatField('Мервый остаток (л)')
     # corrected_capacity = IntegerField(_l('Скорректированная емкость'), validators=[DataRequired()])
     drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])

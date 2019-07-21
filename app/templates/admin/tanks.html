@@ -27,9 +27,10 @@
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Вид топлива</th>
-                                            <th>Паспортный объем (л)</th>
-                                            <th>Реальный объем (л)</th>
+                                            <th>Номинальный объем (л)</th>
+                                            <th>Действующий объем (л)</th>
                                             <th>Скорректированный объем (л)</th>
+                                            <th>Мертвый остаток</th>
                                             <th>Время слива (мин)</th>
                                             <th>Время после слива (мин)</th>
                                             <th>АИС</th>
@@ -53,6 +54,7 @@
                                             <td>{{ i.nominal_capacity }}</td>
                                             <td>{{ i.real_capacity }}</td>
                                             <td>{{ i.corrected_capacity }}</td>
+                                            <td>{{i.dead_capacity }}</td>
                                             <td>{{ i.drain_time }}</td>
                                             <td>{{ i.after_drain_time }}</td>
                                             <td>{{ i.ams }}</td>

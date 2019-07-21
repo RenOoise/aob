@@ -328,6 +328,7 @@ class Tanks(db.Model):
     real_capacity = db.Column(db.Float)  # реальная емкость резервуара
     corrected_capacity = db.Column(db.Float)  # корректированная емкость резервуара
     capacity = db.Column(db.Float)  # емкость
+    dead_capacity = db.Column(db.Float)  # мертвый остаток
     drain_time = db.Column(db.Integer)  # время слива
     after_drain_time = db.Column(db.Integer)  # время после слива
     mixing = db.Column(db.Boolean)  # разрешено ли смешение топлива (для дизеля)

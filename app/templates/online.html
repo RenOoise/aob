@@ -57,7 +57,11 @@
                                             <td>
                                                 {% for z in tanks_list %}
                                                 {% if z.id == i.tank_id %}
+                                                {% if i.fuel_volume == None %}
+
+                                                {% else %}
                                                 {{ (100*(i.fuel_volume/z.real_capacity))|round(1) }}%
+                                                {% endif %}
                                                 {% endif %}
                                                 {% endfor %}
                                             </td>

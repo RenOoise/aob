@@ -209,7 +209,7 @@ def download_tanks_info():
     if current_user.get_task_in_progress('download_tanks_info'):
         flash(_('Выгрузка данных уже выполняется!'))
     else:
-        current_user.launch_task('download_tanks_info', _('Выгружаю данные...'))
+        current_user.launch_task('download_tanks_info', _('Выгружаю данные по остаткам топлива в резервуарах...'))
         db.session.commit()
     return redirect(url_for('main.online'))
 
@@ -231,7 +231,7 @@ def notifications():
 @login_required
 def online():
     azs_list = AzsList.query.all()
-    online = FuelResidue.query.all()
+    online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number, Tanks.tank_number).all()
     tanks_list = Tanks.query.all()
     return render_template('online.html', title='Online остатки', online_active=True,
                            online=online, azs_list=azs_list, tanks_list=tanks_list)
