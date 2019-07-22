@@ -3,84 +3,92 @@
 
 {% block app_content %}
 
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
+    <div class="content">
+        <div class="container">
+            <div class="row py-4">
 
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h4>Online остатки топлива</h4>
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <h4>Online остатки топлива</h4>
+                                </div>
+                                <div class="col-md-2">
+                                    <a href="/download_tanks_info" type="button" class="btn btn-info btn-sm">Обновить</a>
+                                </div>
+
                             </div>
-                            <div class="col-md-2">
-                                <a href="/download_tanks_info" type="button" class="btn btn-info btn-sm">Обновить</a>
-                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <table class="table table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>Номер АЗС</th>
+                                                <th>Номер резервуара</th>
+                                                <th>Вид топлива</th>
+                                                <th>Процент заполнения (%)</th>
+                                                <th>Текущий остаток (л)</th>
+                                                <th>Свободная емкость (л)</th>
+                                                <th>Время замера</th>
+                                                <th>Время выгрузки</th>
 
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table class="table table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th>Номер АЗС</th>
-                                            <th>Номер резервуара</th>
-                                            <th>Вид топлива</th>
-                                            <th>Процент заполнения (%)</th>
-                                            <th>Уровень (мм)</th>
-                                            <th>Текущий остаток (л)</th>
-                                            <th>Время замера</th>
-                                            <th>Время выгрузки</th>
-
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in online %}
-                                        <tr>
-                                            <th scope="row">
-                                                {% for x in azs_list %}
-                                                {% if x.id == i.shop_id %}
-                                                {{ x.number }}
-                                                {% endif %}
-                                                {% endfor %}
-                                            </th>
-                                            <td>
-                                                {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                {{ z.tank_number }}
-                                                {% endif %}
-                                                {% endfor %}
-                                            </td>
-                                            <td>{{ i.product_code }}</td>
-                                            <td>
-                                                {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                {% if i.fuel_volume == None %}
-
-                                                {% else %}
-                                                {{ (100*(i.fuel_volume/z.real_capacity))|round(1) }}%
-                                                {% endif %}
-                                                {% endif %}
-                                                {% endfor %}
-                                            </td>
-                                            <td>{{ i.fuel_level }}</td>
-                                            <td>{{ i.fuel_volume }}</td>
-                                            <td>{{ i.datetime }}</td>
-                                            <td>{{ i.download_time }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for i in online %}
+                                                <tr>
+                                                    <th scope="row">
+                                                        {% for x in azs_list %}
+                                                            {% if x.id == i.shop_id %}
+                                                                {{ x.number }}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </th>
+                                                    <td>
+                                                        {% for z in tanks_list %}
+                                                            {% if z.id == i.tank_id %}
+                                                                {{ z.tank_number }}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>{{ i.product_code }}</td>
+                                                    <td>
+                                                        {% for z in tanks_list %}
+                                                            {% if z.id == i.tank_id %}
+                                                                {% if i.fuel_volume == None %}
+                                                                    None
+                                                                {% else %}
+                                                                    {{ (100*(i.fuel_volume/z.corrected_capacity))|round(1) }}%
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>{{ i.fuel_volume }}</td>
+                                                    {% for z in tanks_list %}
+                                                        {% if z.id == i.tank_id %}
+                                                            {% if i.fuel_volume == None %}
+                                                                <td>None</td>
+                                                            {% else %}
+                                                                <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <td>{{ i.datetime }}</td>
+                                                    <td>{{ i.download_time }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
