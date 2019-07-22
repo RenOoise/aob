@@ -241,7 +241,7 @@ def online():
 @login_required
 def page_azs(id):
     azs_list = AzsList.query.filter_by(id=id).first()
-    # online = FuelResidue.query.filter_by(azs_id=id).outerjoin(Tanks).order_by(Tanks.tank_number).all()
     tanks_list = Tanks.query.filter_by(azs_id=id).all()
-    return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number) , online_active=True,
+    online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
+    return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
                            online=online, azs_list=azs_list, tanks_list=tanks_list)
