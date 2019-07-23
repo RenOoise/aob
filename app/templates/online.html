@@ -42,10 +42,10 @@
                                                     <th scope="row">
                                                         {% for x in azs_list %}
                                                             {% if x.id == i.shop_id %}
-                                                                {{ x.number }}
+                                                               <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}
                                                             {% endif %}
                                                         {% endfor %}
-                                                    </th>
+                                                    </>
                                                     <td>
                                                         {% for z in tanks_list %}
                                                             {% if z.id == i.tank_id %}

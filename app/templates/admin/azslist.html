@@ -35,7 +35,7 @@
                                         <tbody>
                                         {% for i in azs_list %}
                                         <tr>
-                                            <th scope="row">АЗС № {{ i.number}}</td>
+                                            <th scope="row"><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number}}</td>
                                             <td>{{ i.address }}</td>
                                             <td>{{ i.phone }}</td>
                                             <td>{{ i.email }}</td>
