@@ -59,7 +59,6 @@ def download_tanks_info(user_id):
 
     azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
     azs_count = AzsList.query.filter_by(active=True).count()  # получаем количество активных АЗС
-    print(azs_count)
     total_queries = int(azs_count)
     queries = 0
     try:
@@ -315,6 +314,74 @@ def download_tanks_info(user_id):
                         except Exception as error:
                             pass
                             print("Ошибка во время получения данных", error)
+    except:
+        _set_task_progress(100)
+        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+
+
+def download_realisation_info(user_id):
+    azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
+
+    try:
+        _set_task_progress(100)
+        for i in azs:  # перебираем список азс
+            test = CfgDbConnection.query.filter_by(azs_id=i.id).first()
+
+            if test is not None:  # если тестирование соединения успешно
+                if test.system_type == 1:  # если БукТС
+                    azs_config = CfgDbConnection.query.filter_by(system_type=1, azs_id=i.id).first()
+                    if azs_config:  # если есть конфиг
+                        try:
+                            connection = psycopg2.connect(user=azs_config.username,
+                                                          password=azs_config.password,
+                                                          host=azs_config.ip_address,
+                                                          database=azs_config.database,
+                                                          connect_timeout=10)
+                            cursor = connection.cursor()
+                            tanks = Tanks.query.filter_by(azs_id=i.id, active=True).all()  # получаем список резервуаров
+                            print("Подключение к базе " + str(azs_config.database) + " на сервере " +
+                                  str(azs_config.ip_address) + " успешно")
+                            sql_10_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
+                                          "WHERE id_shop = " + str(i.number) + " and begtime between current_TIMESTAMP - " \
+                                                                         "interval '10 day' and current_TIMESTAMP " \
+                                                                         "and (err=0 or err=2) " \
+                                                                         "GROUP BY id_shop, product, tank ORDER BY tank"
+                            cursor.execute(sql_10_days)
+                            query = cursor.fetchall()
+                            print(query)
+
+                            for row in query:
+                                azsid = AzsList.query.filter_by(number=row[0]).first()
+                                print("1")
+                                tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[2]).first()
+                                print("11")
+                                add = FuelRealisation.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                print("122")
+                                if add:
+                                    add.fuel_realisation_10_days = row[3]
+                                    add.shop_id = azsid.id
+                                    add.tank_id = tankid.id
+                                    add.product_code = row[1]
+                                    add.download_time = datetime.now()
+                                    db.session.add(add)
+                                    try:
+                                        db.session.commit()
+                                    except Exception as error:
+                                        print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                else:
+                                    add = FuelRealisation(shop_id=azsid.id, tank_id=tankid.id, product_code=row[1],
+                                                          fuel_realisation_10_days=row[3], download_time=datetime.now())
+                                    db.session.add(add)
+                                    db.session.commit()
+                        except(Exception, psycopg2.Error) as error:
+                            print("Ошибка во время получения данных", error)
+                            pass
+                        finally:
+                            if (connection):
+                                cursor.close()
+                                connection.close()
+                                print("Соединение закрыто")
+
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())

@@ -245,3 +245,14 @@ def page_azs(id):
     online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
     return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
                            online=online, azs_list=azs_list, tanks_list=tanks_list)
+
+
+@bp.route('/download_realisation_info')
+@login_required
+def download_realisation_info():
+    if current_user.get_task_in_progress('download_realisation_info'):
+        flash(_('Выгрузка данных уже выполняется!'))
+    else:
+        current_user.launch_task('download_realisation_info', _('Выгружаю данные по реализации...'))
+        db.session.commit()
+    return redirect(url_for('main.online'))
