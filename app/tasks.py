@@ -54,7 +54,7 @@ def export_posts(user_id):
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
-def download_tanks_info(user_id):
+def download_tanks_info():
     _set_task_progress(0)  # начало задания
 
     azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
@@ -381,7 +381,25 @@ def download_realisation_info(user_id):
                                 cursor.close()
                                 connection.close()
                                 print("Соединение закрыто")
+                elif test.system_type == "2":
+                    print("Oilix")
+                elif test.system_type == "3":
+                    print("ServioPump")
+                    azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
+                    if azs_config:  # если есть конфиг
+                        try:
+                            connection = fdb.connect(
+                                dsn=azs_config.ip_address + ':' + azs_config.database,
+                                user=azs_config.username,
+                                password=azs_config.password)
 
+                            cursor = connection.cursor()
+                            tanks = Tanks.query.filter_by(azs_id=i.id, active=True).all()  # получаем список резервуаров
+                            print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(
+                                azs_config.ip_address) + " успешно")
+                        except Exception as error:
+                            pass
+                            print("Ошибка во время получения данных", error)
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
