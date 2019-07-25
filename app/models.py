@@ -347,6 +347,7 @@ class FuelResidue(db.Model):
     percent = db.Column(db.Integer)  # процент заполненности резервуара
     fuel_level = db.Column(db.Float)  # уровень топлива в резервуаре
     fuel_volume = db.Column(db.Float)  # количество топлива в литрах
+    fuel_volume_percents = db.Column(db.Float)
     fuel_temperature = db.Column(db.Float)  #
     datetime = db.Column(db.DateTime)  # время замера в системе АЗС
     download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу

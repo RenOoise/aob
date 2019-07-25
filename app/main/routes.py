@@ -6,7 +6,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm
-from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks
+from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation
 from app.translate import translate
 from app.main import bp
 
@@ -255,4 +255,14 @@ def download_realisation_info():
     else:
         current_user.launch_task('download_realisation_info', _('Выгружаю данные по реализации...'))
         db.session.commit()
-    return redirect(url_for('main.online'))
+    return redirect(url_for('main.realisation'))
+
+
+@bp.route('/realisation', methods=['POST', 'GET'])
+@login_required
+def realisation():
+    azs_list = AzsList.query.all()
+    realisation = FuelRealisation.query.order_by(FuelRealisation.shop_id).all()
+    tanks_list = Tanks.query.all()
+    return render_template('realisation.html', title='Реализация топлива', realisation_active=True,
+                           realisation=realisation, azs_list=azs_list, tanks_list=tanks_list)

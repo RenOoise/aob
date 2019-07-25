@@ -42,13 +42,13 @@ def export_posts(user_id):
             _set_task_progress(100 * i // total_posts)
 
         send_email('[Microblog] Your blog posts',
-                sender=app.config['ADMINS'][0], recipients=[user.email],
-                text_body=render_template('email/export_posts.txt', user=user),
-                html_body=render_template('email/export_posts.html',
+                   sender=app.config['ADMINS'][0], recipients=[user.email],
+                   text_body=render_template('email/export_posts.txt', user=user),
+                   html_body=render_template('email/export_posts.html',
                                           user=user),
-                attachments=[('posts.json', 'application/json',
+                   attachments=[('posts.json', 'application/json',
                               json.dumps({'posts': data}, indent=4))],
-                sync=True)
+                   sync=True)
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
@@ -324,12 +324,17 @@ def download_tanks_info(user_id):
 
 
 def download_realisation_info(user_id):
+    _set_task_progress(0)  # начало задания
     azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
+    azs_count = AzsList.query.filter_by(active=True).count()  # получаем количество активных АЗС
+    total_queries = int(azs_count)
+    queries = 0
     try:
-        _set_task_progress(100)
+
         for i in azs:  # перебираем список азс
             test = CfgDbConnection.query.filter_by(azs_id=i.id).first()
-
+            queries += 1
+            _set_task_progress(100 * queries // total_queries)
             if test is not None:  # если тестирование соединения успешно
                 if test.system_type == 1:  # если БукТС
                     azs_config = CfgDbConnection.query.filter_by(system_type=1, azs_id=i.id).first()
@@ -341,7 +346,7 @@ def download_realisation_info(user_id):
                                                           database=azs_config.database,
                                                           connect_timeout=10)
                             cursor = connection.cursor()
-                            tanks = Tanks.query.filter_by(azs_id=i.id, active=True).all()  # получаем список резервуаров
+
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " +
                                   str(azs_config.ip_address) + " успешно")
                             sql_10_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
@@ -355,11 +360,8 @@ def download_realisation_info(user_id):
 
                             for row in query:
                                 azsid = AzsList.query.filter_by(number=row[0]).first()
-                                print("1")
                                 tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[2]).first()
-                                print("11")
                                 add = FuelRealisation.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
-                                print("122")
                                 if add:
                                     add.fuel_realisation_10_days = row[3]
                                     add.shop_id = azsid.id
@@ -386,8 +388,10 @@ def download_realisation_info(user_id):
                                 print("Соединение закрыто")
                 elif test.system_type == "2":
                     print("Oilix")
-                elif test.system_type == "3":
-                    print("ServioPump")
+                elif test.system_type == 3:
+                    print("ServioPump!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                          "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                          "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                     if azs_config:  # если есть конфиг
                         try:
@@ -397,12 +401,78 @@ def download_realisation_info(user_id):
                                 password=azs_config.password)
 
                             cursor = connection.cursor()
-                            tanks = Tanks.query.filter_by(azs_id=i.id, active=True).all()  # получаем список резервуаров
+
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(
                                 azs_config.ip_address) + " успешно")
+                            sql_10_days = "select fuel_id, tank, sum(factvolume) as volume from gsmarchive " \
+                                          "where datetime >= current_date-10 group by 1,fuel_id, tank"
+                            cursor.execute(sql_10_days)
+                            query = cursor.fetchall()
+
+                            for row in query:
+                                azsnumber = AzsList.query.filter_by(id=i.id).first_or_404()
+                                azsid = AzsList.query.filter_by(number=azsnumber.number).first()
+                                tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
+                                add = FuelRealisation.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                if add:
+                                    add.fuel_realisation_10_days = row[2]
+                                    add.shop_id = azsid.id
+                                    add.tank_id = tankid.id
+                                    product_code = 0
+                                    if row[1] is 1:
+                                        product_code = 95
+                                    elif row[1] is 2:
+                                        product_code = 92
+                                    elif row[1] is 3:
+                                        product_code = 50
+                                    elif row[1] is 4:
+                                        product_code = 51
+                                    add.product_code = product_code
+                                    add.download_time = datetime.now()
+                                    db.session.add(add)
+                                    try:
+                                        db.session.commit()
+                                    except Exception as error:
+                                        print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                else:
+                                    product_code = 0
+                                    if row[1] is 1:
+                                        product_code = 95
+                                    elif row[1] is 2:
+                                        product_code = 92
+                                    elif row[1] is 3:
+                                        product_code = 50
+                                    elif row[1] is 4:
+                                        product_code = 51
+                                    add = FuelRealisation(shop_id=azsnumber.number, tank_id=tankid.id,
+                                                          product_code=product_code, fuel_realisation_10_days=row[2],
+                                                          download_time=datetime.now())
+                                    db.session.add(add)
+                                    db.session.commit()
                         except Exception as error:
                             pass
                             print("Ошибка во время получения данных", error)
+
+
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+
+
+class DownloadTanksInfo(object):
+
+    def __init__(self, host, username, password, database, system_type):
+        self.host = host
+        self.username = username
+        self.password = password
+        self.database = database
+        self.system_type = system_type
+
+    def oilix(self):
+        print("Oilix")
+
+    def bukts(self):
+        print("bukts")
+
+    def serviopump(self):
+        print("ServioPump")
