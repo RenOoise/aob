@@ -54,7 +54,7 @@ def export_posts(user_id):
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
-def download_tanks_info():
+def download_tanks_info(user_id):
     _set_task_progress(0)  # начало задания
 
     azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
@@ -104,6 +104,7 @@ def download_tanks_info():
                                             add.tank_id = tankid.id
                                             add.product_code = row[2]
                                             add.download_time = datetime.now()
+                                            add.auto = True
                                             db.session.add(add)
                                             try:
                                                 db.session.commit()
@@ -113,7 +114,7 @@ def download_tanks_info():
                                             add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                               fuel_level=row[3], fuel_volume=row[4],
                                                               fuel_temperature=row[5], datetime=row[6],
-                                                              download_time=datetime.now())
+                                                              download_time=datetime.now(), auto=True)
                                             db.session.add(add)
                                             db.session.commit()
                                 elif id.active and not id.ams:
@@ -155,6 +156,7 @@ def download_tanks_info():
                                             add.tank_id = tankid.id
                                             add.product_code = row[2]
                                             add.download_time = datetime.now()
+                                            add.auto = False
                                             db.session.add(add)
                                             try:
                                                 db.session.commit()
@@ -164,7 +166,7 @@ def download_tanks_info():
                                             add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                               fuel_level=row[3], fuel_volume=query[0][4]-realisation[0][3],
                                                               fuel_temperature=row[5], datetime=row[6],
-                                                              download_time=datetime.now())
+                                                              download_time=datetime.now(), auto=False)
                                             db.session.add(add)
                                             db.session.commit()
                         except(Exception, psycopg2.Error) as error:
@@ -221,6 +223,7 @@ def download_tanks_info():
                                             add.tank_id = tankid.id
                                             add.product_code = id.fuel_type
                                             add.download_time = datetime.now()
+                                            add.auto = True
                                             db.session.add(add)
                                             try:
                                                 db.session.commit()
@@ -230,7 +233,7 @@ def download_tanks_info():
                                             add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id,
                                                               product_code=id.fuel_type, fuel_level=row[6],
                                                               fuel_volume=row[7], fuel_temperature=row[10],
-                                                              datetime=row[8], download_time=datetime.now())
+                                                              datetime=row[8], download_time=datetime.now(), auto=True)
                                             db.session.add(add)
                                             db.session.commit()
                         except(Exception, psycopg2.Error) as error:
@@ -281,6 +284,7 @@ def download_tanks_info():
                                             add.datetime = row[2]
                                             add.shop_id = azsid.id
                                             add.tank_id = tankid.id
+                                            add.auto = True
                                             if row[0] is 1:
                                                 add.product_code = 95
                                             elif row[0] is 2:
@@ -308,7 +312,7 @@ def download_tanks_info():
                                             add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=product_code,
                                                               fuel_level=0, fuel_volume=row[3],
                                                               fuel_temperature=0, datetime=row[2],
-                                                              download_time=datetime.now())
+                                                              download_time=datetime.now(), auto=True)
                                             db.session.add(add)
                                             db.session.commit()
                         except Exception as error:
@@ -321,7 +325,6 @@ def download_tanks_info():
 
 def download_realisation_info(user_id):
     azs = AzsList.query.filter_by(active=True).order_by("number").all()  # получаем список активных АЗС
-
     try:
         _set_task_progress(100)
         for i in azs:  # перебираем список азс

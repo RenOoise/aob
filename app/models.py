@@ -343,13 +343,14 @@ class FuelResidue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     shop_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
-    product_code = db.Column(db.Integer)
-    percent = db.Column(db.Integer)
-    fuel_level = db.Column(db.Float)
-    fuel_volume = db.Column(db.Float)
-    fuel_temperature = db.Column(db.Float)
-    datetime = db.Column(db.DateTime)
-    download_time = db.Column(db.DateTime)
+    product_code = db.Column(db.Integer)  # код топлива
+    percent = db.Column(db.Integer)  # процент заполненности резервуара
+    fuel_level = db.Column(db.Float)  # уровень топлива в резервуаре
+    fuel_volume = db.Column(db.Float)  # количество топлива в литрах
+    fuel_temperature = db.Column(db.Float)  #
+    datetime = db.Column(db.DateTime)  # время замера в системе АЗС
+    download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу
+    auto = db.Column(db.Boolean)  # данные загружены с видерута или по книжным остаткам?
 
 
 # реализация топлива на азс
@@ -357,10 +358,26 @@ class FuelRealisation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     shop_id = db.Column(db.Integer, index=True)
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
-    product_code = db.Column(db.Integer)
-    fuel_realisation_hour = db.Column(db.Float)
-    fuel_realisation_1_days = db.Column(db.Float)
-    fuel_realisation_3_days = db.Column(db.Float)
-    fuel_realisation_7_days = db.Column(db.Float)
-    fuel_realisation_10_days = db.Column(db.Float)
-    download_time = db.Column(db.DateTime)
+    product_code = db.Column(db.Integer)  # код топлива
+    average_1_days = db.Column(db.Float)  # среднее значение реализации за сутки
+    average_3_days = db.Column(db.Float)  # среднее значение реализации за 3 сутон
+    average_7_days = db.Column(db.Float)   # среднее значение реализации за 7 суток
+    average_10_days = db.Column(db.Float)  # среднее значение реализации за 10 суток
+    fuel_realisation_1_days = db.Column(db.Float)  # реализация за 1 сутки
+    fuel_realisation_3_days = db.Column(db.Float)  # реализация за 3 суток
+    fuel_realisation_7_days = db.Column(db.Float)  # реализация за 7 суток
+    fuel_realisation_10_days = db.Column(db.Float)  # реализация за 10 суток
+    download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу
+
+
+class Trucks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reg_number = db.Column(db.String(30))
+    trailer_reg_number = db.Column(db.String(40))
+    bay_1_volume = db.Column(db.Integer)
+    bay_2_volume = db.Column(db.Integer)
+    bay_3_volume = db.Column(db.Integer)
+    bay_4_volume = db.Column(db.Integer)
+    weight_limit = db.Column(db.Integer)
+    seals = db.Column(db.Integer)
+    driver = db.Column(db.String(60))

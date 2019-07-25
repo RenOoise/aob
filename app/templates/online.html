@@ -33,6 +33,7 @@
                                                 <th>Свободная емкость (л)</th>
                                                 <th>Время замера</th>
                                                 <th>Время выгрузки</th>
+                                                <th>Тип формирования</th>
 
                                             </tr>
                                             </thead>
@@ -77,6 +78,12 @@
                                                     {% endfor %}
                                                     <td>{{ i.datetime }}</td>
                                                     <td>{{ i.download_time }}</td>
+                                                    <td>{% if i.auto %}
+                                                        Автоматически
+                                                    {% else %}
+                                                    По книжным остаткам
+                                                    {% endif%}
+                                                    </td>
                                                 </tr>
                                             {% endfor %}
                                             </tbody>

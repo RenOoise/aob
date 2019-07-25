@@ -5,12 +5,12 @@ from app import tasks
 import atexit
 
 
-def download_tanks_info():
-    print("!!!!!!@!")
+def test():
+    tasks.download_tanks_info(1)
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=download_tanks_info, trigger="interval", seconds=5)
+scheduler.add_job(func=test, trigger="interval", minutes=5)
 scheduler.start()
 
 app = create_app()
