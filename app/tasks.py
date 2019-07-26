@@ -353,10 +353,11 @@ def download_realisation_info(user_id):
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " +
                                   str(azs_config.ip_address) + " успешно")
                             sql_10_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                          "WHERE id_shop = " + str(i.number) + " and begtime between current_TIMESTAMP - " \
-                                                                         "interval '10 day' and current_TIMESTAMP " \
-                                                                         "and (err=0 or err=2) " \
-                                                                         "GROUP BY id_shop, product, tank ORDER BY tank"
+                                          " WHERE id_shop = " \
+                                          + str(i.number) + \
+                                          " and begtime between current_TIMESTAMP - interval '10 day'" \
+                                          " and current_TIMESTAMP and (err=0 or err=2)" \
+                                          " GROUP BY id_shop, product, tank ORDER BY tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
                             print(query)
