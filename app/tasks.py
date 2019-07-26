@@ -359,12 +359,14 @@ def download_realisation_info(user_id):
                             print(query)
 
                             for row in query:
-                                azsid = AzsList.query.filter_by(number=row[0]).first()
-                                tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[2]).first()
-                                add = FuelRealisation.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+
+                                tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[2]).first()
+                                add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
+                                print("AZS NUMBER! " + str(i.number) + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
                                 if add:
                                     add.fuel_realisation_10_days = row[3]
-                                    add.shop_id = azsid.id
+                                    add.shop_id = i.number
                                     add.tank_id = tankid.id
                                     add.product_code = row[1]
                                     add.download_time = datetime.now()
@@ -374,7 +376,7 @@ def download_realisation_info(user_id):
                                     except Exception as error:
                                         print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                 else:
-                                    add = FuelRealisation(shop_id=azsid.id, tank_id=tankid.id, product_code=row[1],
+                                    add = FuelRealisation(shop_id=i.number, tank_id=tankid.id, product_code=row[1],
                                                           fuel_realisation_10_days=row[3], download_time=datetime.now())
                                     db.session.add(add)
                                     db.session.commit()
@@ -386,7 +388,7 @@ def download_realisation_info(user_id):
                                 cursor.close()
                                 connection.close()
                                 print("Соединение закрыто")
-                elif test.system_type == "2":
+                elif test.system_type == 2:
                     print("Oilix")
                 elif test.system_type == 3:
                     print("ServioPump!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -408,15 +410,13 @@ def download_realisation_info(user_id):
                                           "where datetime >= current_date-10 group by 1,fuel_id, tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
-
+                            print(query)
                             for row in query:
-                                azsnumber = AzsList.query.filter_by(id=i.id).first_or_404()
-                                azsid = AzsList.query.filter_by(number=azsnumber.number).first()
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
-                                add = FuelRealisation.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
                                 if add:
                                     add.fuel_realisation_10_days = row[2]
-                                    add.shop_id = azsid.id
+                                    add.shop_id = i.number
                                     add.tank_id = tankid.id
                                     product_code = 0
                                     if row[1] is 1:
@@ -444,7 +444,7 @@ def download_realisation_info(user_id):
                                         product_code = 50
                                     elif row[1] is 4:
                                         product_code = 51
-                                    add = FuelRealisation(shop_id=azsnumber.number, tank_id=tankid.id,
+                                    add = FuelRealisation(shop_id=i.number, tank_id=tankid.id,
                                                           product_code=product_code, fuel_realisation_10_days=row[2],
                                                           download_time=datetime.now())
                                     db.session.add(add)
