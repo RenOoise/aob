@@ -375,10 +375,28 @@ class Trucks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     reg_number = db.Column(db.String(30))
     trailer_reg_number = db.Column(db.String(40))
-    bay_1_volume = db.Column(db.Integer)
-    bay_2_volume = db.Column(db.Integer)
-    bay_3_volume = db.Column(db.Integer)
-    bay_4_volume = db.Column(db.Integer)
-    weight_limit = db.Column(db.Integer)
     seals = db.Column(db.Integer)
-    driver = db.Column(db.String(60))
+    weight = db.Column(db.Integer)  # вес бензовоза сухой
+    driver = db.Column(db.String(120))  # ФИО водителя
+
+
+class TruckTanks(db.Model):  # резервуары бензовоза
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer)  # порядковый номер резервуара
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    capacity = db.Column(db.Integer)  # вместимость резервуара
+
+
+class Priority(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    day_stock_from = db.Column(db.Float)  # запас суток от
+    day_stock_to = db.Column(db.Float)  # запас суток до
+    priority = db.Column(db.Integer)  # приоритет
+    sort_method = db.Column(db.String(60))  # метод сортировки
+
+
+class Trip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    distance = db.Column(db.Integer)
+    time_to = db.Column(db.Time)
+    time_from = db.Column(db.Time)
