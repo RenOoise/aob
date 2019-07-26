@@ -88,7 +88,8 @@ def download_tanks_info(user_id):
                                            + str(id.tank_number) +
                                            " ORDER BY optime DESC LIMIT 1;")
                                     cursor.execute(sql)
-
+                                    print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
+                                        azs_config.ip_address) + " выполнен")
                                     print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(azs_config.ip_address) + " выполнен")
                                     query = cursor.fetchall()
                                     for row in query:
@@ -208,7 +209,8 @@ def download_tanks_info(user_id):
                                            " ORDER BY stamp desc limit 1")
 
                                     cursor.execute(sql)
-                                    print("SQL запрос выполнен")
+                                    print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
+                                        azs_config.ip_address) + " выполнен")
                                     query = cursor.fetchall()
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=i.number).first()
@@ -248,7 +250,7 @@ def download_tanks_info(user_id):
 
                 # если система serviopump
                 elif test.system_type == 3:
-                    print("SERVIOPUMP!!!!!!!!!!!!!!!!!!!!!")
+                    print("SERVIOPUMP!")
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                     if azs_config:  # если есть конфиг
                         try:
@@ -271,7 +273,8 @@ def download_tanks_info(user_id):
                                           "and td.datetime = tdm.datetime and tnk.num = td.tank and td.tank=" \
                                           + str(id.tank_number)
                                     cursor.execute(sql)
-                                    print("SQL запрос выполнен")
+                                    print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
+                                        azs_config.ip_address) + " выполнен")
                                     query = cursor.fetchall()
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=i.number).first()
@@ -357,12 +360,12 @@ def download_realisation_info(user_id):
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
                             print(query)
-
+                            print("SQL запрос книжных остатков на АЗС №" + str(
+                                azs_config.ip_address) + " выполнен")
                             for row in query:
 
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[2]).first()
                                 add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
-                                print("AZS NUMBER! " + str(i.number) + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
                                 if add:
                                     add.fuel_realisation_10_days = row[3]
@@ -390,10 +393,8 @@ def download_realisation_info(user_id):
                                 print("Соединение закрыто")
                 elif test.system_type == 2:
                     print("Oilix")
+
                 elif test.system_type == 3:
-                    print("ServioPump!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                          "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-                          "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                     if azs_config:  # если есть конфиг
                         try:
