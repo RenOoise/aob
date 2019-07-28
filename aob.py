@@ -10,7 +10,7 @@ def test():
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=test, trigger="interval", minutes=5)
+scheduler.add_job(func=test, trigger="interval", minutes=7)
 scheduler.start()
 
 app = create_app()

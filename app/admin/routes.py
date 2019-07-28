@@ -2,10 +2,11 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
-from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm
-from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems
+from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
+    AddTruckForm
+from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip
 from app.admin import bp
-"import jsonify"
+import jsonify
 
 
 @bp.route('/admin', methods=['POST', 'GET'])
@@ -237,7 +238,6 @@ def edit_tank(tank_id):
 @bp.route('/admin/azs/<azs_id>/edit', methods=['POST', 'GET'])
 @login_required
 def edit_azs(azs_id):
-    print(azs_id)
     azs_list = AzsList.query.filter_by(id=azs_id).first()
     form = EditAzsForm()
     if form.validate_on_submit():
@@ -257,3 +257,44 @@ def edit_azs(azs_id):
         form.active.data = azs_list.active
     return render_template('admin/edit_azs.html', title='Редактирование параметров АЗС', edit_azs=True, form=form,
                            settings_active=True)
+
+
+@bp.route('/admin/truck/add', methods=['POST', 'GET'])
+@login_required
+def add_truck():
+    form = AddTruckForm()
+
+    if form.validate_on_submit():
+        trucks = Trucks(reg_number=form.reg_number.data, trailer_reg_number=form.trailer_reg_number.data,
+                        seals=form.seals.data, weight=form.weight.data, driver=form.driver.data,
+                        active=form.active.data, weight_limit=form.weight_limit.data)
+        db.session.add(trucks)
+        db.session.commit()
+        flash('ТС добавлено в базу')
+        return redirect(url_for('admin.trucks_list'))
+    return render_template('admin/add_truck.html', title='Добавление бензовоза', add_truck=True, settings_active=True,
+                           form=form)
+
+
+@bp.route('/admin/trucks_list', methods=['POST', 'GET'])
+@login_required
+def trucks_list():
+    trucks_list = Trucks.query.order_by("reg_number").all()
+    return render_template('admin/trucks_list.html', title='Список ТС', add_truck=True,
+                           settings_active=True, trucks_list=trucks_list)
+
+
+@bp.route('/admin/truck_tanks_list', methods=['POST', 'GET'])
+@login_required
+def truck_tanks_list():
+    truck_tanks_list = TruckTanks.query.order_by("truck_id").all()
+    return render_template('admin/truck_tanks_list.html', title='Список резервуаров ТС', truck_tanks=True,
+                           settings_active=True, truck_tanks_list=truck_tanks_list)
+
+
+@bp.route('/admin/truck_tanks_add', methods=['POST', 'GET'])
+@login_required
+def truck_tanks_add():
+    truck_tanks_list = TruckTanks.query.order_by("truck_id").all()
+    return render_template('admin/truck_tanks_list.html', title='Добавление резервуара ТС', truck_tanks=True,
+                           settings_active=True, truck_tanks_list=truck_tanks_list)

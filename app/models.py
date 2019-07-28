@@ -373,11 +373,13 @@ class FuelRealisation(db.Model):
 
 class Trucks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    reg_number = db.Column(db.String(30))
-    trailer_reg_number = db.Column(db.String(40))
-    seals = db.Column(db.Integer)
+    reg_number = db.Column(db.String(30))  # номер машины
+    trailer_reg_number = db.Column(db.String(40))  # номер прицепа
+    seals = db.Column(db.Integer)  # пломбы
     weight = db.Column(db.Integer)  # вес бензовоза сухой
+    weight_limit = db.Column(db.Integer)  # ограничение массы
     driver = db.Column(db.String(120))  # ФИО водителя
+    active = db.Column(db.Boolean)  # активен?
 
 
 class TruckTanks(db.Model):  # резервуары бензовоза
@@ -397,6 +399,6 @@ class Priority(db.Model):
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    distance = db.Column(db.Integer)
-    time_to = db.Column(db.Time)
-    time_from = db.Column(db.Time)
+    distance = db.Column(db.Integer)  # расстояние до азс от нефтебазы
+    time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
+    time_from = db.Column(db.Time)  # время от АЗС до нефтебазы

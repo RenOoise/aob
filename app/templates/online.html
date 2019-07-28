@@ -22,7 +22,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="row">
-                                        <table class="table table-striped">
+                                        <table id="myTest" class="table table-striped">
                                             <thead>
                                             <tr>
                                                 <th>Номер АЗС</th>
@@ -40,13 +40,13 @@
                                             <tbody>
                                             {% for i in online %}
                                                 <tr>
-                                                    <th scope="row">
+                                                    <td>
                                                         {% for x in azs_list %}
                                                             {% if x.id == i.shop_id %}
-                                                               <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}
+                                                               <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
                                                             {% endif %}
                                                         {% endfor %}
-                                                    </>
+                                                    </td>
                                                     <td>
                                                         {% for z in tanks_list %}
                                                             {% if z.id == i.tank_id %}
