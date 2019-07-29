@@ -384,7 +384,7 @@ class Trucks(db.Model):
 
 class TruckTanks(db.Model):  # резервуары бензовоза
     id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.Integer)  # порядковый номер резервуара
+    number = db.Column(db.Integer, unique=True)  # порядковый номер резервуара
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     capacity = db.Column(db.Integer)  # вместимость резервуара
 

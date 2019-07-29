@@ -116,6 +116,18 @@ class AddTruckForm(FlaskForm):
     submit = SubmitField('Добавить')
 
 
-class AddTruckTank(FlaskForm):
+class AddTruckTankForm(FlaskForm):
     number = IntegerField(_l('Порядковый номер'), validators=[DataRequired()])
-    volume = IntegerField(_l('Емкость (л.)'), validators=[DataRequired()])
+    capacity = IntegerField(_l('Емкость (л.)'), validators=[DataRequired()])
+    submit = SubmitField('Добавить')
+
+
+class EditTruckForm(FlaskForm):
+    reg_number = StringField(_l('Регистрационный номер'), validators=[DataRequired()])
+    trailer_reg_number = StringField(_l('Регистрационный номер прицепа'), validators=[DataRequired()])
+    seals = IntegerField(_l('Пломбы'), validators=[DataRequired()])
+    weight = IntegerField(_l('Сухая масса'))
+    weight_limit = IntegerField('Максимальная масса', validators=[DataRequired()])
+    driver = StringField(_l('ФИО водителя'))
+    active = BooleanField('Активен?')
+    submit = SubmitField('Сохранить')

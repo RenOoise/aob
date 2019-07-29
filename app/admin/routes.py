@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip
 from app.admin import bp
 import jsonify
@@ -295,9 +295,48 @@ def truck_tanks_list():
 @bp.route('/admin/truck_tanks/add/id<id>', methods=['POST', 'GET'])
 @login_required
 def truck_tanks_add(id):
-    truck_tanks_list = TruckTanks.query.order_by("truck_id").all()
-    return render_template('admin/truck_tanks_list.html', title='Добавление резервуара ТС', truck_tanks=True,
-                           settings_active=True, truck_tanks_list=truck_tanks_list)
+    form = AddTruckTankForm()
+
+    if form.validate_on_submit():
+        truck_tank = TruckTanks(number=form.number.data, truck_id=id, capacity=form.capacity.data)
+        db.session.add(truck_tank)
+        db.session.commit()
+        flash('Резервуар бензовоза добавлен в базу')
+        return redirect(url_for('admin.truck', id=id))
+
+    return render_template('admin/add_truck_tank.html', title='Добавление резервуара ТС', truck_tanks=True,
+                           settings_active=True, truck_tanks_list=truck_tanks_list, form=form)
+
+
+@bp.route('/admin/truck/edit/id<id>', methods=['POST', 'GET'])
+@login_required
+def truck_edit(id):
+    form = EditTruckForm()
+    truck = Trucks.query.filter_by(id=id).first_or_404()
+
+    if form.validate_on_submit():
+        truck.reg_number = form.reg_number.data
+        truck.trailer_reg_number = form.trailer_reg_number.data
+        truck.seals = form.seals.data
+        truck.weight = form.weight.data
+        truck.driver = form.driver.data
+        truck.active = form.active.data
+        truck.weight_limit = form.weight_limit.data
+        db.session.commit()
+        flash('ТС отредактированно')
+        return redirect(url_for('admin.truck', id=id))
+
+    elif request.method == 'GET':
+        form.reg_number.data = truck.reg_number
+        form.trailer_reg_number.data = truck.trailer_reg_number
+        form.seals.data = truck.seals
+        form.weight.data = truck.weight
+        form.driver.data = truck.driver
+        form.active.data = truck.active
+        form.weight_limit.data = truck.weight_limit
+
+    return render_template('admin/add_truck_tank.html', title='Редактирование ТС', truck_edit=True,
+                           settings_active=True, truck=truck, form=form)
 
 
 @bp.route('/admin/truck/id<id>', methods=['POST', 'GET'])
@@ -305,5 +344,7 @@ def truck_tanks_add(id):
 def truck(id):
     truck = Trucks.query.filter_by(id=id).first_or_404()
     truck_tanks_list = TruckTanks.query.filter_by(truck_id=id).all()
-    return render_template('admin/truck.html', title='Бензовоз ', truck_active=True,
-                           settings_active=True, truck_tanks_list=truck_tanks_list, truck=truck)
+    truck_tanks_count = TruckTanks.query.filter_by(truck_id=id).count()
+    return render_template('admin/truck.html', title='Бензовоз ' + truck.reg_number, truck_active=True,
+                           settings_active=True, truck_tanks_list=truck_tanks_list, truck=truck,
+                           truck_tanks_count=truck_tanks_count)
