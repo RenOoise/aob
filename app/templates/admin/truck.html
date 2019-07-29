@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+<div class="content">
+    <div class="container">
+        <div class="row py-4">
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row py-4">
+                        <div class="col col-md-6">
+                            <h4><b>Бензовоз с регистрационным номером {{ truck.reg_number }}</b></h4>
+                            <hr>
+
+                    </div>
+                    <hr>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -292,9 +292,18 @@ def truck_tanks_list():
                            settings_active=True, truck_tanks_list=truck_tanks_list)
 
 
-@bp.route('/admin/truck_tanks_add', methods=['POST', 'GET'])
+@bp.route('/admin/truck_tanks/add/id<id>', methods=['POST', 'GET'])
 @login_required
-def truck_tanks_add():
+def truck_tanks_add(id):
     truck_tanks_list = TruckTanks.query.order_by("truck_id").all()
     return render_template('admin/truck_tanks_list.html', title='Добавление резервуара ТС', truck_tanks=True,
                            settings_active=True, truck_tanks_list=truck_tanks_list)
+
+
+@bp.route('/admin/truck/id<id>', methods=['POST', 'GET'])
+@login_required
+def truck(id):
+    truck = Trucks.query.filter_by(id=id).first_or_404()
+    truck_tanks_list = TruckTanks.query.filter_by(truck_id=id).all()
+    return render_template('admin/truck.html', title='Бензовоз ', truck_active=True,
+                           settings_active=True, truck_tanks_list=truck_tanks_list, truck=truck)

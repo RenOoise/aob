@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField
+    BooleanField, FieldList
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
@@ -109,8 +109,13 @@ class AddTruckForm(FlaskForm):
     reg_number = StringField(_l('Регистрационный номер'), validators=[DataRequired()])
     trailer_reg_number = StringField(_l('Регистрационный номер прицепа'), validators=[DataRequired()])
     seals = IntegerField(_l('Пломбы'), validators=[DataRequired()])
-    weight = IntegerField(_l('Сухая масса'), validators=[DataRequired()])
+    weight = IntegerField(_l('Сухая масса'))
     weight_limit = IntegerField('Максимальная масса', validators=[DataRequired()])
     driver = StringField(_l('ФИО водителя'))
     active = BooleanField('Активен?')
     submit = SubmitField('Добавить')
+
+
+class AddTruckTank(FlaskForm):
+    number = IntegerField(_l('Порядковый номер'), validators=[DataRequired()])
+    volume = IntegerField(_l('Емкость (л.)'), validators=[DataRequired()])
