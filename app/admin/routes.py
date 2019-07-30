@@ -335,7 +335,7 @@ def truck_edit(id):
         form.active.data = truck.active
         form.weight_limit.data = truck.weight_limit
 
-    return render_template('admin/add_truck_tank.html', title='Редактирование ТС', truck_edit=True,
+    return render_template('admin/edit_truck.html', title='Редактирование ТС', truck_edit=True,
                            settings_active=True, truck=truck, form=form)
 
 
