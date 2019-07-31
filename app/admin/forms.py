@@ -131,3 +131,12 @@ class EditTruckForm(FlaskForm):
     driver = StringField(_l('ФИО водителя'))
     active = BooleanField('Активен?')
     submit = SubmitField('Сохранить')
+
+
+class EditPriorityListForm(FlaskForm):
+    day_stock_from = FloatField('Запас суток От', validators=[DataRequired()])
+    day_stock_to = FloatField('Запас суток До', validators=[DataRequired()])  # запас суток до
+    priority = IntegerField('Уровень приоритета', validators=[DataRequired()])  # приоритет
+    sort_method = SelectField('Метод сортировки', choices=[('1', 'Приоритет расстояние'), ('2', 'Приоритет время')],
+                              validators=[DataRequired()])
+    submit = SubmitField('Сохранить')

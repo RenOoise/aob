@@ -3,8 +3,9 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm
-from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm
+from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
+    PriorityList
 from app.admin import bp
 import jsonify
 
@@ -348,3 +349,80 @@ def truck(id):
     return render_template('admin/truck.html', title='Бензовоз ' + truck.reg_number, truck_active=True,
                            settings_active=True, truck_tanks_list=truck_tanks_list, truck=truck,
                            truck_tanks_count=truck_tanks_count)
+
+
+@bp.route('/admin/priority/add/', methods=['POST', 'GET'])
+@login_required
+def add_priority():
+    form = EditPriorityListForm()
+    if form.validate_on_submit():
+        priority_list = PriorityList(day_stock_from=form.day_stock_from.data, day_stock_to=form.day_stock_to.data,
+                                     priority=form.priority.data, sort_method=form.sort_method.data)
+        db.session.add(priority_list)
+        db.session.commit()
+        flash('Приоритет добавлен')
+        return redirect(url_for('admin.priority'))
+    return render_template('admin/add_priority.html', title='Добавление приоритетов', add_priority=True,
+                           settings_active=True, form=form)
+
+
+@bp.route('/admin/priority', methods=['POST', 'GET'])
+@login_required
+def priority():
+    priority_list = PriorityList.query.order_by("priority").all()
+    form = PriorityList()
+    return render_template('admin/edit_priority.html', title='Список приоритетов', priority=True,
+                           settings_active=True, priority_list=priority_list, form=form)
+
+
+@bp.route('/admin/priority/edit/id<id>', methods=['POST', 'GET'])
+@login_required
+def edit_priority(id):
+    form = EditPriorityListForm()
+    priority_list = PriorityList.query.filter_by(id=id).first_or_404()
+
+    if form.validate_on_submit():
+        priority_list.day_stock_from = form.day_stock_from.data
+        priority_list.day_stock_to = form.day_stock_to.data
+        priority_list.priority = form.priority.data
+        priority_list.sort_method = form.sort_method.data
+        db.session.commit()
+        flash('Приоритет отредактирован')
+        return redirect(url_for('admin.priority'))
+
+    elif request.method == 'GET':
+        form.day_stock_from.data = priority_list.day_stock_from
+        form.day_stock_to.data = priority_list.day_stock_to
+        form.priority.data = priority_list.priority
+        form.sort_method.data = priority_list.sort_method
+    return render_template('admin/edit_truck.html', title='Редактирование приоритета', priority_edit=True,
+                           settings_active=True, priority_list=priority_list, form=form)
+
+
+@bp.route('/admin/priority/delete/id<id>', methods=['POST', 'GET'])
+@login_required
+def delete_priority(id):
+    priority = PriorityList.query.filter_by(id=id).first_or_404()
+    db.session.delete(priority)
+    db.session.commit()
+    flash('Приоритет удален')
+    return redirect(url_for('admin.priority'))
+
+
+@bp.route('/admin/truck/delete/id<id>', methods=['POST', 'GET'])
+@login_required
+def truck_delete(id):
+    sql = Trucks.query.filter_by(id=id).first_or_404()
+    tanks = TruckTanks.query.filter_by(truck_id=id).all()
+    if tanks:
+        for i in tanks:
+            db.session.delete(i)
+            db.session.commit()
+        db.session.delete(sql)
+        db.session.commit()
+        flash('Бензовоз удален')
+    else:
+        db.session.delete(sql)
+        db.session.commit()
+        flash('Бензовоз и резервуары удалены')
+    return redirect(url_for('admin.trucks_list'))

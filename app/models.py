@@ -389,12 +389,12 @@ class TruckTanks(db.Model):  # резервуары бензовоза
     capacity = db.Column(db.Integer)  # вместимость резервуара
 
 
-class Priority(db.Model):
+class PriorityList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day_stock_from = db.Column(db.Float)  # запас суток от
     day_stock_to = db.Column(db.Float)  # запас суток до
     priority = db.Column(db.Integer)  # приоритет
-    sort_method = db.Column(db.String(60))  # метод сортировки
+    sort_method = db.Column(db.Integer)  # метод сортировки
 
 
 class Trip(db.Model):
@@ -402,3 +402,9 @@ class Trip(db.Model):
     distance = db.Column(db.Integer)  # расстояние до азс от нефтебазы
     time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
     time_from = db.Column(db.Time)  # время от АЗС до нефтебазы
+
+
+class Priority(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    priority = db.Column(db.Integer)  # номер в очереди

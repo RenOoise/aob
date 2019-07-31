@@ -30,8 +30,9 @@
                                             <th>Сухая масса (без груза, кг)</th>
                                             <th>Максимальная масса (с грузом, кг)</th>
                                             <th>ФИО водителя</th>
-                                            <th>Активна?</th>
+                                            <th>Активен?</th>
                                             <th>Редактировать</th>
+                                            <th>Удалитиь</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -50,6 +51,8 @@
                                                 {% endif %}
                                             </td>
                                             <td><a href="{{ url_for('admin.truck_edit', id=i.id) }}">Редактировать</a></td>
+
+                                            <td><a href="{{ url_for('admin.truck_delete', id=i.id) }}">Удалить</a></td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>
