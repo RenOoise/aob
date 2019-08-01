@@ -231,7 +231,12 @@ def notifications():
 @login_required
 def online():
     azs_list = AzsList.query.all()
-    online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number, Tanks.tank_number).all()
+    online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
+    '''online_ = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).all()
+    for item in online_:
+        online_list = {
+
+        }'''
     tanks_list = Tanks.query.all()
     return render_template('online.html', title='Online остатки', online_active=True,
                            online=online, azs_list=azs_list, tanks_list=tanks_list)

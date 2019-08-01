@@ -3,68 +3,69 @@
 
 {% block app_content %}
 
-    <div class="content">
-        <div class="container">
-            <div class="row py-4">
+<div class="content">
+    <div class="container">
+        <div class="row py-4">
 
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <h4>Реализация топлива на АЗС по резервуарам</h4>
-                                </div>
-                                <div class="col-md-2">
-                                    <a href="/download_realisation_info" type="button" class="btn btn-info btn-sm">Обновить</a>
-                                </div>
-
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-10">
+                                <h4>Реализация топлива на АЗС по резервуарам</h4>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="row">
-                                        <table class="table table-striped">
-                                            <thead>
-                                            <tr>
-                                                <th>Номер АЗС</th>
-                                                <th>Номер резервуара</th>
-                                                <th>Вид топлива</th>
-                                                <th>Реализация за 10 дней (л.)</th>
-                                                <th>Время выгрузки</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for i in realisation %}
-                                                <tr>
-                                                    <th scope="row">
-                                                        {% for x in azs_list %}
-                                                            {% if x.number == i.shop_id %}
-                                                               <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
-                                                            {% endif %}
-                                                        {% endfor %}
-
-                                                    <td>
-                                                        {% for z in tanks_list %}
-                                                            {% if z.id == i.tank_id %}
-                                                                {{ z.tank_number }}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </td>
-                                                    <td>{{ i.product_code }}</td>
-                                                    <td>{{i.fuel_realisation_10_days}} </td>
-
-                                                    <td>{{ i.download_time }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div class="col-md-2">
+                                <a href="/download_realisation_info" type="button" class="btn btn-info btn-sm">Обновить</a>
                             </div>
 
                         </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>Номер АЗС</th>
+                                            <th>Номер резервуара</th>
+                                            <th>Вид топлива</th>
+                                            <th>Реализация за 10 дней (л.)</th>
+                                            <th>Запас суток</th>
+                                            <th>Время выгрузки</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for i in realisation %}
+                                        <tr>
+                                            <th scope="row">
+                                                {% for x in azs_list %}
+                                                {% if x.number == i.shop_id %}
+                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                {% endif %}
+                                                {% endfor %}
+
+                                            <td>
+                                                {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                {{ z.tank_number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ i.product_code }}</td>
+                                            <td>{{i.fuel_realisation_10_days}} </td>
+                                            <td>{{i.days_stock_10}}</td>
+                                            <td>{{ i.download_time }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

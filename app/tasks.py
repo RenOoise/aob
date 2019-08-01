@@ -142,7 +142,6 @@ def download_tanks_info(user_id):
 
                                     cursor.execute(realisation)
                                     realisation = cursor.fetchall()
-                                    print(query[0][4]-realisation[0][3])
 
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
@@ -250,7 +249,7 @@ def download_tanks_info(user_id):
 
                 # если система serviopump
                 elif test.system_type == 3:
-                    print("SERVIOPUMP!")
+                    print("SERVIOPUMP")
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                     if azs_config:  # если есть конфиг
                         try:
@@ -360,7 +359,6 @@ def download_realisation_info(user_id):
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
-                            print(query)
                             print("SQL запрос книжных остатков на АЗС №" + str(
                                 azs_config.ip_address) + " выполнен")
                             for row in query:
@@ -412,7 +410,7 @@ def download_realisation_info(user_id):
                                           "where datetime >= current_date-10 group by 1,fuel_id, tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
-                            print(query)
+
                             for row in query:
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
                                 add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()

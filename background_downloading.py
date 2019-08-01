@@ -91,7 +91,7 @@ def download_tanks_info():
 
                                     cursor.execute(realisation)
                                     realisation = cursor.fetchall()
-                                    print(query[0][4]-realisation[0][3])
+
 
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
@@ -302,7 +302,7 @@ def download_realisation_info():
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
-                            print(query)
+
                             print("SQL запрос книжных остатков на АЗС №" + str(
                                 azs_config.ip_address) + " выполнен")
                             for row in query:
@@ -354,7 +354,7 @@ def download_realisation_info():
                                           "where datetime >= current_date-10 group by 1,fuel_id, tank"
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
-                            print(query)
+
                             for row in query:
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
                                 add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
@@ -422,7 +422,6 @@ class DownloadTanksInfo(object):
 
 
 download_tanks_info()
-sleep(60)
+sleep(5)
 download_realisation_info()
 
-datetime.now()

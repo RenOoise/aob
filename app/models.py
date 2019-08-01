@@ -368,6 +368,7 @@ class FuelRealisation(db.Model):
     fuel_realisation_3_days = db.Column(db.Float)  # реализация за 3 суток
     fuel_realisation_7_days = db.Column(db.Float)  # реализация за 7 суток
     fuel_realisation_10_days = db.Column(db.Float)  # реализация за 10 суток
+    day_stock_10 = db.Column(db.Float)  # запас суток (10 дней
     download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу
 
 
@@ -407,4 +408,5 @@ class Trip(db.Model):
 class Priority(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    day_stock = db.Column(db.Float)  # запас суток
     priority = db.Column(db.Integer)  # номер в очереди
