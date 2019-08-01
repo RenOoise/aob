@@ -341,7 +341,7 @@ class Tanks(db.Model):
 # остатки в резервуарах
 class FuelResidue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shop_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
     percent = db.Column(db.Integer)  # процент заполненности резервуара
@@ -357,7 +357,7 @@ class FuelResidue(db.Model):
 # реализация топлива на азс
 class FuelRealisation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shop_id = db.Column(db.Integer, index=True)
+    shop_id = db.Column(db.Integer, index=True)  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза и связать с AzsList
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
     average_1_days = db.Column(db.Float)  # среднее значение реализации за сутки

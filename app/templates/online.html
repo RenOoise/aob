@@ -42,7 +42,7 @@
                                                 <tr>
                                                     <td>
                                                         {% for x in azs_list %}
-                                                            {% if x.id == i.shop_id %}
+                                                            {% if x.id == i.azs_id %}
                                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
                                                             {% endif %}
                                                         {% endfor %}

@@ -44,7 +44,7 @@ def download_tanks_info():
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
-                                        add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                        add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
                                         if add:
                                             add.fuel_level = row[3]
                                             add.fuel_volume = row[4]
@@ -61,7 +61,7 @@ def download_tanks_info():
                                             except Exception as error:
                                                 print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                         else:
-                                            add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
+                                            add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                               fuel_level=row[3], fuel_volume=row[4],
                                                               fuel_temperature=row[5], datetime=row[6],
                                                               download_time=datetime.now(), auto=True)
@@ -96,13 +96,13 @@ def download_tanks_info():
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
-                                        add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                        add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
                                         if add:
                                             add.fuel_level = row[3]
                                             add.fuel_volume = query[0][4]-realisation[0][3]
                                             add.fuel_temperature = row[5]
                                             add.datetime = row[6]
-                                            add.shop_id = azsid.id
+                                            add.azs_id = azsid.id
                                             add.tank_id = tankid.id
                                             add.product_code = row[2]
                                             add.download_time = datetime.now()
@@ -113,7 +113,7 @@ def download_tanks_info():
                                             except Exception as error:
                                                 print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                         else:
-                                            add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=row[2],
+                                            add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                               fuel_level=row[3], fuel_volume=query[0][4]-realisation[0][3],
                                                               fuel_temperature=row[5], datetime=row[6],
                                                               download_time=datetime.now(), auto=False)
@@ -164,7 +164,7 @@ def download_tanks_info():
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=i.number).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
-                                        add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                        add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
                                         if add:
                                             add.fuel_level = row[6]
                                             add.fuel_volume = row[7]
@@ -181,7 +181,7 @@ def download_tanks_info():
                                             except Exception as error:
                                                 print("Данные по АЗС № " + str(azsid.id) + " не найдены", error)
                                         else:
-                                            add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id,
+                                            add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id,
                                                               product_code=id.fuel_type, fuel_level=row[6],
                                                               fuel_volume=row[7], fuel_temperature=row[10],
                                                               datetime=row[8], download_time=datetime.now(), auto=True)
@@ -228,7 +228,7 @@ def download_tanks_info():
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=i.number).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
-                                        add = FuelResidue.query.filter_by(shop_id=azsid.id, tank_id=tankid.id).first()
+                                        add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
                                         if add:
                                             # add.fuel_level =
                                             add.fuel_volume = row[3]
@@ -261,7 +261,7 @@ def download_tanks_info():
                                                 product_code = 50
                                             elif row[0] is 4:
                                                 product_code = 51
-                                            add = FuelResidue(shop_id=azsid.id, tank_id=tankid.id, product_code=product_code,
+                                            add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=product_code,
                                                               fuel_level=0, fuel_volume=row[3],
                                                               fuel_temperature=0, datetime=row[2],
                                                               download_time=datetime.now(), auto=True)
