@@ -92,7 +92,6 @@ def download_tanks_info():
                                     cursor.execute(realisation)
                                     realisation = cursor.fetchall()
 
-
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
@@ -148,7 +147,8 @@ def download_tanks_info():
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(
                                 azs_config.ip_address) + " успешно")
                             for id in tanks:  # перебераем резервуары
-                                if id.active:  # если активен, то строим запрос к базе
+                                if id.active and id.ams:
+                                    # если активен и есть система автоматического измерения, то строим запрос к базе
 
                                     sql = ("SELECT id, calculatedvolume, comment, density, incomeactive, "
                                            "insideincomefillinglitres, level, lmsvolume, stamp, tank, temperature, volume, "
@@ -161,6 +161,7 @@ def download_tanks_info():
                                     print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
                                         azs_config.ip_address) + " выполнен")
                                     query = cursor.fetchall()
+
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=i.number).first()
                                         tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
@@ -187,7 +188,66 @@ def download_tanks_info():
                                                               datetime=row[8], download_time=datetime.now(), auto=True)
                                             db.session.add(add)
                                             db.session.commit()
-                        except(Exception, psycopg2.Error) as error:
+
+                                elif id.active and not id.ams:
+                                    # если резервуар активен, но системы измерения нет, то получаем остаток
+                                    sql = ("select code, startvolume"
+                                           " from TankShiftInfo "
+                                           "where shiftinfo_id "
+                                           "in (select id from shiftinfo "
+                                           "order by shiftdate DESC limit 1) order by code;")
+                                    cursor.execute(sql)
+                                    residue = cursor.fetchall()
+
+                                    finished = ("select shiftdate from shiftinfo order by shiftdate DESC limit 1")
+                                    cursor.execute(finished)
+                                    shiftdate = cursor.fetchall()
+
+                                    print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(azs_config.ip_address) + " выполнен")
+                                    print(residue)
+
+                                    # и делаем выборку по реализации с начала смены
+                                    realisation = ("select tank, gas, sum(litres) volume from filling fl "
+                                                   "join payment pm on fl.payment_id = pm.id "
+                                                   "join bninfo bi on pm.bnmode = bi.code "
+                                                   "where fl.shiftinfo_id "
+                                                   "in (select id from shiftinfo order by number desc limit 1) "
+                                                   "and not bi.tosign group by tank, gas order by tank")
+
+                                    cursor.execute(realisation)
+                                    realisation = cursor.fetchall()
+
+                                    for row in residue:
+                                        tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
+                                        add = FuelResidue.query.filter_by(azs_id=i.id, tank_id=tankid.id).first()
+                                        for realis in realisation:
+                                            if add:
+                                                if row[0] is tankid.tank_number:
+                                                    resid = row[1] - realis[2]
+                                                    # add.fuel_level = row[3]
+                                                    add.fuel_volume = resid
+                                                    # add.fuel_temperature = row[5]
+                                                    add.datetime = shiftdate[0]
+                                                    add.azs_id = i.id
+                                                    add.tank_id = tankid.id
+                                                    add.product_code = tankid.fuel_type
+                                                    add.download_time = datetime.now()
+                                                    add.auto = False
+                                                    db.session.add(add)
+                                                    try:
+                                                        db.session.commit()
+                                                    except Exception as error:
+                                                        print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                            else:
+                                                if row[0] is tankid.tank_number:
+                                                    add = FuelResidue(azs_id=i.id, tank_id=tankid.id, product_code=tankid.fuel_type,
+                                                                      fuel_volume=i.row[1]-realis[2],
+                                                                      datetime=shiftdate[0],
+                                                                      download_time=datetime.now(), auto=False)
+                                                db.session.add(add)
+                                                db.session.commit()
+
+                        except (Exception, psycopg2.Error) as error:
                             print("Ошибка во время получения данных", error)
                             pass
 

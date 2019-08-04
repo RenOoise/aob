@@ -125,7 +125,7 @@ class AddTruckTankForm(FlaskForm):
 class EditTruckForm(FlaskForm):
     reg_number = StringField(_l('Регистрационный номер'), validators=[DataRequired()])
     trailer_reg_number = StringField(_l('Регистрационный номер прицепа'), validators=[DataRequired()])
-    seals = IntegerField(_l('Пломбы'), validators=[DataRequired()])
+    seals = IntegerField(_l('Пломбы (шт.)'), validators=[DataRequired()])
     weight = IntegerField(_l('Сухая масса'))
     weight_limit = IntegerField('Максимальная масса', validators=[DataRequired()])
     driver = StringField(_l('ФИО водителя'))
@@ -134,9 +134,10 @@ class EditTruckForm(FlaskForm):
 
 
 class EditPriorityListForm(FlaskForm):
-    day_stock_from = FloatField('Запас суток От', validators=[DataRequired()])
+    day_stock_from = FloatField('Запас суток От')
     day_stock_to = FloatField('Запас суток До', validators=[DataRequired()])  # запас суток до
     priority = IntegerField('Уровень приоритета', validators=[DataRequired()])  # приоритет
-    sort_method = SelectField('Метод сортировки', choices=[('1', 'Приоритет расстояние'), ('2', 'Приоритет время')],
+    sort_method = SelectField('Метод сортировки', choices=[('1', 'Приоритет дальние'), ('2', 'Приоритет ближние'),
+                                                           ('3', 'Приоритет долгие'), ('4', 'Приоритет быстрые')],
                               validators=[DataRequired()])
     submit = SubmitField('Сохранить')
