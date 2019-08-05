@@ -360,9 +360,11 @@ def download_realisation_info():
                                           " and begtime between current_TIMESTAMP - interval '10 day'" \
                                           " and current_TIMESTAMP and (err=0 or err=2)" \
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
+
                             cursor.execute(sql_10_days)
                             query = cursor.fetchall()
 
+                            print(query)
                             print("SQL запрос книжных остатков на АЗС №" + str(
                                 azs_config.ip_address) + " выполнен")
                             for row in query:
@@ -462,6 +464,27 @@ def download_realisation_info():
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
+def days_stock():
+    return 0
+
+
+def realisation(azs_id):
+    azs_number = AzsList.query.filter_by(id=azs_id).first_or_404()
+    realisation = FuelRealisation.query.filter_by(shop_id=azs_number.number).all()
+    residue = FuelResidue.query.filter_by(azs_id=azs_id).all()
+
+    for fuel in residue:
+        for data in realisation:
+            if fuel.tank_id is data.tank_id:
+                add = FuelRealisation.query.filter_by(tank_id=data.tank_id).first_or_404()
+                days_stock_10 = fuel.fuel_volume / (data.fuel_realisation_10_days / 10)
+                days_stock_10 = round(days_stock_10, 2)
+                add.day_stock_10 = days_stock_10
+                db.session.add(add)
+                db.session.commit()
+                print(days_stock_10)
+
+
 class DownloadTanksInfo(object):
 
     def __init__(self, host, username, password, database, system_type):
@@ -482,6 +505,10 @@ class DownloadTanksInfo(object):
 
 
 download_tanks_info()
-sleep(5)
 download_realisation_info()
+test = AzsList.query.order_by("number").all()
 
+for i in test:
+    azs_id = i.id
+    realisation(azs_id)
+sleep(2)

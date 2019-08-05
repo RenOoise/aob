@@ -341,7 +341,7 @@ class Tanks(db.Model):
 # остатки в резервуарах
 class FuelResidue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
     percent = db.Column(db.Integer)  # процент заполненности резервуара
