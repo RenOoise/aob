@@ -8,7 +8,7 @@ from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks
     PriorityList
 from app.admin import bp
 import jsonify
-
+from sqlalchemy import desc
 
 @bp.route('/admin', methods=['POST', 'GET'])
 @login_required
@@ -432,6 +432,8 @@ def truck_delete(id):
 @login_required
 def add_trip():
     form = AddTripForm()
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
+    form.azs_id.choices = categories
     if form.validate_on_submit():
 
         trip = Trip(distance=form.distance.data,
@@ -446,3 +448,12 @@ def add_trip():
         return redirect(url_for('admin.trucks_list'))
     return render_template('admin/add_trip.html', title='Добавление пути и времени', add_trip=True, settings_active=True,
                            form=form)
+
+
+@bp.route('/admin/trip', methods=['POST', 'GET'])
+@login_required
+def trip_list():
+    azs_list = AzsList.query.order_by(desc('number'))
+    trip_list = Trip.query.all()
+    return render_template('admin/trip_list.html', title='Расстояние и время до объектов', trip=True,
+                           settings_active=True, azs_list=azs_list, trip_list=trip_list)

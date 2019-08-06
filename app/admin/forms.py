@@ -145,6 +145,7 @@ class EditPriorityListForm(FlaskForm):
 
 
 class AddTripForm(FlaskForm):
+    azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     distance = IntegerField('Расстояние от нефтебазы до АЗС')
     time_to_before_lunch = TimeField('Время до АЗС (до обеда)')
     time_from_before_lunch = TimeField('Время от АЗС (до обеда)')

@@ -375,6 +375,7 @@ def download_realisation_info():
                                 if add:
                                     add.fuel_realisation_10_days = row[3]
                                     add.shop_id = i.number
+                                    add.azs_id = i.id
                                     add.tank_id = tankid.id
                                     add.product_code = row[1]
                                     add.download_time = datetime.now()
@@ -384,7 +385,7 @@ def download_realisation_info():
                                     except Exception as error:
                                         print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                 else:
-                                    add = FuelRealisation(shop_id=i.number, tank_id=tankid.id, product_code=row[1],
+                                    add = FuelRealisation(shop_id=i.number, azs_id=i.id, tank_id=tankid.id, product_code=row[1],
                                                           fuel_realisation_10_days=row[3], download_time=datetime.now())
                                     db.session.add(add)
                                     db.session.commit()
@@ -450,7 +451,7 @@ def download_realisation_info():
                                         product_code = 50
                                     elif row[1] is 4:
                                         product_code = 51
-                                    add = FuelRealisation(shop_id=i.number, tank_id=tankid.id,
+                                    add = FuelRealisation(shop_id=i.number, tank_id=tankid.id, azs_id=i.id,
                                                           product_code=product_code, fuel_realisation_10_days=row[2],
                                                           download_time=datetime.now())
                                     db.session.add(add)

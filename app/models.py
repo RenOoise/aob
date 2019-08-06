@@ -357,6 +357,7 @@ class FuelResidue(db.Model):
 # реализация топлива на азс
 class FuelRealisation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, index=True)
     shop_id = db.Column(db.Integer, index=True)  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза и связать с AzsList
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
@@ -402,6 +403,7 @@ class PriorityList(db.Model):
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # к какой азс привязано по id
     distance = db.Column(db.Integer)  # расстояние до азс от нефтебазы
     time_to_before_lunch = db.Column(db.Time)  # время до АЗС от нефтебазы до обеда
     time_from_before_lunch = db.Column(db.Time)  # время от АЗС до нефтебазы до обеда
