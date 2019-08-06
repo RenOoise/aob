@@ -403,6 +403,8 @@ class PriorityList(db.Model):
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     distance = db.Column(db.Integer)  # расстояние до азс от нефтебазы
+    time_to_before_lunch = db.Column(db.Time)  # время до АЗС от нефтебазы до обеда
+    time_from_before_lunch = db.Column(db.Time)  # время от АЗС до нефтебазы до обеда
     time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
     time_from = db.Column(db.Time)  # время от АЗС до нефтебазы
 

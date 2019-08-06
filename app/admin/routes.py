@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
     PriorityList
 from app.admin import bp
@@ -426,3 +426,23 @@ def truck_delete(id):
         db.session.commit()
         flash('Бензовоз и резервуары удалены')
     return redirect(url_for('admin.trucks_list'))
+
+
+@bp.route('/admin/trip/add', methods=['POST', 'GET'])
+@login_required
+def add_trip():
+    form = AddTripForm()
+    if form.validate_on_submit():
+
+        trip = Trip(distance=form.distance.data,
+                    time_from_before_lunch=form.time_from_before_lunch.data,
+                    time_to_before_lunch=form.time_to_before_lunch.data,
+                    time_from=form.time_from.data,
+                    time_to=form.time_to.data)
+
+        db.session.add(trip)
+        db.session.commit()
+        flash('Конфигурация добавлена в базу')
+        return redirect(url_for('admin.trucks_list'))
+    return render_template('admin/add_trip.html', title='Добавление пути и времени', add_trip=True, settings_active=True,
+                           form=form)
