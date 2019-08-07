@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
     BooleanField, FieldList
+from wtforms_components import TimeField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
@@ -141,3 +142,14 @@ class EditPriorityListForm(FlaskForm):
                                                            ('3', 'Приоритет долгие'), ('4', 'Приоритет быстрые')],
                               validators=[DataRequired()])
     submit = SubmitField('Сохранить')
+
+
+class AddTripForm(FlaskForm):
+    azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
+    distance = IntegerField('Расстояние от нефтебазы до АЗС')
+    time_to_before_lunch = TimeField('Время до АЗС (до обеда)')
+    time_from_before_lunch = TimeField('Время от АЗС (до обеда)')
+    time_to = TimeField('Время до АЗС (после обеда)')
+    time_from = TimeField('Время от АЗС (после обеда)')
+    submit = SubmitField('Сохранить')
+

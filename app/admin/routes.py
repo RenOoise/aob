@@ -3,12 +3,12 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
     PriorityList
 from app.admin import bp
 import jsonify
-
+from sqlalchemy import desc
 
 @bp.route('/admin', methods=['POST', 'GET'])
 @login_required
@@ -426,3 +426,65 @@ def truck_delete(id):
         db.session.commit()
         flash('Бензовоз и резервуары удалены')
     return redirect(url_for('admin.trucks_list'))
+
+
+@bp.route('/admin/trip/add', methods=['POST', 'GET'])
+@login_required
+def add_trip():
+    form = AddTripForm()
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
+    form.azs_id.choices = categories
+    if form.validate_on_submit():
+
+        trip = Trip(distance=form.distance.data,
+                    time_from_before_lunch=form.time_from_before_lunch.data,
+                    time_to_before_lunch=form.time_to_before_lunch.data,
+                    time_from=form.time_from.data,
+                    time_to=form.time_to.data,
+                    azs_id=form.azs_id.data)
+
+        db.session.add(trip)
+        db.session.commit()
+        flash('Конфигурация добавлена в базу')
+        return redirect(url_for('admin.trip_list'))
+    return render_template('admin/add_trip.html', title='Добавление пути и времени', add_trip=True, settings_active=True,
+                           form=form)
+
+
+@bp.route('/admin/trip', methods=['POST', 'GET'])
+@login_required
+def trip_list():
+    azs_list = AzsList.query.order_by('number').all()
+    trip_list = Trip.query.all()
+    return render_template('admin/trip_list.html', title='Расстояние и время до объектов', trip=True,
+                           settings_active=True, azs_list=azs_list, trip_list=trip_list)
+
+
+@bp.route('/admin/trip/edit/<id>', methods=['POST', 'GET'])
+@login_required
+def edit_trip(id):
+    form = AddTripForm()
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
+    form.azs_id.choices = categories
+    trip_list = Trip.query.filter_by(id=id).first_or_404()
+    if form.validate_on_submit():
+        trip_list.azs_id = form.azs_id.data
+        trip_list.distance = form.distance.data
+        trip_list.time_to_before_lunch = form.time_to_before_lunch.data
+        trip_list.time_from_before_lunch = form.time_from_before_lunch.data
+        trip_list.time_to = form.time_to.data
+        trip_list.time_from = form.time_from.data
+        db.session.commit()
+        flash('Данные изменены')
+        return redirect(url_for('admin.trip_list'))
+
+    elif request.method == 'GET':
+        form.azs_id.data = trip_list.azs_id
+        form.distance.data = trip_list.distance
+        form.time_to_before_lunch.data = trip_list.time_to_before_lunch
+        form.time_from_before_lunch.data = trip_list.time_from_before_lunch
+        form.time_to.data = trip_list.time_to
+        form.time_from.data = trip_list.time_from
+    return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True, settings_active=True,
+                           form=form)
+
