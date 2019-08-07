@@ -6,7 +6,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm
-from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation
+from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority
 from app.translate import translate
 from app.main import bp
 
@@ -271,3 +271,13 @@ def realisation():
     tanks_list = Tanks.query.all()
     return render_template('realisation.html', title='Реализация топлива', realisation_active=True,
                            realisation=realisation, azs_list=azs_list, tanks_list=tanks_list)
+
+
+@bp.route('/priority', methods=['GET', 'POST'])
+@login_required
+def priority():
+    azs_list = AzsList.query.all()
+    tanks_list = Tanks.query.all()
+    priority = Priority.query.order_by("priority").all()
+    return render_template('priority.html', title='Список АЗС по приоритету', realisation_active=True,
+                           azs_list=azs_list, priority=priority, tanks_list=tanks_list)
