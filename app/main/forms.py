@@ -7,10 +7,10 @@ from app.models import User
 
 
 class EditProfileForm(FlaskForm):
-    username = StringField(_l('Username'), validators=[DataRequired()])
-    about_me = TextAreaField(_l('About me'),
+    username = StringField(_l('Имя пользователя'), validators=[DataRequired()])
+    about_me = TextAreaField(_l('Обо мне'),
                              validators=[Length(min=0, max=140)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Сохранить'))
 
     def __init__(self, original_username, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
@@ -20,12 +20,12 @@ class EditProfileForm(FlaskForm):
         if username.data != self.original_username:
             user = User.query.filter_by(username=self.username.data).first()
             if user is not None:
-                raise ValidationError(_('Please use a different username.'))
+                raise ValidationError(_('Пожалуйста введите другое имя пользователя'))
 
 
 class PostForm(FlaskForm):
-    post = TextAreaField(_l('Say something'), validators=[DataRequired()])
-    submit = SubmitField(_l('Submit'))
+    post = TextAreaField(_l('Скажите что-нибудь'), validators=[DataRequired()])
+    submit = SubmitField(_l('Отправить'))
 
 
 class SearchForm(FlaskForm):
@@ -40,7 +40,7 @@ class SearchForm(FlaskForm):
 
 
 class MessageForm(FlaskForm):
-    message = TextAreaField(_l('Message'), validators=[
+    message = TextAreaField(_l('Сообщение'), validators=[
         DataRequired(), Length(min=1, max=140)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Отправить'))
 
