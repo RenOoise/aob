@@ -341,7 +341,7 @@ def download_realisation_info():
                                               'fuel_realisation_3_days': 0,
                                               'fuel_realisation_7_days': 0,
                                               'fuel_realisation_10_days': 0,
-                                              'sql_week_ago': 0}
+                                              'fuel_realisation_week_ago': 0}
 
                             for row in query_10:
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
@@ -839,8 +839,8 @@ for rs in realisation:
             print("Резервуар №" + str(tank.tank_number) + " на АЗС №" + str(azs.number) + " отключен")
 
 
-#azs_priority()
-#download_tanks_info()
+azs_priority()
+download_tanks_info()
 download_realisation_info()
 azs_priority()
 test = AzsList.query.order_by("number").all()
