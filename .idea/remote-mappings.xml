@@ -3,13 +3,14 @@
   <component name="RemoteMappingsManager">
     <list>
       <list>
-        <remote-mappings server-id="python@sftp://administrator@192.168.150.119:22/home/administrator/aob-test/venv/bin/python">
+        <remote-mappings server-id="python@sftp://administrator@195.135.214.35:220/home/administrator/aob/venv/bin/python">
           <settings>
             <list>
-              <mapping local-root="$PROJECT_DIR$" remote-root="/home/administrator/aob-test" />
+              <mapping local-root="$PROJECT_DIR$" remote-root="/home/administrator/aob" />
             </list>
           </settings>
         </remote-mappings>
+        <remote-mappings server-id="python@sftp://administrator@192.168.150.119:22/home/administrator/aob-test/venv/bin/python" />
       </list>
     </list>
   </component>

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+<div class="content">
+    <div class="container">
+        <div class="row py-4">
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4>Список АЗС по приоритету отправки</h4>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>Номер АЗС</th>
+                                            <th>Номер резервуара</th>
+                                            <th>Запас суток</th>
+                                            <th>Номер приоритета</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for i in priority %}
+                                        <tr>
+                                            <th scope="row">
+                                                {% for x in azs_list %}
+                                                {% if x.id == i.azs_id %}
+                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                {% endif %}
+                                                {% endfor %}
+
+                                            <td>
+                                                {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                {{ z.tank_number }}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ i.day_stock }}</td>
+                                            <td>{{ i.priority }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

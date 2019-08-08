@@ -1,7 +1,7 @@
 # фоновая загрузка данных
 import sys
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList
 import psycopg2
 from datetime import datetime
 import fdb
@@ -51,7 +51,7 @@ def download_realisation_info():
                             sql_7_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
                                           " WHERE id_shop = " \
                                           + str(i.number) + \
-                                          " and begtime between current_TIMESTAMP - interval '10 day'" \
+                                          " and begtime between current_TIMESTAMP - interval '7 day'" \
                                           " and current_TIMESTAMP and (err=0 or err=2)" \
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
                             cursor.execute(sql_7_days)
@@ -60,7 +60,7 @@ def download_realisation_info():
                             sql_3_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
                                           " WHERE id_shop = " \
                                           + str(i.number) + \
-                                          " and begtime between current_TIMESTAMP - interval '10 day'" \
+                                          " and begtime between current_TIMESTAMP - interval '3 day'" \
                                           " and current_TIMESTAMP and (err=0 or err=2)" \
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
                             cursor.execute(sql_3_days)
@@ -69,13 +69,12 @@ def download_realisation_info():
                             sql_1_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
                                           " WHERE id_shop = " \
                                           + str(i.number) + \
-                                          " and begtime between current_TIMESTAMP - interval '10 day'" \
+                                          " and begtime between current_TIMESTAMP - interval '1 day'" \
                                           " and current_TIMESTAMP and (err=0 or err=2)" \
                                           " GROUP BY id_shop, product, tank ORDER BY tank"
 
                             cursor.execute(sql_1_days)
                             query_1 = cursor.fetchall()
-                            print(query_1[0][3])
                             print("SQL запрос книжных остатков на АЗС №" + str(
                                 azs_config.ip_address) + " выполнен")
                             for row in query_10:
@@ -85,6 +84,9 @@ def download_realisation_info():
 
                                 if add:
                                     add.fuel_realisation_10_days = row[3]
+                                    add.fuel_realisation_3_days = query_3[0][3]
+                                    add.fuel_realisation_7_days = query_7[0][3]
+                                    add.fuel_realisation_1_days = query_1[0][3]
                                     add.shop_id = i.number
                                     add.azs_id = i.id
                                     add.tank_id = tankid.id
@@ -115,7 +117,80 @@ def download_realisation_info():
                                 connection.close()
                                 print("Соединение закрыто")
                 elif test.system_type == 2:
-                    print("Oilix")
+                    azs_config = CfgDbConnection.query.filter_by(system_type=2, azs_id=i.id).first()
+                    if azs_config:  # если есть конфиг
+                        try:
+                            connection = psycopg2.connect(user=azs_config.username,
+                                                          password=azs_config.password,
+                                                          host=azs_config.ip_address,
+                                                          database=azs_config.database,
+                                                          connect_timeout=10)
+                            cursor = connection.cursor()
+
+                            print("Подключение к базе " + str(azs_config.database) + " на сервере " +
+                                  str(azs_config.ip_address) + " успешно")
+                            sql_10_days = "select tank, gas, sum(litres) volume from filling " \
+                                          "where endstamp between current_TIMESTAMP - interval '10 day' " \
+                                          "and current_TIMESTAMP " \
+                                          "group by tank, gas order by tank"
+                            cursor.execute(sql_10_days)
+                            query_10 = cursor.fetchall()
+
+                            sql_7_days = "select tank, gas, sum(litres) volume from filling " \
+                                         "where endstamp between current_TIMESTAMP - interval '7 day' " \
+                                         "and current_TIMESTAMP " \
+                                         "group by tank, gas order by tank"
+                            cursor.execute(sql_7_days)
+                            query_7 = cursor.fetchall()
+
+                            sql_3_days = "select tank, gas, sum(litres) volume from filling " \
+                                         "where endstamp between current_TIMESTAMP - interval '3day' " \
+                                         "and current_TIMESTAMP " \
+                                         "group by tank, gas order by tank"
+                            cursor.execute(sql_3_days)
+                            query_3 = cursor.fetchall()
+
+                            sql_1_days = "select tank, gas, sum(litres) volume from filling " \
+                                         "where endstamp between current_TIMESTAMP - interval '0 day' " \
+                                         "and current_TIMESTAMP " \
+                                         "group by tank, gas order by tank"
+                            cursor.execute(sql_1_days)
+                            query_1 = cursor.fetchall()
+                            print(query_10)
+                            print("SQL запрос книжных остатков на АЗС №" + str(
+                                azs_config.ip_address) + " выполнен")
+                            for row in query_10:
+                                tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
+                                add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
+
+                                if add:
+                                    add.fuel_realisation_10_days = row[2]
+                                    add.shop_id = i.number
+                                    add.azs_id = i.id
+                                    add.tank_id = tankid.id
+                                    add.product_code = row[1]
+                                    add.download_time = datetime.now()
+                                    db.session.add(add)
+                                    try:
+                                        db.session.commit()
+                                    except Exception as error:
+                                        print("Данные по АЗС № " + str(azs.number) + " не найдены", error)
+                                else:
+                                    add = FuelRealisation(shop_id=i.number, azs_id=i.id,
+                                                          tank_id=tankid.id,
+                                                          product_code=row[1],
+                                                          fuel_realisation_10_days=row[2],
+                                                          download_time=datetime.now())
+                                    db.session.add(add)
+                                    db.session.commit()
+                        except(Exception, psycopg2.Error) as error:
+                            print("Ошибка во время получения данных", error)
+                            pass
+                        finally:
+                            if (connection):
+                                cursor.close()
+                                connection.close()
+                                print("Соединение закрыто")
 
                 elif test.system_type == 3:
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
@@ -202,7 +277,7 @@ def realisation(azs_id):
                 add.day_stock_10 = days_stock_10
                 db.session.add(add)
                 db.session.commit()
-                print(days_stock_10)
+                print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_10))
 
 
 class QueryFromDb(object):
@@ -235,10 +310,8 @@ class QueryFromDb(object):
                                    + str(id.tank_number) +
                                    " ORDER BY optime DESC LIMIT 1;")
                             cursor.execute(sql)
-                            print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                self.ip_address) + " выполнен")
-                            print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                self.ip_address) + " выполнен")
+                            print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС №" + str(
+                                self.number) + " выполнен")
                             query = cursor.fetchall()
                             for row in query:
                                 azsid = AzsList.query.filter_by(number=row[0]).first()
@@ -258,7 +331,7 @@ class QueryFromDb(object):
                                     try:
                                         db.session.commit()
                                     except Exception as error:
-                                        print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                        print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                 else:
                                     add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                       fuel_level=row[3], fuel_volume=row[4],
@@ -266,15 +339,15 @@ class QueryFromDb(object):
                                                       download_time=datetime.now(), auto=True)
                                     db.session.add(add)
                                     db.session.commit()
-                        elif id.active and not id.ams:
+                        elif id.active and id.ams is False:
                             # если резервуар активен, но системы измерения нет, то получаем остаток
                             sql = ("SELECT id_shop, tanknum, prodcod, lvl, volume, t, optime "
                                    "FROM pj_tanks WHERE tanknum = "
                                    + str(id.tank_number) +
                                    " ORDER BY optime DESC LIMIT 1;")
                             cursor.execute(sql)
-                            print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                self.ip_address) + " выполнен")
+                            print("SQL запрос Книжных остатков по резервуару " + str(id.tank_number) + " на АЗС №" + str(
+                                self.number) + " выполнен")
                             query = cursor.fetchall()
 
                             # и делаем выборку по реализации с начала смены
@@ -312,7 +385,7 @@ class QueryFromDb(object):
                                     try:
                                         db.session.commit()
                                     except Exception as error:
-                                        print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                        print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                 else:
                                     add = FuelResidue(azs_id=self.id, tank_id=tankid.id, product_code=row[2],
                                                       fuel_level=row[3], fuel_volume=query[0][4] - realisation[0][3],
@@ -355,7 +428,7 @@ class QueryFromDb(object):
 
                             cursor.execute(sql)
                             print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                azs_config.ip_address) + " выполнен")
+                                self.number) + " выполнен")
                             query = cursor.fetchall()
 
                             for row in query:
@@ -376,7 +449,7 @@ class QueryFromDb(object):
                                     try:
                                         db.session.commit()
                                     except Exception as error:
-                                        print("Данные по АЗС № " + str(azsid.id) + " не найдены", error)
+                                        print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                 else:
                                     add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id,
                                                       product_code=id.fuel_type, fuel_level=row[6],
@@ -385,7 +458,7 @@ class QueryFromDb(object):
                                     db.session.add(add)
                                     db.session.commit()
 
-                        elif id.active and id.ams is not False:
+                        elif id.active and id.ams is False:
                             # если резервуар активен, но системы измерения нет, то получаем остаток
                             sql = ("select code, startvolume"
                                    " from TankShiftInfo "
@@ -400,7 +473,7 @@ class QueryFromDb(object):
                             shiftdate = cursor.fetchall()
 
                             print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                azs_config.ip_address) + " выполнен")
+                                self.number) + " выполнен")
                             print(residue)
 
                             # и делаем выборку по реализации с начала смены
@@ -434,7 +507,7 @@ class QueryFromDb(object):
                                             try:
                                                 db.session.commit()
                                             except Exception as error:
-                                                print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
+                                                print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                     else:
                                         if row[0] is tankid.tank_number:
                                             add = FuelResidue(azs_id=self.id, tank_id=tankid.id,
@@ -480,7 +553,7 @@ class QueryFromDb(object):
                                   + str(id.tank_number)
                             cursor.execute(sql)
                             print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
-                                self.ip_address) + " выполнен")
+                                self.number) + " выполнен")
                             query = cursor.fetchall()
                             for row in query:
                                 azsid = AzsList.query.filter_by(number=self.number).first()
@@ -507,7 +580,7 @@ class QueryFromDb(object):
                                     try:
                                         db.session.commit()
                                     except Exception as error:
-                                        print("Данные по АЗС № " + str(azsid.number) + " не найдены", error)
+                                        print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                 else:
                                     product_code = 0
                                     if row[0] is 1:
@@ -540,9 +613,34 @@ class QueryFromDb(object):
         return connection
 
 
-# download_tanks_info()
-download_realisation_info()
+def azs_priority():
+    priority = Priority.query.all()
+    for i in priority:
+        db.session.delete(i)
+        db.session.commit()
+    priority_list = PriorityList.query.all()
+    realisation = FuelRealisation.query.order_by("day_stock_10").all()
+    realisation_count = FuelRealisation.query.order_by("day_stock_10").count()
 
+    counter = 1
+    for pr in realisation:
+        tank = Tanks.query.filter_by(id=pr.tank_id).first_or_404()
+        azs = AzsList.query.filter_by(id=pr.azs_id).first_or_404()
+        if tank.active:
+            if counter <= realisation_count:
+                priority_sorted = Priority(azs_id=pr.azs_id, day_stock=pr.day_stock_10, tank_id=pr.tank_id,
+                                           priority=counter)
+                db.session.add(priority_sorted)
+                db.session.commit()
+                counter += 1
+        else:
+            print("Резервуар №" + str(tank.tank_number) + " на АЗС №" + str(azs.number) + " отключен")
+
+
+azs_priority()
+download_tanks_info()
+download_realisation_info()
+azs_priority()
 test = AzsList.query.order_by("number").all()
 
 for i in test:
