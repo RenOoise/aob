@@ -327,7 +327,6 @@ class Tanks(db.Model):
     nominal_capacity = db.Column(db.Float)  # емкость резервуара по паспорту
     real_capacity = db.Column(db.Float)  # реальная емкость резервуара
     corrected_capacity = db.Column(db.Float)  # корректированная емкость резервуара
-    capacity = db.Column(db.Float)  # емкость
     dead_capacity = db.Column(db.Float)  # мертвый остаток
     drain_time = db.Column(db.Integer)  # время слива
     after_drain_time = db.Column(db.Integer)  # время после слива
@@ -365,12 +364,18 @@ class FuelRealisation(db.Model):
     average_3_days = db.Column(db.Float)  # среднее значение реализации за 3 сутон
     average_7_days = db.Column(db.Float)   # среднее значение реализации за 7 суток
     average_10_days = db.Column(db.Float)  # среднее значение реализации за 10 суток
+    average_week_ago = db.Column(db.Float)  # среднее значение реализации за сутки неделю назад
     fuel_realisation_1_days = db.Column(db.Float)  # реализация за 1 сутки
     fuel_realisation_3_days = db.Column(db.Float)  # реализация за 3 суток
     fuel_realisation_7_days = db.Column(db.Float)  # реализация за 7 суток
     fuel_realisation_10_days = db.Column(db.Float)  # реализация за 10 суток
-    day_stock_10 = db.Column(db.Float)  # запас суток (10 дней
+    day_stock_10 = db.Column(db.Float)  # запас суток (10 дней)
+    day_stock_7 = db.Column(db.Float)  # запас суток (7 дней)
+    day_stock_3 = db.Column(db.Float)  # запас суток (3 дней)
+    day_stock_1 = db.Column(db.Float)  # запас суток (1 дн)
+    day_stock_week_ago = db.Column(db.Float)  # неделю назад
     download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу
+    fuel_realisation_week_ago = db.Column(db.Float)  # реализация за такой же день неделю назад
 
 
 class Trucks(db.Model):

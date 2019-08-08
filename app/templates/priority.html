@@ -22,31 +22,36 @@
                                     <table class="table table-striped">
                                         <thead>
                                         <tr>
+                                            <th>Номер очереди</th>
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Запас суток</th>
-                                            <th>Номер приоритета</th>
+                                            <th>Приоритет (табличный)</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {% for i in priority %}
                                         <tr>
+                                            <td>{{ i.priority }}</td>
                                             <th scope="row">
                                                 {% for x in azs_list %}
-                                                {% if x.id == i.azs_id %}
-                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
-                                                {% endif %}
+                                                    {% if x.id == i.azs_id %}
+                                                        <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                    {% endif %}
                                                 {% endfor %}
-
                                             <td>
                                                 {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                {{ z.tank_number }}
-                                                {% endif %}
+                                                    {% if z.id == i.tank_id %}
+                                                        {{ z.tank_number }}
+                                                    {% endif %}
                                                 {% endfor %}
                                             </td>
                                             <td>{{ i.day_stock }}</td>
-                                            <td>{{ i.priority }}</td>
+                                            <td>{% for z in priority_list %}
+                                                    {% if z.day_stock_from <= i.day_stock <= z.day_stock_to %}
+                                                        {{ z.priority }}
+                                                    {% endif %}
+                                                {% endfor %}</td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>
