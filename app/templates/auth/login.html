@@ -4,8 +4,11 @@
 {% block app_content %}
 
 <div class="row">
-    <h3 class="text-center">{{ _('Добро пожаловать в систему Автоматической отправки бензовозов!') }}</h3>
-    <div class="col-md-4 col-md-offset-4">
+
+    <div class="col-md-4 col-md-offset-4 text-center">
+
+        <img src="{{ url_for('static', filename='surgutshadow.png')}}" class="img-thumbnail" alt="...">
+
         {{ wtf.quick_form(form) }}
     </div>
 </div>

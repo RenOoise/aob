@@ -29,7 +29,11 @@
                                             <th>Номер резервуара</th>
                                             <th>Вид топлива</th>
                                             <th>Реализация за 10 дней (л.)</th>
-                                            <th>Запас суток</th>
+                                            <th>Реализация за 7 дней (л.)</th>
+                                            <th>Реализация за 3 дня (л.)</th>
+                                            <th>Реализация за 1 день (л.)</th>
+                                            <th>Реализация за 1 день неделю назад (л.)</th>
+                                            <th>Минимальный запас суток</th>
                                             <th>Время выгрузки</th>
                                         </tr>
                                         </thead>
@@ -52,6 +56,10 @@
                                             </td>
                                             <td>{{ i.product_code }}</td>
                                             <td>{{i.fuel_realisation_10_days}} </td>
+                                            <td>{{i.fuel_realisation_7_days}} </td>
+                                            <td>{{i.fuel_realisation_3_days}} </td>
+                                            <td>{{i.fuel_realisation_1_days}} </td>
+                                            <td>{{i.fuel_realisation_week_ago}} </td>
                                             <td>{{i.day_stock_10}}</td>
                                             <td>{{ i.download_time }}</td>
                                         </tr>
