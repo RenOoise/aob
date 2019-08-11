@@ -48,7 +48,7 @@
                                             </td>
                                             <td>{{ i.day_stock }}</td>
                                             <td>{% for z in priority_list %}
-                                                    {% if z.day_stock_from <= i.day_stock <= z.day_stock_to %}
+                                                    {% if z.id == i.table_priority %}
                                                         {{ z.priority }}
                                                     {% endif %}
                                                 {% endfor %}</td>

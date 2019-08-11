@@ -1,15 +1,52 @@
 # фоновая загрузка данных
 import sys
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
 import psycopg2
 from datetime import datetime
 import fdb
 from time import sleep
-import operator
+import pandas as pd
+
 
 app = create_app()
 app.app_context().push()
+
+
+def add_data(collected_data):
+    add = FuelRealisation(shop_id=collected_data['shop_id'],
+                          azs_id=collected_data['azs_id'],
+                          tank_id=collected_data['tank_id'],
+                          product_code=collected_data['product_code'],
+                          fuel_realisation_10_days=collected_data['fuel_realisation_10_days'],
+                          fuel_realisation_1_days=collected_data['fuel_realisation_1_days'],
+                          fuel_realisation_3_days=collected_data['fuel_realisation_3_days'],
+                          fuel_realisation_7_days=collected_data['fuel_realisation_7_days'],
+                          fuel_realisation_week_ago=collected_data['fuel_realisation_week_ago'],
+                          download_time=collected_data['download_time'],
+                          average_10_days=collected_data['average_10_days'],
+                          average_7_days=collected_data['average_7_days'],
+                          average_3_days=collected_data['average_3_days'])
+    return add
+
+
+def update_data(add, collected_data):
+    add = add
+    add.fuel_realisation_10_days = collected_data['fuel_realisation_10_days']
+    add.fuel_realisation_7_days = collected_data['fuel_realisation_7_days']
+    add.fuel_realisation_3_days = collected_data['fuel_realisation_3_days']
+    add.fuel_realisation_1_days = collected_data['fuel_realisation_1_days']
+    add.fuel_realisation_week_ago = collected_data['fuel_realisation_week_ago']
+    add.fuel_realisation_hour = collected_data['fuel_realisation_hour']
+    add.average_3_days = collected_data['average_3_days']
+    add.average_7_days = collected_data['average_7_days']
+    add.average_10_days = collected_data['average_10_days']
+    add.shop_id = collected_data['shop_id']
+    add.azs_id = collected_data['azs_id']
+    add.tank_id = collected_data['tank_id']
+    add.product_code = collected_data['product_code']
+    add.download_time = collected_data['download_time']
+    return add
 
 
 def download_tanks_info():
@@ -84,6 +121,15 @@ def download_realisation_info():
                                               " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_week_ago)
                                 query_week_ago = cursor.fetchall()
+
+                                sql_hour = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
+                                              " WHERE id_shop = " \
+                                              + str(i.number) + \
+                                              " and begtime between current_TIMESTAMP - interval '1 hour'" \
+                                              " and current_TIMESTAMP and (err=0 or err=2)" \
+                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                cursor.execute(sql_hour)
+                                query_hour = cursor.fetchall()
                                 collected_data = {'shop_id': 0,
                                                   'azs_id': 0,
                                                   'tank_id': 0,
@@ -93,10 +139,15 @@ def download_realisation_info():
                                                   'fuel_realisation_3_days': 0,
                                                   'fuel_realisation_7_days': 0,
                                                   'fuel_realisation_10_days': 0,
-                                                  'sql_week_ago': 0}
+                                                  'fuel_realisation_week_ago': 0,
+                                                  'fuel_realisation_hour': 0,
+                                                  'average_10_days': 0,
+                                                  'average_7_days': 0,
+                                                  'average_3_days': 0,
+                                                  'average_1_days': 0,
+                                                  'average_week_ago': 0}
 
-                                print("SQL запрос книжных остатков на АЗС №" + str(
-                                    azs_config.ip_address) + " выполнен")
+                                print("SQL запрос книжных остатков на АЗС №" + str(azs_config.ip_address) + " выполнен")
 
                                 for row in query_10:
                                     print('collect rows')
@@ -110,18 +161,21 @@ def download_realisation_info():
                                     for fr_3_d in query_3:
                                         if fr_3_d[2] is row[2]:
                                             collected_data['fuel_realisation_3_days'] = fr_3_d[3]
-
+                                            collected_data['average_3_days'] = collected_data['fuel_realisation_3_days'] / 3
                                     for fr_7_d in query_7:
                                         if fr_7_d[2] is row[2]:
                                             collected_data['fuel_realisation_7_days'] = fr_7_d[3]
-
+                                            collected_data['average_7_days'] = collected_data['fuel_realisation_7_days'] / 7
                                     for fr_10_d in query_10:
                                         if fr_10_d[2] is row[2]:
                                             collected_data['fuel_realisation_10_days'] = fr_10_d[3]
-
+                                            collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
                                     for fr_week_ago in query_week_ago:
                                         if fr_week_ago[2] is row[2]:
                                             collected_data['fuel_realisation_week_ago'] = fr_week_ago[3]
+                                    for fr_hour in query_hour:
+                                        if fr_hour[2] is row[2]:
+                                            collected_data['fuel_realisation_hour'] = fr_hour[3]
 
                                     collected_data['shop_id'] = i.number
                                     collected_data['azs_id'] = i.id
@@ -131,32 +185,14 @@ def download_realisation_info():
                                     app.logger.info(collected_data)
 
                                     if add:
-                                        add.fuel_realisation_10_days = collected_data['fuel_realisation_10_days']
-                                        add.fuel_realisation_7_days = collected_data['fuel_realisation_7_days']
-                                        add.fuel_realisation_3_days = collected_data['fuel_realisation_3_days']
-                                        add.fuel_realisation_1_days = collected_data['fuel_realisation_1_days']
-                                        add.fuel_realisation_week_ago = collected_data['fuel_realisation_week_ago']
-                                        add.shop_id = collected_data['shop_id']
-                                        add.azs_id = collected_data['azs_id']
-                                        add.tank_id = collected_data['tank_id']
-                                        add.product_code = collected_data['product_code']
-                                        add.download_time = collected_data['download_time']
+                                        add = update_data(add, collected_data)
                                         db.session.add(add)
                                         try:
                                             db.session.commit()
                                         except Exception as error:
                                             print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                     else:
-                                        add = FuelRealisation(shop_id=collected_data['shop_id'],
-                                                              azs_id=collected_data['azs_id'],
-                                                              tank_id=collected_data['tank_id'],
-                                                              product_code=collected_data['product_code'],
-                                                              fuel_realisation_10_days=collected_data['fuel_realisation_10_days'],
-                                                              fuel_realisation_1_days=collected_data['fuel_realisation_1_days'],
-                                                              fuel_realisation_3_days=collected_data['fuel_realisation_3_days'],
-                                                              fuel_realisation_7_days=collected_data['fuel_realisation_7_days'],
-                                                              fuel_realisation_week_ago=collected_data['fuel_realisation_week_ago'],
-                                                              download_time=collected_data['download_time'])
+                                        add = add_data(collected_data)
                                         db.session.add(add)
                                         db.session.commit()
                             finally:
@@ -212,12 +248,19 @@ def download_realisation_info():
                                 query_1 = cursor.fetchall()
 
                                 sql_week_ago = "select tank, gas, sum(litres) volume from filling " \
-                                             "where endstamp between current_TIMESTAMP - interval '1 day' " \
-                                             "and current_TIMESTAMP " \
+                                             "where endstamp between current_TIMESTAMP - interval '8 day' " \
+                                             "and current_TIMESTAMP - interval '7 day' " \
                                              "group by tank, gas order by tank"
 
                                 cursor.execute(sql_week_ago)
                                 query_week_ago = cursor.fetchall()
+
+                                sql_hour = "select tank, gas, sum(litres) volume from filling " \
+                                           "where endstamp between current_TIMESTAMP - interval '2 hour' " \
+                                           "and current_TIMESTAMP " \
+                                           "group by tank, gas order by tank"
+                                cursor.execute(sql_hour)
+                                query_hour = cursor.fetchall()
 
                                 collected_data = {'shop_id': 0,
                                                   'azs_id': 0,
@@ -228,7 +271,13 @@ def download_realisation_info():
                                                   'fuel_realisation_3_days': 0,
                                                   'fuel_realisation_7_days': 0,
                                                   'fuel_realisation_10_days': 0,
-                                                  'sql_week_ago': 0}
+                                                  'fuel_realisation_week_ago': 0,
+                                                  'fuel_realisation_hour': 0,
+                                                  'average_10_days': 0,
+                                                  'average_7_days': 0,
+                                                  'average_3_days': 0,
+                                                  'average_1_days': 0,
+                                                  'average_week_ago': 0}
 
                                 print("SQL запрос книжных остатков на АЗС №" + str(
                                     azs_config.ip_address) + " выполнен")
@@ -243,18 +292,24 @@ def download_realisation_info():
                                     for fr_3_d in query_3:
                                         if fr_3_d[0] is row[0]:
                                             collected_data['fuel_realisation_3_days'] = fr_3_d[2]
+                                            collected_data['average_3_days'] = collected_data['fuel_realisation_3_days'] / 3
 
                                     for fr_7_d in query_7:
                                         if fr_7_d[0] is row[0]:
                                             collected_data['fuel_realisation_7_days'] = fr_7_d[2]
-
+                                            collected_data['average_7_days'] = collected_data['fuel_realisation_7_days'] / 7
                                     for fr_10_d in query_10:
                                         if fr_10_d[0] is row[0]:
                                             collected_data['fuel_realisation_10_days'] = fr_10_d[2]
+                                            collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
 
                                     for fr_week_ago in query_week_ago:
                                         if fr_week_ago[0] is row[0]:
                                             collected_data['fuel_realisation_week_ago'] = fr_week_ago[2]
+
+                                    for fr_hour in query_hour:
+                                        if fr_hour[0] is row[0]:
+                                            collected_data['fuel_realisation_hour'] = fr_hour[2] / 2
 
                                     collected_data['shop_id'] = i.number
                                     collected_data['azs_id'] = i.id
@@ -264,32 +319,14 @@ def download_realisation_info():
                                     app.logger.info(collected_data)
 
                                     if add:
-                                        add.fuel_realisation_10_days = collected_data['fuel_realisation_10_days']
-                                        add.fuel_realisation_7_days = collected_data['fuel_realisation_7_days']
-                                        add.fuel_realisation_3_days = collected_data['fuel_realisation_3_days']
-                                        add.fuel_realisation_1_days = collected_data['fuel_realisation_1_days']
-                                        add.fuel_realisation_week_ago = collected_data['fuel_realisation_week_ago']
-                                        add.shop_id = collected_data['shop_id']
-                                        add.azs_id = collected_data['azs_id']
-                                        add.tank_id = collected_data['tank_id']
-                                        add.product_code = collected_data['product_code']
-                                        add.download_time = collected_data['download_time']
+                                        add = update_data(add, collected_data)
                                         db.session.add(add)
                                         try:
                                             db.session.commit()
                                         except Exception as error:
                                             print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                     else:
-                                        add = FuelRealisation(shop_id=collected_data['shop_id'],
-                                                              azs_id=collected_data['azs_id'],
-                                                              tank_id=collected_data['tank_id'],
-                                                              product_code=collected_data['product_code'],
-                                                              fuel_realisation_10_days=collected_data['fuel_realisation_10_days'],
-                                                              fuel_realisation_1_days=collected_data['fuel_realisation_1_days'],
-                                                              fuel_realisation_3_days=collected_data['fuel_realisation_3_days'],
-                                                              fuel_realisation_7_days=collected_data['fuel_realisation_7_days'],
-                                                              fuel_realisation_week_ago=collected_data['fuel_realisation_week_ago'],
-                                                              download_time=collected_data['download_time'])
+                                        add = add_data(collected_data)
                                         db.session.add(add)
                                         db.session.commit()
                             finally:
@@ -345,7 +382,13 @@ def download_realisation_info():
                                               'fuel_realisation_3_days': 0,
                                               'fuel_realisation_7_days': 0,
                                               'fuel_realisation_10_days': 0,
-                                              'fuel_realisation_week_ago': 0}
+                                              'fuel_realisation_week_ago': 0,
+                                              'fuel_realisation_hour': 0,
+                                              'average_10_days': 0,
+                                              'average_7_days': 0,
+                                              'average_3_days': 0,
+                                              'average_1_days': 0,
+                                              'average_week_ago': 0}
 
                             for row in query_10:
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
@@ -389,32 +432,14 @@ def download_realisation_info():
                                 app.logger.info(collected_data)
 
                                 if add:
-                                    add.fuel_realisation_10_days = collected_data['fuel_realisation_10_days']
-                                    add.fuel_realisation_7_days = collected_data['fuel_realisation_7_days']
-                                    add.fuel_realisation_3_days = collected_data['fuel_realisation_3_days']
-                                    add.fuel_realisation_1_days = collected_data['fuel_realisation_1_days']
-                                    add.fuel_realisation_week_ago = collected_data['fuel_realisation_week_ago']
-                                    add.shop_id = collected_data['shop_id']
-                                    add.azs_id = collected_data['azs_id']
-                                    add.tank_id = collected_data['tank_id']
-                                    add.product_code = collected_data['product_code']
-                                    add.download_time = collected_data['download_time']
+                                    add = update_data(add, collected_data)
                                     db.session.add(add)
                                     try:
                                         db.session.commit()
                                     except Exception as error:
                                         print("Данные по АЗС № " + str(row[0]) + " не найдены", error)
                                 else:
-                                    add = FuelRealisation(shop_id=collected_data['shop_id'],
-                                                          azs_id=collected_data['azs_id'],
-                                                          tank_id=collected_data['tank_id'],
-                                                          product_code=collected_data['product_code'],
-                                                          fuel_realisation_10_days=collected_data['fuel_realisation_10_days'],
-                                                          fuel_realisation_1_days=collected_data['fuel_realisation_1_days'],
-                                                          fuel_realisation_3_days=collected_data['fuel_realisation_3_days'],
-                                                          fuel_realisation_7_days=collected_data['fuel_realisation_7_days'],
-                                                          fuel_realisation_week_ago=collected_data['fuel_realisation_week_ago'],
-                                                          download_time=collected_data['download_time'])
+                                    add = add_data(collected_data)
                                     db.session.add(add)
                                     db.session.commit()
                         except Exception as error:
@@ -444,9 +469,9 @@ def day_stock(azs_id):
                 # считаем среднюю реализацию за сутки
                 try:
                     average_day_stock_10 = data.fuel_realisation_10_days / 10
-                    average_day_stock_7 = data.fuel_realisation_10_days / 7
-                    average_day_stock_3 = data.fuel_realisation_10_days / 3
-                    average_day_stock_1 = data.fuel_realisation_10_days / 1
+                    average_day_stock_7 = data.fuel_realisation_7_days / 7
+                    average_day_stock_3 = data.fuel_realisation_3_days / 3
+                    average_day_stock_1 = data.fuel_realisation_1_days / 1
                     average_day_stock_week_ago = data.fuel_realisation_week_ago / 1
 
                     # считаем запас суток по усредненной реалезации
@@ -455,13 +480,13 @@ def day_stock(azs_id):
                     days_stock_3 = round(fuel.fuel_volume / average_day_stock_3, 1)
                     days_stock_1 = round(fuel.fuel_volume / average_day_stock_1, 1)
                     days_stock_week_ago = round(fuel.fuel_volume / average_day_stock_week_ago)
-
-
+                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago])
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
                     add.day_stock_3 = days_stock_3
                     add.day_stock_1 = days_stock_1
                     add.days_stock_week_ago = days_stock_week_ago
+                    add.days_stock_min = days_stock_min
                     db.session.add(add)
                     db.session.commit()
 
@@ -813,49 +838,123 @@ class QueryFromDb(object):
         return connection
 
 
+def priority_sort(sorted_list):
+    priority_list = PriorityList.query.all()
+    new_sort_list = []
+    short_list = list()
+    far_list = list()
+    near_list = list()
+    long_list = list()
+    df = pd.DataFrame(sorted_list)
+    for tbl_pr in sorted_list:
+        for pl in priority_list:
+
+            if tbl_pr['table_priority'] == pl.id and pl.sort_method == '1':
+                near_list.append(tbl_pr)
+
+            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '2':
+                far_list.append(tbl_pr)
+
+            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '3':
+                long_list.append(tbl_pr)
+
+            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '4':
+                short_list.append(tbl_pr)
+
+    def sort_table_priority(list):
+        if list:
+            df = pd.DataFrame(list)
+            list = df.sort_values('table_priority').to_dict('r')
+            return list
+        else:
+            return False
+
+    near_list = sort_table_priority(near_list)
+    far_list = sort_table_priority(far_list)
+    long_list = sort_table_priority(long_list)
+    short_list = sort_table_priority(short_list)
+
+    def final_sort(list):
+        for params in list:
+            try:
+                trip = Trip.query.filter_by(azs_id=int(params['azs_id'])).first_or_404()
+                try:
+                    if trip:
+                        if trip.azs_id == params['azs_id']:
+                            params['distance'] = trip.distance
+                            params['time_sum_after'] = trip.time_to + trip.time_from
+                            params['time_sum_before'] = trip.time_from_before_lunch + trip.time_to_before_lunch
+                        print(params)
+                finally:
+                    print("end")
+            except:
+                pass
+    final_sort(near_list)
+
+
 def azs_priority():
+    azs_list = AzsList.query.order_by("number").filter_by(active=True).all()
     priority = Priority.query.all()
+
     for i in priority:
         db.session.delete(i)
         db.session.commit()
+    realisation_count = FuelRealisation.query.order_by("days_stock_min").count()
+    counter_list = 0
+    test_list = []
+    sorted_list = []
+    unsorted_list = []
+    for azs in azs_list:
+        realisation = FuelRealisation.query.filter_by(azs_id=azs.id).all()
+        azs_tanks = {}
+        min_tank = []
+        for tank in realisation:
+            if tank.days_stock_min is not None and tank.days_stock_min > 0.0:
+                counter_list = counter_list + 1
+                azs_tanks = {'number': azs.number,
+                             'azs_id': tank.azs_id,
+                             'tank_id': tank.tank_id,
+                             'day_stock': tank.days_stock_min,
+                             'priority': 0,
+                             'table_priority': 0}
+                min_tank.append(azs_tanks)
+        df = pd.DataFrame(min_tank)
+        test_list = df.sort_values('day_stock').to_dict('r')
+        unsorted_list.append(test_list[0])
+    df = pd.DataFrame(unsorted_list)
+    sorted_list = df.sort_values('day_stock').to_dict('r')
+    # print(sorted_list)
     priority_list = PriorityList.query.all()
-    realisation = FuelRealisation.query.order_by("day_stock_10").all()
-    realisation_count = FuelRealisation.query.order_by("day_stock_10").count()
-
-    '''sorted_list = {'azs_id': 0, 'tank_id': 0, 'day_stock': 0}
-for rs in realisation:
-
-    list = []
-    list.append(rs.day_stock_10)
-    day_stock = min(list)
-
-    sorted_list['azs_id'] = rs.azs_id
-    sorted_list['tank_id'] = rs.tank_id
-    sorted_list['day_stock'] = day_stock
-    realisation = FuelRealisation.query.filter_by(azs_id=sorted_list['azs_id'], day_stock_10=day_stock).first_or_404()'''
-
     counter = 1
-    for pr in realisation:
-        tank = Tanks.query.filter_by(id=pr.tank_id).first_or_404()
-        azs = AzsList.query.filter_by(id=pr.azs_id).first_or_404()
+
+    for pr in sorted_list:
+        tank = Tanks.query.filter_by(id=pr['tank_id'], active=True).first_or_404()
+        for tp in priority_list:
+            if tp.day_stock_from <= pr['day_stock'] <= tp.day_stock_to:
+                priority_id = PriorityList.query.filter_by(priority=tp.priority).first_or_404()
+                pr['table_priority'] = priority_id.id
+
         if tank.active:
             if counter <= realisation_count:
-                priority_sorted = Priority(azs_id=pr.azs_id, day_stock=pr.day_stock_10, tank_id=pr.tank_id,
-                                           priority=counter)
+                priority_sorted = Priority(azs_id=pr['azs_id'], day_stock=pr['day_stock'], tank_id=pr['tank_id'],
+                                           priority=counter, table_priority=pr['table_priority'])
                 db.session.add(priority_sorted)
                 db.session.commit()
                 counter += 1
         else:
-            print("Резервуар №" + str(tank.tank_number) + " на АЗС №" + str(azs.number) + " отключен")
+            print('Резервуар не активен!')
+    priority_sort(sorted_list)
+
+
+
 
 
 azs_priority()
-download_tanks_info()
-download_realisation_info()
-azs_priority()
-test = AzsList.query.order_by("number").all()
-
+#download_tanks_info()
+#download_realisation_info()
+#azs_priority()
+'''test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id
     day_stock(azs_id)
-sleep(2)
+sleep(2)'''
