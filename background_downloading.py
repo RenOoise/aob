@@ -875,22 +875,29 @@ def priority_sort(sorted_list):
     short_list = sort_table_priority(short_list)
 
     def final_sort(list):
-        for params in list:
-            try:
-                trip = Trip.query.filter_by(azs_id=int(params['azs_id'])).first_or_404()
+        if list == False:
+            print('list empty')
+        else:
+            for params in list:
                 try:
-                    if trip:
-                        if trip.azs_id == params['azs_id']:
-                            params['distance'] = trip.distance
-                            params['time_sum_after'] = trip.time_to + trip.time_from
-                            params['time_sum_before'] = trip.time_from_before_lunch + trip.time_to_before_lunch
-                        print(params)
-                finally:
-                    print("end")
-            except:
-                pass
+                    trip = Trip.query.filter_by(azs_id=int(params['azs_id'])).first_or_404()
+                    try:
+                        if trip:
+                            if trip.azs_id == params['azs_id']:
+                                params['distance'] = trip.distance
+                                params['time_sum_after'] = trip.time_to + trip.time_from
+                                params['time_sum_before'] = trip.time_from_before_lunch + trip.time_to_before_lunch
+                            print(params)
+                    finally:
+                        print("end")
+                except Exception as e:
+                    print(e)
+                    pass
     final_sort(near_list)
-
+    final_sort(far_list)
+    final_sort(long_list)
+    final_sort(short_list)
+    print(near_list)
 
 def azs_priority():
     azs_list = AzsList.query.order_by("number").filter_by(active=True).all()
@@ -945,16 +952,12 @@ def azs_priority():
             print('Резервуар не активен!')
     priority_sort(sorted_list)
 
-
-
-
-
 azs_priority()
-#download_tanks_info()
-#download_realisation_info()
-#azs_priority()
-'''test = AzsList.query.order_by("number").all()
+download_tanks_info()
+download_realisation_info()
+azs_priority()
+test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id
     day_stock(azs_id)
-sleep(2)'''
+sleep(2)

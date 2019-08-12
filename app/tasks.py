@@ -92,7 +92,6 @@ def download_tanks_info(user_id):
                                     cursor.execute(sql)
                                     print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
                                         azs_config.ip_address) + " выполнен")
-                                    print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(azs_config.ip_address) + " выполнен")
                                     query = cursor.fetchall()
                                     for row in query:
                                         azsid = AzsList.query.filter_by(number=row[0]).first()
