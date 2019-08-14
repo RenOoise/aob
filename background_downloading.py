@@ -7,6 +7,7 @@ from datetime import datetime
 import fdb
 from time import sleep
 import pandas as pd
+from datetime import date, time, timedelta
 
 
 app = create_app()
@@ -420,23 +421,23 @@ def download_realisation_info():
                                 for fr_1_d in query_1:
                                     if fr_1_d[1] is row[1]:
                                         collected_data['fuel_realisation_1_days'] = fr_1_d[2]
-
+                                        collected_data['average_10_days'] = collected_data[
+                                                                                'fuel_realisation_10_days'] / 10
                                 for fr_3_d in query_3:
                                     if fr_3_d[1] is row[1]:
                                         collected_data['fuel_realisation_3_days'] = fr_3_d[2]
-
+                                        collected_data['average_3_days'] = collected_data['fuel_realisation_3_days'] / 3
                                 for fr_7_d in query_7:
                                     if fr_7_d[1] is row[1]:
                                         collected_data['fuel_realisation_7_days'] = fr_7_d[2]
-
+                                        collected_data['average_7_days'] = collected_data['fuel_realisation_7_days'] / 7
                                 for fr_10_d in query_10:
                                     if fr_10_d[1] is row[1]:
                                         collected_data['fuel_realisation_10_days'] = fr_10_d[2]
-
+                                        collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
                                 for fr_week_ago in query_week_ago:
                                     if fr_week_ago[1] is row[1]:
                                         collected_data['fuel_realisation_week_ago'] = fr_week_ago[2]
-
                                 for fr_hour in query_hour:
                                     if fr_hour[1] is row[1]:
                                         collected_data['fuel_realisation_hour'] = fr_hour[2]
@@ -513,7 +514,8 @@ def day_stock(azs_id):
                     print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_3))
                     print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_1))
                     print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_week_ago))
-                except:
+                except Exception as e:
+                    print(e)
                     pass
 
 
@@ -858,12 +860,11 @@ class QueryFromDb(object):
 
 def priority_sort(sorted_list):
     priority_list = PriorityList.query.all()
-    new_sort_list = []
     short_list = list()
     far_list = list()
     near_list = list()
     long_list = list()
-    df = pd.DataFrame(sorted_list)
+
     for tbl_pr in sorted_list:
         for pl in priority_list:
 
@@ -903,19 +904,54 @@ def priority_sort(sorted_list):
                         if trip:
                             if trip.azs_id == params['azs_id']:
                                 params['distance'] = trip.distance
-                                params['time_sum_after'] = trip.time_to + trip.time_from
-                                params['time_sum_before'] = trip.time_from_before_lunch + trip.time_to_before_lunch
-                            print(params)
+
+                                def sum_time(first, second):
+                                    sum = timedelta()
+                                    timeList = [str(first), str(second)]
+                                    for time in timeList:
+                                        (h, m, s) = time.split(':')
+                                        d = timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+                                        sum +=d
+                                    return sum
+                                params['time_sum_after'] = sum_time(trip.time_to, trip.time_from)
+                                print(sum)
+                                params['time_sum_before'] = sum_time(trip.time_to_before_lunch, trip.time_from_before_lunch)
                     finally:
                         print("end")
                 except Exception as e:
                     print(e)
                     pass
+
     final_sort(near_list)
+    df_near_list = pd.DataFrame(near_list)
+    near_list = df_near_list.sort_values('distance').to_dict('r')
     final_sort(far_list)
+    df_near_list = pd.DataFrame(far_list)
+    far_list = df_near_list.sort_values('distance', ascending=False).to_dict('r')
     final_sort(long_list)
+    df_long_list = pd.DataFrame(long_list)
+    long_list = df_long_list.sort_values('time_sum_after').to_dict('r')
     final_sort(short_list)
+    df_short_list = pd.DataFrame(short_list)
+    short_list = df_short_list.sort_values('time_sum_after', ascending=False).to_dict('r')
     print(near_list)
+    print('-*----------*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
+    print(far_list)
+    print('-*----------*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
+    print(long_list)
+    print('-0-00000000000000000000000000----------------------------------')
+    print(short_list)
+
+    final_list = []
+    for i in near_list:
+        final_list.append(i)
+    for i in far_list:
+        final_list.append(i)
+    for i in long_list:
+        final_list.append(i)
+    for i in short_list:
+        final_list.append(i)
+    return final_list
 
 
 def azs_priority():
@@ -935,7 +971,7 @@ def azs_priority():
         azs_tanks = {}
         min_tank = []
         for tank in realisation:
-            if tank.days_stock_min is not None or not 0:
+            if not pd.isnull(tank.days_stock_min) or tank.days_stock_min is not None:
                 counter_list = counter_list + 1
                 azs_tanks = {'number': azs.number,
                              'azs_id': tank.azs_id,
@@ -944,6 +980,15 @@ def azs_priority():
                              'priority': 0,
                              'table_priority': 0}
                 min_tank.append(azs_tanks)
+            else:
+                counter_list = counter_list + 1
+                azs_tanks = {'number': azs.number,
+                             'azs_id': tank.azs_id,
+                             'tank_id': tank.tank_id,
+                             'day_stock': 0,
+                             'priority': 0,
+                             'table_priority': 0}
+            min_tank.append(azs_tanks)
 
         df = pd.DataFrame(min_tank)
         test_list = df.sort_values('day_stock').to_dict('r')
@@ -955,29 +1000,43 @@ def azs_priority():
     counter = 1
     print(sorted_list)
     for pr in sorted_list:
-        tank = Tanks.query.filter_by(id=pr['tank_id'], active=True).first_or_404()
+        tank = Tanks.query.filter_by(id=pr['tank_id']).first()
+        print(pr['tank_id'])
         for tp in priority_list:
             if tp.day_stock_from <= pr['day_stock'] <= tp.day_stock_to:
                 priority_id = PriorityList.query.filter_by(priority=tp.priority).first_or_404()
                 pr['table_priority'] = priority_id.id
-
-        if tank.active:
+                print(tank.id)
+        if tank.active is not None or tank.active or tank.active:
             if counter <= realisation_count:
                 priority_sorted = Priority(azs_id=pr['azs_id'], day_stock=pr['day_stock'], tank_id=pr['tank_id'],
-                                           priority=counter, table_priority=pr['table_priority'])
+                                           priority=counter, table_priority=pr['table_priority'], timestamp=datetime.now())
                 db.session.add(priority_sorted)
                 db.session.commit()
                 counter += 1
         else:
             print('Резервуар не активен!')
-    priority_sort(sorted_list)
+    final = priority_sort(sorted_list)
+    priority = Priority.query.all()
 
-azs_priority()
+    for i in priority:
+        db.session.delete(i)
+        db.session.commit()
+    counter = 1
+    for priority in final:
+        if counter <= realisation_count:
+            priority_sorted = Priority(azs_id=priority['azs_id'], day_stock=priority['day_stock'], tank_id=priority['tank_id'],
+                                       priority=counter, table_priority=priority['table_priority'], timestamp=datetime.now())
+            db.session.add(priority_sorted)
+            db.session.commit()
+            counter += 1
+
+
 download_tanks_info()
 download_realisation_info()
-#azs_priority()
 test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id
     day_stock(azs_id)
 sleep(2)
+azs_priority()

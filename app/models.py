@@ -425,3 +425,4 @@ class Priority(db.Model):
     day_stock = db.Column(db.Float)  # запас суток
     priority = db.Column(db.Integer, unique=True)  # номер в очереди
     table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
+    timestamp = db.Column(db.DateTime)
