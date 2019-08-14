@@ -125,7 +125,7 @@ def download_realisation_info():
                                 sql_hour = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
                                               " WHERE id_shop = " \
                                               + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '1 hour'" \
+                                              " and begtime between current_TIMESTAMP - interval '6 hour'" \
                                               " and current_TIMESTAMP and (err=0 or err=2)" \
                                               " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_hour)
@@ -172,9 +172,13 @@ def download_realisation_info():
                                             collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
                                     for fr_week_ago in query_week_ago:
                                         if fr_week_ago[2] is row[2]:
-                                            collected_data['fuel_realisation_week_ago'] = fr_week_ago[3]
+                                            if fr_week_ago[2] <= 0 or fr_week_ago[2] is False:
+                                                collected_data['fuel_realisation_week_ago'] = 2
+                                            else:
+                                                collected_data['fuel_realisation_week_ago'] = fr_week_ago[3]
                                     for fr_hour in query_hour:
                                         if fr_hour[2] is row[2]:
+
                                             collected_data['fuel_realisation_hour'] = fr_hour[3]
 
                                     collected_data['shop_id'] = i.number
@@ -256,7 +260,7 @@ def download_realisation_info():
                                 query_week_ago = cursor.fetchall()
 
                                 sql_hour = "select tank, gas, sum(litres) volume from filling " \
-                                           "where endstamp between current_TIMESTAMP - interval '2 hour' " \
+                                           "where endstamp between current_TIMESTAMP - interval '6 hour' " \
                                            "and current_TIMESTAMP " \
                                            "group by tank, gas order by tank"
                                 cursor.execute(sql_hour)
@@ -372,6 +376,15 @@ def download_realisation_info():
                                            "where datetime >= current_date-1 group by 1,fuel_id, tank"
                             cursor.execute(sql_week_ago)
                             query_week_ago = cursor.fetchall()
+                            sql_addmin = "DECLARE EXTERNAL FUNCTION ADDMINUTE TIMESTAMP, INTEGER " \
+                                         "RETURNS TIMESTAMP " \
+                                         "ENTRY_POINT 'addMinute' MODULE_NAME 'fbudf';"
+                            cursor.execute(sql_addmin)
+
+                            sql_hour = "select fuel_id, tank, sum(factvolume) as volume from gsmarchive " \
+                                           "where datetime > ADDMINUTE(CURRENT_TIMESTAMP, -360) group by 1,fuel_id, tank"
+                            cursor.execute(sql_hour)
+                            query_hour = cursor.fetchall()
 
                             collected_data = {'shop_id': 0,
                                               'azs_id': 0,
@@ -423,6 +436,10 @@ def download_realisation_info():
                                 for fr_week_ago in query_week_ago:
                                     if fr_week_ago[1] is row[1]:
                                         collected_data['fuel_realisation_week_ago'] = fr_week_ago[2]
+
+                                for fr_hour in query_hour:
+                                    if fr_hour[1] is row[1]:
+                                        collected_data['fuel_realisation_hour'] = fr_hour[2]
 
                                 collected_data['shop_id'] = i.number
                                 collected_data['azs_id'] = i.id
@@ -481,6 +498,7 @@ def day_stock(azs_id):
                     days_stock_1 = round(fuel.fuel_volume / average_day_stock_1, 1)
                     days_stock_week_ago = round(fuel.fuel_volume / average_day_stock_week_ago)
                     days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago])
+                    print("tank # " + str(fuel.tank_id) +"day7 "+ str(days_stock_7))
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
                     add.day_stock_3 = days_stock_3
@@ -498,8 +516,8 @@ def day_stock(azs_id):
                 except:
                     pass
 
-class QueryFromDb(object):
 
+class QueryFromDb(object):
     def __init__(self, id):
         conn_cfg = CfgDbConnection.query.filter_by(azs_id=id).first()
         azs = AzsList.query.filter_by(id=id).first_or_404()
@@ -899,6 +917,7 @@ def priority_sort(sorted_list):
     final_sort(short_list)
     print(near_list)
 
+
 def azs_priority():
     azs_list = AzsList.query.order_by("number").filter_by(active=True).all()
     priority = Priority.query.all()
@@ -916,7 +935,7 @@ def azs_priority():
         azs_tanks = {}
         min_tank = []
         for tank in realisation:
-            if tank.days_stock_min is not None and tank.days_stock_min > 0.0:
+            if tank.days_stock_min is not None or not 0:
                 counter_list = counter_list + 1
                 azs_tanks = {'number': azs.number,
                              'azs_id': tank.azs_id,
@@ -925,6 +944,7 @@ def azs_priority():
                              'priority': 0,
                              'table_priority': 0}
                 min_tank.append(azs_tanks)
+
         df = pd.DataFrame(min_tank)
         test_list = df.sort_values('day_stock').to_dict('r')
         unsorted_list.append(test_list[0])
@@ -933,7 +953,7 @@ def azs_priority():
     # print(sorted_list)
     priority_list = PriorityList.query.all()
     counter = 1
-
+    print(sorted_list)
     for pr in sorted_list:
         tank = Tanks.query.filter_by(id=pr['tank_id'], active=True).first_or_404()
         for tp in priority_list:
@@ -955,7 +975,7 @@ def azs_priority():
 azs_priority()
 download_tanks_info()
 download_realisation_info()
-azs_priority()
+#azs_priority()
 test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id
