@@ -1,7 +1,7 @@
 # фоновая загрузка данных
 import sys
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip, PriorityBuf
 import psycopg2
 from datetime import datetime
 import fdb
@@ -88,47 +88,47 @@ def download_realisation_info():
                                 query_10 = cursor.fetchall()
 
                                 sql_7_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                              " WHERE id_shop = " \
-                                              + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '7 day'" \
-                                              " and current_TIMESTAMP and (err=0 or err=2)" \
-                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                             " WHERE id_shop = " \
+                                             + str(i.number) + \
+                                             " and begtime between current_TIMESTAMP - interval '7 day'" \
+                                             " and current_TIMESTAMP and (err=0 or err=2)" \
+                                             " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_7_days)
                                 query_7 = cursor.fetchall()
 
                                 sql_3_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                              " WHERE id_shop = " \
-                                              + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '3 day'" \
-                                              " and current_TIMESTAMP and (err=0 or err=2)" \
-                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                             " WHERE id_shop = " \
+                                             + str(i.number) + \
+                                             " and begtime between current_TIMESTAMP - interval '3 day'" \
+                                             " and current_TIMESTAMP and (err=0 or err=2)" \
+                                             " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_3_days)
                                 query_3 = cursor.fetchall()
 
                                 sql_1_days = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                              " WHERE id_shop = " \
-                                              + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '1 day'" \
-                                              " and current_TIMESTAMP and (err=0 or err=2)" \
-                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                             " WHERE id_shop = " \
+                                             + str(i.number) + \
+                                             " and begtime between current_TIMESTAMP - interval '1 day'" \
+                                             " and current_TIMESTAMP and (err=0 or err=2)" \
+                                             " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_1_days)
                                 query_1 = cursor.fetchall()
 
                                 sql_week_ago = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                              " WHERE id_shop = " \
-                                              + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '8 day'" \
-                                              " and current_TIMESTAMP - interval '7 day' and (err=0 or err=2)" \
-                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                               " WHERE id_shop = " \
+                                               + str(i.number) + \
+                                               " and begtime between current_TIMESTAMP - interval '8 day'" \
+                                               " and current_TIMESTAMP - interval '7 day' and (err=0 or err=2)" \
+                                               " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_week_ago)
                                 query_week_ago = cursor.fetchall()
 
                                 sql_hour = "SELECT id_shop, product, tank, sum(volume) as volume FROM pj_td " \
-                                              " WHERE id_shop = " \
-                                              + str(i.number) + \
-                                              " and begtime between current_TIMESTAMP - interval '6 hour'" \
-                                              " and current_TIMESTAMP and (err=0 or err=2)" \
-                                              " GROUP BY id_shop, product, tank ORDER BY tank"
+                                           " WHERE id_shop = " \
+                                           + str(i.number) + \
+                                           " and begtime between current_TIMESTAMP - interval '6 hour'" \
+                                           " and current_TIMESTAMP and (err=0 or err=2)" \
+                                           " GROUP BY id_shop, product, tank ORDER BY tank"
                                 cursor.execute(sql_hour)
                                 query_hour = cursor.fetchall()
                                 collected_data = {'shop_id': 0,
@@ -253,9 +253,9 @@ def download_realisation_info():
                                 query_1 = cursor.fetchall()
 
                                 sql_week_ago = "select tank, gas, sum(litres) volume from filling " \
-                                             "where endstamp between current_TIMESTAMP - interval '8 day' " \
-                                             "and current_TIMESTAMP - interval '7 day' " \
-                                             "group by tank, gas order by tank"
+                                               "where endstamp between current_TIMESTAMP - interval '8 day' " \
+                                               "and current_TIMESTAMP - interval '7 day' " \
+                                               "group by tank, gas order by tank"
 
                                 cursor.execute(sql_week_ago)
                                 query_week_ago = cursor.fetchall()
@@ -383,7 +383,7 @@ def download_realisation_info():
                             cursor.execute(sql_addmin)
 
                             sql_hour = "select fuel_id, tank, sum(factvolume) as volume from gsmarchive " \
-                                           "where datetime > ADDMINUTE(CURRENT_TIMESTAMP, -360) group by 1,fuel_id, tank"
+                                       "where datetime > ADDMINUTE(CURRENT_TIMESTAMP, -360) group by 1,fuel_id, tank"
                             cursor.execute(sql_hour)
                             query_hour = cursor.fetchall()
 
@@ -498,8 +498,7 @@ def day_stock(azs_id):
                     days_stock_3 = round(fuel.fuel_volume / average_day_stock_3, 1)
                     days_stock_1 = round(fuel.fuel_volume / average_day_stock_1, 1)
                     days_stock_week_ago = round(fuel.fuel_volume / average_day_stock_week_ago)
-                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago])
-                    print("tank # " + str(fuel.tank_id) +"day7 "+ str(days_stock_7))
+                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1])
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
                     add.day_stock_3 = days_stock_3
@@ -508,12 +507,6 @@ def day_stock(azs_id):
                     add.days_stock_min = days_stock_min
                     db.session.add(add)
                     db.session.commit()
-
-                    print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_10))
-                    print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_7))
-                    print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_3))
-                    print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_1))
-                    print('АЗС ' + str(azs_number.number) + ' ' + str(days_stock_week_ago))
                 except Exception as e:
                     print(e)
                     pass
@@ -591,17 +584,17 @@ class QueryFromDb(object):
 
                                 # и делаем выборку по реализации с начала смены
                                 realisation = (
-                                            "SELECT pj_td.id_shop, pj_td.product, pj_td.tank, sum(pj_td.volume) as volume "
-                                            "FROM pj_td, sj_tranz WHERE pj_td.id_shop=" + str(self.number) + " and pj_td.tank="
-                                            + str(id.tank_number) +
-                                            "and pj_td.begtime between current_TIMESTAMP - interval '1 day' "
-                                            "and current_TIMESTAMP and (pj_td.err=0 or pj_td.err=2) "
-                                            "and sj_tranz.id_shop=pj_td.id_shop "
-                                            "and pj_td.trannum=sj_tranz.trannum "
-                                            "and sj_tranz.shift=(select max(num) from sj_shifts where id_shop=" + str(
-                                        self.number) +
-                                            "and begtime between current_TIMESTAMP - interval '2 day' "
-                                            "and current_TIMESTAMP ) GROUP BY pj_td.id_shop, pj_td.product, pj_td.tank")
+                                        "SELECT pj_td.id_shop, pj_td.product, pj_td.tank, sum(pj_td.volume) as volume "
+                                        "FROM pj_td, sj_tranz WHERE pj_td.id_shop=" + str(self.number) + " and pj_td.tank="
+                                        + str(id.tank_number) +
+                                        "and pj_td.begtime between current_TIMESTAMP - interval '1 day' "
+                                        "and current_TIMESTAMP and (pj_td.err=0 or pj_td.err=2) "
+                                        "and sj_tranz.id_shop=pj_td.id_shop "
+                                        "and pj_td.trannum=sj_tranz.trannum "
+                                        "and sj_tranz.shift=(select max(num) from sj_shifts where id_shop=" + str(
+                                    self.number) +
+                                        "and begtime between current_TIMESTAMP - interval '2 day' "
+                                        "and current_TIMESTAMP ) GROUP BY pj_td.id_shop, pj_td.product, pj_td.tank")
 
                                 cursor.execute(realisation)
                                 realisation = cursor.fetchall()
@@ -858,117 +851,79 @@ class QueryFromDb(object):
         return connection
 
 
+def sum_time(first, second):
+    sum = timedelta()
+    timeList = [str(first), str(second)]
+    for time in timeList:
+        (h, m, s) = time.split(':')
+        d = timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+        sum += d
+    return sum
+
+
 def priority_sort(sorted_list):
-    priority_list = PriorityList.query.all()
-    short_list = list()
-    far_list = list()
-    near_list = list()
-    long_list = list()
+    counterX = 0
 
-    for tbl_pr in sorted_list:
-        for pl in priority_list:
+    priority_list = PriorityList.query.order_by('priority').all()
 
-            if tbl_pr['table_priority'] == pl.id and pl.sort_method == '1':
-                near_list.append(tbl_pr)
+    final_list = list()
 
-            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '2':
-                far_list.append(tbl_pr)
+    for pl in priority_list:
+        temp_list = list()
+        counterX = counterX + 1
+        for tbl_pr in sorted_list:
+            if tbl_pr['table_priority'] == pl.id:
+                trip = Trip.query.filter_by(azs_id=int(tbl_pr['azs_id'])).first_or_404()
+                tbl_pr['distance'] = trip.distance
+                tbl_pr['time_before'] = sum_time(trip.time_to_before_lunch, trip.time_from_before_lunch)
+                tbl_pr['time_after'] = sum_time(trip.time_to, trip.time_from)
+                temp_list.append(tbl_pr)
+        try:
+            if temp_list:
+                if pl.sort_method == "1":
+                    df = pd.DataFrame(temp_list)
+                    test = df.sort_values('distance', ascending=False).to_dict('r')
+                    for i in test:
+                        final_list.append(i)
 
-            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '3':
-                long_list.append(tbl_pr)
+                elif pl.sort_method == "2":
+                    df = pd.DataFrame(temp_list)
+                    test = df.sort_values('distance').to_dict('r')
+                    for i in test:
+                        final_list.append(i)
 
-            elif tbl_pr['table_priority'] == pl.id and pl.sort_method == '4':
-                short_list.append(tbl_pr)
+                elif pl.sort_method == "3":
+                    df = pd.DataFrame(temp_list)
+                    test = df.sort_values('time_before', ascending=False).to_dict('r')
+                    for i in test:
+                        final_list.append(i)
 
-    def sort_table_priority(list):
-        if list:
-            df = pd.DataFrame(list)
-            list = df.sort_values('table_priority').to_dict('r')
-            return list
-        else:
-            return False
+                elif pl.sort_method == "4":
+                    df = pd.DataFrame(temp_list)
+                    test = df.sort_values('time_before').to_dict('r')
+                    for i in test:
+                        final_list.append(i)
 
-    near_list = sort_table_priority(near_list)
-    far_list = sort_table_priority(far_list)
-    long_list = sort_table_priority(long_list)
-    short_list = sort_table_priority(short_list)
 
-    def final_sort(list):
-        if list == False:
-            print('list empty')
-        else:
-            for params in list:
-                try:
-                    trip = Trip.query.filter_by(azs_id=int(params['azs_id'])).first_or_404()
-                    try:
-                        if trip:
-                            if trip.azs_id == params['azs_id']:
-                                params['distance'] = trip.distance
-
-                                def sum_time(first, second):
-                                    sum = timedelta()
-                                    timeList = [str(first), str(second)]
-                                    for time in timeList:
-                                        (h, m, s) = time.split(':')
-                                        d = timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-                                        sum +=d
-                                    return sum
-                                params['time_sum_after'] = sum_time(trip.time_to, trip.time_from)
-                                print(sum)
-                                params['time_sum_before'] = sum_time(trip.time_to_before_lunch, trip.time_from_before_lunch)
-                    finally:
-                        print("end")
-                except Exception as e:
-                    print(e)
-                    pass
-
-    final_sort(near_list)
-    df_near_list = pd.DataFrame(near_list)
-    near_list = df_near_list.sort_values('distance').to_dict('r')
-    final_sort(far_list)
-    df_near_list = pd.DataFrame(far_list)
-    far_list = df_near_list.sort_values('distance', ascending=False).to_dict('r')
-    final_sort(long_list)
-    df_long_list = pd.DataFrame(long_list)
-    long_list = df_long_list.sort_values('time_sum_after').to_dict('r')
-    final_sort(short_list)
-    df_short_list = pd.DataFrame(short_list)
-    short_list = df_short_list.sort_values('time_sum_after', ascending=False).to_dict('r')
-    print(near_list)
-    print('-*----------*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
-    print(far_list)
-    print('-*----------*-*-*-*-*-*-*-*-*-*-*-*-*-*-*')
-    print(long_list)
-    print('-0-00000000000000000000000000----------------------------------')
-    print(short_list)
-
-    final_list = []
-    for i in near_list:
-        final_list.append(i)
-    for i in far_list:
-        final_list.append(i)
-    for i in long_list:
-        final_list.append(i)
-    for i in short_list:
-        final_list.append(i)
+        except Exception as e:
+            print(e)
+            pass
+    for i in final_list:
+        print(i)
     return final_list
 
 
 def azs_priority():
     azs_list = AzsList.query.order_by("number").filter_by(active=True).all()
     priority = Priority.query.all()
-
     for i in priority:
         db.session.delete(i)
         db.session.commit()
     realisation_count = FuelRealisation.query.order_by("days_stock_min").count()
     counter_list = 0
-    test_list = []
-    sorted_list = []
     unsorted_list = []
     for azs in azs_list:
         realisation = FuelRealisation.query.filter_by(azs_id=azs.id).all()
-        azs_tanks = {}
         min_tank = []
         for tank in realisation:
             if not pd.isnull(tank.days_stock_min) or tank.days_stock_min is not None:
@@ -989,7 +944,6 @@ def azs_priority():
                              'priority': 0,
                              'table_priority': 0}
             min_tank.append(azs_tanks)
-
         df = pd.DataFrame(min_tank)
         test_list = df.sort_values('day_stock').to_dict('r')
         unsorted_list.append(test_list[0])
@@ -998,19 +952,16 @@ def azs_priority():
     # print(sorted_list)
     priority_list = PriorityList.query.all()
     counter = 1
-    print(sorted_list)
     for pr in sorted_list:
         tank = Tanks.query.filter_by(id=pr['tank_id']).first()
-        print(pr['tank_id'])
         for tp in priority_list:
             if tp.day_stock_from <= pr['day_stock'] <= tp.day_stock_to:
                 priority_id = PriorityList.query.filter_by(priority=tp.priority).first_or_404()
                 pr['table_priority'] = priority_id.id
-                print(tank.id)
         if tank.active is not None or tank.active or tank.active:
             if counter <= realisation_count:
-                priority_sorted = Priority(azs_id=pr['azs_id'], day_stock=pr['day_stock'], tank_id=pr['tank_id'],
-                                           priority=counter, table_priority=pr['table_priority'], timestamp=datetime.now())
+                priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=float(pr['day_stock']), tank_id=int(pr['tank_id']),
+                                           priority=counter, table_priority=int(pr['table_priority']), timestamp=datetime.now())
                 db.session.add(priority_sorted)
                 db.session.commit()
                 counter += 1
@@ -1024,16 +975,23 @@ def azs_priority():
         db.session.commit()
     counter = 1
     for priority in final:
+
         if counter <= realisation_count:
+
             priority_sorted = Priority(azs_id=priority['azs_id'], day_stock=priority['day_stock'], tank_id=priority['tank_id'],
                                        priority=counter, table_priority=priority['table_priority'], timestamp=datetime.now())
-            db.session.add(priority_sorted)
-            db.session.commit()
-            counter += 1
+            try:
+                db.session.add(priority_sorted)
+                db.session.commit()
+            except Exception as error:
+                print(error)
+                pass
+
+        counter += 1
 
 
-download_tanks_info()
-download_realisation_info()
+#download_tanks_info()
+#download_realisation_info()
 test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id

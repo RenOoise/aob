@@ -426,3 +426,13 @@ class Priority(db.Model):
     priority = db.Column(db.Integer, unique=True)  # номер в очереди
     table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
     timestamp = db.Column(db.DateTime)
+
+
+class PriorityBuf(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'), unique=True)
+    day_stock = db.Column(db.Float)  # запас суток
+    priority = db.Column(db.Integer, unique=True)  # номер в очереди
+    table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
+    timestamp = db.Column(db.DateTime)
