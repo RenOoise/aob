@@ -378,6 +378,7 @@ class FuelRealisation(db.Model):
     days_stock_min = db.Column(db.Float)  # минимальный запас суток из всех диапазонов
     download_time = db.Column(db.DateTime)  # время в которое данные загружены в базу
     fuel_realisation_week_ago = db.Column(db.Float)  # реализация за такой же день неделю назад
+    average_for_azs = db.Column(db.Float)  # средний запас суток среди резервуаров
 
 
 class Trucks(db.Model):
@@ -425,14 +426,6 @@ class Priority(db.Model):
     day_stock = db.Column(db.Float)  # запас суток
     priority = db.Column(db.Integer, unique=True)  # номер в очереди
     table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
+    average_for_azs = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime)
 
-
-class PriorityBuf(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
-    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'), unique=True)
-    day_stock = db.Column(db.Float)  # запас суток
-    priority = db.Column(db.Integer, unique=True)  # номер в очереди
-    table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
-    timestamp = db.Column(db.DateTime)

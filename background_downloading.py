@@ -1,7 +1,7 @@
 # фоновая загрузка данных
 import sys
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip, PriorityBuf
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
 import psycopg2
 from datetime import datetime
 import fdb
@@ -288,7 +288,7 @@ def download_realisation_info():
                                     azs_config.ip_address) + " выполнен")
 
                                 for row in query_10:
-                                    tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
+                                    tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0], active=True).first()
                                     add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
                                     for fr_1_d in query_1:
                                         if fr_1_d[0] is row[0]:
@@ -468,12 +468,6 @@ def download_realisation_info():
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
-def calculate_days_stock(azs_id):
-    azs_number = AzsList.query.filter_by(id=azs_id).first_or_404()
-    realisation = FuelRealisation.query.filter_by(shop_id=azs_number.number).all()
-    residue = FuelResidue.query.filter_by(azs_id=azs_id).all()
-
-
 def day_stock(azs_id):
     azs_number = AzsList.query.filter_by(id=azs_id).first_or_404()
     realisation = FuelRealisation.query.filter_by(shop_id=azs_number.number).all()
@@ -498,7 +492,7 @@ def day_stock(azs_id):
                     days_stock_3 = round(fuel.fuel_volume / average_day_stock_3, 1)
                     days_stock_1 = round(fuel.fuel_volume / average_day_stock_1, 1)
                     days_stock_week_ago = round(fuel.fuel_volume / average_day_stock_week_ago)
-                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1])
+                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago])
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
                     add.day_stock_3 = days_stock_3
@@ -904,7 +898,6 @@ def priority_sort(sorted_list):
                     for i in test:
                         final_list.append(i)
 
-
         except Exception as e:
             print(e)
             pass
@@ -925,25 +918,30 @@ def azs_priority():
     for azs in azs_list:
         realisation = FuelRealisation.query.filter_by(azs_id=azs.id).all()
         min_tank = []
+        average_azs_stock = 0
         for tank in realisation:
-            if not pd.isnull(tank.days_stock_min) or tank.days_stock_min is not None:
-                counter_list = counter_list + 1
-                azs_tanks = {'number': azs.number,
-                             'azs_id': tank.azs_id,
-                             'tank_id': tank.tank_id,
-                             'day_stock': tank.days_stock_min,
-                             'priority': 0,
-                             'table_priority': 0}
-                min_tank.append(azs_tanks)
-            else:
-                counter_list = counter_list + 1
-                azs_tanks = {'number': azs.number,
-                             'azs_id': tank.azs_id,
-                             'tank_id': tank.tank_id,
-                             'day_stock': 0,
-                             'priority': 0,
-                             'table_priority': 0}
-            min_tank.append(azs_tanks)
+            tank_id = Tanks.query.filter_by(id=tank.tank_id).first()
+            if tank_id.active:
+                if not pd.isnull(tank.days_stock_min) or tank.days_stock_min is not None:
+                    counter_list = counter_list + 1
+                    azs_tanks = {'number': azs.number,
+                                 'azs_id': tank.azs_id,
+                                 'tank_id': tank.tank_id,
+                                 'day_stock': tank.days_stock_min,
+                                 'priority': 0,
+                                 'day_stock_average_by_tank': average_azs_stock,
+                                 'table_priority': 0}
+                    min_tank.append(azs_tanks)
+                else:
+                    counter_list = counter_list + 1
+                    azs_tanks = {'number': azs.number,
+                                 'azs_id': tank.azs_id,
+                                 'tank_id': tank.tank_id,
+                                 'day_stock': 0,
+                                 'priority': 0,
+                                 'day_stock_average_by_tank': average_azs_stock,
+                                 'table_priority': 0}
+                    min_tank.append(azs_tanks)
         df = pd.DataFrame(min_tank)
         test_list = df.sort_values('day_stock').to_dict('r')
         unsorted_list.append(test_list[0])
@@ -960,8 +958,11 @@ def azs_priority():
                 pr['table_priority'] = priority_id.id
         if tank.active is not None or tank.active or tank.active:
             if counter <= realisation_count:
-                priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=float(pr['day_stock']), tank_id=int(pr['tank_id']),
-                                           priority=counter, table_priority=int(pr['table_priority']), timestamp=datetime.now())
+                priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=float(pr['day_stock']),
+                                           tank_id=int(pr['tank_id']),
+                                           priority=counter, table_priority=int(pr['table_priority']),
+                                           average_for_azs=float(pr['day_stock_average_by_tank']),
+                                           timestamp=datetime.now())
                 db.session.add(priority_sorted)
                 db.session.commit()
                 counter += 1
@@ -990,8 +991,8 @@ def azs_priority():
         counter += 1
 
 
-#download_tanks_info()
-#download_realisation_info()
+download_tanks_info()
+download_realisation_info()
 test = AzsList.query.order_by("number").all()
 for i in test:
     azs_id = i.id

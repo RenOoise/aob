@@ -26,6 +26,7 @@
                                             <th>Номер АЗС</th>
                                             <th>Номер резервуара</th>
                                             <th>Запас суток</th>
+                                            <th>Средний запас суток по резервуарам</th>
                                             <th>Приоритет (табличный)</th>
                                         </tr>
                                         </thead>
@@ -47,6 +48,7 @@
                                                 {% endfor %}
                                             </td>
                                             <td>{{ i.day_stock }}</td>
+                                        <td>{{i.average_for_azs}}</td>
                                             <td>{% for z in priority_list %}
                                                     {% if z.id == i.table_priority %}
                                                         {{ z.priority }}
