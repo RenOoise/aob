@@ -15,7 +15,7 @@
                                     <h4>Online остатки топлива</h4>
                                 </div>
                                 <div class="col-md-2">
-                                    <a href="/download_tanks_info" type="button" class="btn btn-info btn-sm">Обновить</a>
+                                    <a href="{{ url_for('main.export_to_xlsx', datetime=datetime) }}" type="button" class="btn btn-success btn-sm">Экспорт в Excel</a>
                                 </div>
 
                             </div>

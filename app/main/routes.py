@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app
+    jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from guess_language import guess_language
@@ -10,6 +10,8 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
     PriorityList
 from app.translate import translate
 from app.main import bp
+import pandas as pd
+from StyleFrame import StyleFrame, Styler, utils
 
 
 @bp.before_app_request
@@ -228,19 +230,82 @@ def notifications():
     } for n in notifications])
 
 
+@bp.route('/export_to_xlsx/<datetime>')
+@login_required
+def export_to_xlsx(datetime):
+    timenow = datetime
+
+    online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
+    online_list = list()
+    for data in online:
+        azs_number = AzsList.query.filter_by(id=data.azs_id).first()
+        tank_number = Tanks.query.filter_by(id=data.tank_id).first()
+        if data.auto:
+            auto = "Автоматически"
+        else:
+            auto = "По книжным остаткам"
+        online_dict = {
+            '№': 'АЗС № ' + str(azs_number.number),
+            'Резервуар №': tank_number.tank_number,
+            'Вид топлива': data.product_code,
+            'Процент (%)': data.percent,
+            'Текущий остаток (л)': data.fuel_volume,
+            'Свободная емкость (до 95%) (л)': round(tank_number.corrected_capacity - data.fuel_volume, 1),
+            'Время замера АИСом': data.datetime,
+            'Время получения данных': data.download_time,
+            'Тип формирования': auto
+        }
+        online_list.append(online_dict)
+    df = pd.DataFrame(online_list)
+    excel_writer = StyleFrame.ExcelWriter(r'/home/administrator/aob-test/files/онлайн-остатки_'+str(timenow)+'.xlsx')
+    sf = StyleFrame(df)
+    sf.apply_style_by_indexes(indexes_to_style=sf[sf['Текущий остаток (л)'] == 0],
+                              cols_to_style=['Время получения данных',
+                                                           'Тип формирования', 'Время замера АИСом',
+                                                           'Свободная емкость (до 95%) (л)',
+                                                           'Резервуар №',
+                                                           '№',
+                                                           'Вид топлива',
+                                                           'Текущий остаток (л)',
+                                                           'Процент (%)'], styler_obj=Styler(bg_color='F5455F'))
+
+    sf.apply_style_by_indexes(indexes_to_style=sf[sf['Тип формирования'] == 'По книжным остаткам'],
+                              cols_to_style=['Время получения данных',
+                                             'Тип формирования',
+                                             'Время замера АИСом',
+                                             'Свободная емкость (до 95%) (л)',
+                                             'Резервуар №',
+                                             '№',
+                                             'Вид топлива',
+                                             'Текущий остаток (л)',
+                                             'Процент (%)'], styler_obj=Styler(bg_color='BFEDFF'))
+
+    sf.to_excel(excel_writer=excel_writer, row_to_add_filters=0,
+                columns_and_rows_to_freeze='A1', best_fit=['Время получения данных',
+                                                           'Тип формирования', 'Время замера АИСом',
+                                                           'Свободная емкость (до 95%) (л)',
+                                                           'Резервуар №',
+                                                           '№',
+                                                           'Вид топлива',
+                                                           'Процент (%)',
+                                                           'Текущий остаток (л)',
+                                                           'Процент (%)'
+                                                           ])
+
+    # df.to_excel(r'/home/administrator/aob-test/files/онлайн-остатки_'+str(timenow)+'.xlsx')
+    excel_writer.save()
+    path = '/home/administrator/aob-test/files/онлайн-остатки_'+str(timenow)+'.xlsx'
+    return send_file(path)
+
+
 @bp.route('/online', methods=['POST', 'GET'])
 @login_required
 def online():
-    azs_list = AzsList.query.all()
+    azs_list = AzsList.query.order_by('number').all()
     online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
-    '''online_ = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).all()
-    for item in online_:
-        online_list = {
-
-        }'''
-    tanks_list = Tanks.query.all()
+    tanks_list = Tanks.    query.all()
     return render_template('online.html', title='Online остатки', online_active=True,
-                           online=online, azs_list=azs_list, tanks_list=tanks_list)
+                           online=online, azs_list=azs_list, tanks_list=tanks_list, datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
 
 @bp.route('/page/azs/id<id>', methods=['POST', 'GET'])
