@@ -441,7 +441,8 @@ def add_trip():
                     time_to_before_lunch=form.time_to_before_lunch.data,
                     time_from=form.time_from.data,
                     time_to=form.time_to.data,
-                    azs_id=form.azs_id.data)
+                    azs_id=form.azs_id.data,
+                    weigher=form.weigher.data)
 
         db.session.add(trip)
         db.session.commit()
@@ -474,6 +475,7 @@ def edit_trip(id):
         trip_list.time_from_before_lunch = form.time_from_before_lunch.data
         trip_list.time_to = form.time_to.data
         trip_list.time_from = form.time_from.data
+        trip_list.weigher = form.weigher.data
         db.session.commit()
         flash('Данные изменены')
         return redirect(url_for('admin.trip_list'))
@@ -485,6 +487,7 @@ def edit_trip(id):
         form.time_from_before_lunch.data = trip_list.time_from_before_lunch
         form.time_to.data = trip_list.time_to
         form.time_from.data = trip_list.time_from
+        form.weigher.data = trip_list.weigher
     return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True, settings_active=True,
                            form=form)
 

@@ -259,6 +259,7 @@ def export_to_xlsx(datetime):
     df = pd.DataFrame(online_list)
     excel_writer = StyleFrame.ExcelWriter(r'/home/administrator/aob-test/files/онлайн-остатки_'+str(timenow)+'.xlsx')
     sf = StyleFrame(df)
+
     sf.apply_style_by_indexes(indexes_to_style=sf[sf['Текущий остаток (л)'] == 0],
                               cols_to_style=['Время получения данных',
                                                            'Тип формирования', 'Время замера АИСом',
@@ -279,6 +280,16 @@ def export_to_xlsx(datetime):
                                              'Вид топлива',
                                              'Текущий остаток (л)',
                                              'Процент (%)'], styler_obj=Styler(bg_color='BFEDFF'))
+
+    sf.apply_style_by_indexes(indexes_to_style=sf[sf['Тип формирования'] == 'По книжным остаткам'],
+                              cols_to_style=['Время получения данных',
+                                             'Время замера АИСом'],
+                              styler_obj=Styler(number_format=utils.number_formats.date_time, bg_color='BFEDFF'))
+
+    sf.apply_style_by_indexes(indexes_to_style=sf[sf['Текущий остаток (л)'] == 0],
+                              cols_to_style=['Время получения данных',
+                                             'Время замера АИСом'],
+                              styler_obj=Styler(number_format=utils.number_formats.date_time, bg_color='F5455F'))
 
     sf.to_excel(excel_writer=excel_writer, row_to_add_filters=0,
                 columns_and_rows_to_freeze='A1', best_fit=['Время получения данных',

@@ -151,5 +151,5 @@ class AddTripForm(FlaskForm):
     time_from_before_lunch = TimeField('Время от АЗС (до обеда)')
     time_to = TimeField('Время до АЗС (после обеда)')
     time_from = TimeField('Время от АЗС (после обеда)')
+    weigher = SelectField('Весы', choices=[('1', 'Да'), ('0', 'Нет')])
     submit = SubmitField('Сохранить')
-

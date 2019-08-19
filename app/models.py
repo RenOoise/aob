@@ -417,6 +417,7 @@ class Trip(db.Model):
     time_from_before_lunch = db.Column(db.Time)  # время от АЗС до нефтебазы до обеда
     time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
     time_from = db.Column(db.Time)  # время от АЗС до нефтебазы
+    weigher = db.Column(db.String)  # весы
 
 
 class Priority(db.Model):
