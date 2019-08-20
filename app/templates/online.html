@@ -61,7 +61,7 @@
                                                                 {% if i.fuel_volume == None %}
                                                                     None
                                                                 {% else %}
-                                                                    {{ (100*(i.fuel_volume/z.corrected_capacity))|round(1) }}%
+                                                                    {{ i.percent }}%
                                                                 {% endif %}
                                                             {% endif %}
                                                         {% endfor %}

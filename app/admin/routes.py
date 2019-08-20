@@ -10,6 +10,7 @@ from app.admin import bp
 import jsonify
 from sqlalchemy import desc
 
+
 @bp.route('/admin', methods=['POST', 'GET'])
 @login_required
 def settings():
