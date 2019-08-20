@@ -5,7 +5,7 @@ from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
     AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList
+    PriorityList, FuelRealisation, FuelResidue
 from app.admin import bp
 import jsonify
 from sqlalchemy import desc
@@ -490,4 +490,8 @@ def edit_trip(id):
         form.weigher.data = trip_list.weigher
     return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True, settings_active=True,
                            form=form)
+
+
+
+
 

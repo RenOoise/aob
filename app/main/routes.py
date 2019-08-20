@@ -359,3 +359,39 @@ def priority():
     priority_list = PriorityList.query.all()
     return render_template('priority.html', title='Список АЗС по приоритету', realisation_active=True,
                            azs_list=azs_list, priority=priority, tanks_list=tanks_list, priority_list=priority_list)
+
+
+@bp.route('/start', methods=['POST', 'GET'])
+@login_required
+def start():
+    azs_list = AzsList.query.all()
+    for azs in azs_list:
+        if azs.active:
+            tanks_list = Tanks.query.filter_by(azs_id=azs.id).all()
+            for tank in tanks_list:
+                if tank.active:
+                    residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
+                    realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
+                    if residue.fuel_volume is not None and residue.fuel_volume is not 0:
+                        print('Остатки на АЗС №' + str(azs.number) + ':')
+                        print('   Резервуар №' + str(tank.tank_number) + ' = ' + str(residue.fuel_volume))
+                    else:
+                        print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
+
+                    if realisation.fuel_realisation_1_days is not None and realisation.fuel_realisation_1_days is not 0:
+                        print('Реализация на АЗС №' + str(azs.number) + ':')
+                        print('   Резервуар №' + str(tank.tank_number) + ' = ' + str(realisation.fuel_realisation_1_days))
+                    else:
+                        print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
+                    priority_list = PriorityList.query.all()
+                    for priority in priority_list:
+                        if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
+                            this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
+                            if this_priority.id:
+                                print('   Резервуар №' + str(tank.tank_number) +
+                                      ' попадает в диапазон приоритетов и имеет значение ' + str(this_priority))
+                            else:
+                                print('   Резервуар №' + str(tank.tank_number) +
+                                      ' не попадает в диапазон приоритетов!!!')
+                                print(realisation.days_stock_min)
+    return redirect(url_for('main.index'))

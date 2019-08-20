@@ -972,7 +972,7 @@ def azs_priority():
             if tp.day_stock_from <= pr['day_stock'] <= tp.day_stock_to:
                 priority_id = PriorityList.query.filter_by(priority=tp.priority).first_or_404()
                 pr['table_priority'] = priority_id.id
-        if tank.active is not None or tank.active or tank.active:
+        if tank.active is not None or tank.active is True:
             if counter <= realisation_count:
                 priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=float(pr['day_stock']),
                                            tank_id=int(pr['tank_id']),
