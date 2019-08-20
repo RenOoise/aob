@@ -668,7 +668,7 @@ class QueryFromDb(object):
                                     azsid = AzsList.query.filter_by(number=self.number).first()
                                     tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
                                     add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
-                                    percent = (100 * (float(row[3]) / tankid.corrected_capacity))
+                                    percent = (100 * (float(row[7]) / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[6]
                                         add.fuel_volume = row[7]
