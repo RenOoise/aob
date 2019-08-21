@@ -7,7 +7,7 @@ from datetime import datetime
 import fdb
 from time import sleep
 import pandas as pd
-from datetime import date, time, timedelta
+from datetime import timedelta
 
 
 app = create_app()
@@ -995,8 +995,12 @@ def azs_priority():
 
         if counter <= realisation_count:
 
-            priority_sorted = Priority(azs_id=priority['azs_id'], day_stock=priority['day_stock'], tank_id=priority['tank_id'],
-                                       priority=counter, table_priority=priority['table_priority'], timestamp=datetime.now())
+            priority_sorted = Priority(azs_id=priority['azs_id'], day_stock=priority['day_stock'],
+                                       tank_id=priority['tank_id'],
+                                       priority=counter,
+                                       table_priority=priority['table_priority'],
+                                       average_for_azs=priority['day_stock_average_by_tank'],
+                                       timestamp=datetime.now())
             try:
                 db.session.add(priority_sorted)
                 db.session.commit()
@@ -1007,11 +1011,46 @@ def azs_priority():
         counter += 1
 
 
+def average_day_stock_by_tanks(azs_id):
+    azs = AzsList.query.filter_by(id=azs_id).first()
+    if azs.active:
+        realisation = FuelRealisation.query.filter_by(azs_id=azs_id).all()
+        tanks = Tanks.query.filter_by(azs_id=azs_id).all()
+        for tank in tanks:
+            if tank.active:
+                stock_list = list()
+                for realis_stock in realisation:
+                    if realis_stock.days_stock_min is not None and realis_stock.days_stock_min is not 0:
+                        stock_list.append(realis_stock.days_stock_min)
+                        add = Priority.query.filter_by(azs_id=azs_id).first()
+
+            average_stock = sum(stock_list) / len(stock_list)
+            print("Айди резервуара " + str(tank.id)+ " запас суток " + str(average_stock))
+            add.average_for_azs = average_stock
+            try:
+                db.session.add(add)
+                db.session.commit()
+            except Exception as error:
+                print(error)
+    pass
+
+
 download_tanks_info()
 download_realisation_info()
-test = AzsList.query.order_by("number").all()
-for i in test:
-    azs_id = i.id
-    day_stock(azs_id)
-sleep(2)
+'''Подсчет запаса суток по каждому резервуару'''
+azs_list = AzsList.query.order_by("number").all()
+for i in azs_list:
+    day_stock(i.id)
 azs_priority()
+'''Средний запас суток среди всех резервуаров АЗС'''
+average_azs = Priority.query.all()
+for i in average_azs:
+    average_day_stock_by_tanks(i.azs_id)
+sleep(2)
+
+azs_dict = list()
+test = AzsList.query.filter_by(active=True).all()
+for azs in test:
+    azs_dict.append(azs.id)
+print(azs_dict)
+
