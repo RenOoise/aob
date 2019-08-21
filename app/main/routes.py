@@ -5,9 +5,9 @@ from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
-from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm
+from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority,\
-    PriorityList
+    PriorityList, ManualInfo
 from app.translate import translate
 from app.main import bp
 import pandas as pd
@@ -364,6 +364,7 @@ def priority():
 @bp.route('/start', methods=['POST', 'GET'])
 @login_required
 def start():
+    errors = 0
     azs_list = AzsList.query.all()
     for azs in azs_list:
         if azs.active:
@@ -372,26 +373,33 @@ def start():
                 if tank.active:
                     residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
                     realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
-                    if residue.fuel_volume is not None and residue.fuel_volume is not 0:
-                        print('Остатки на АЗС №' + str(azs.number) + ':')
-                        print('   Резервуар №' + str(tank.tank_number) + ' = ' + str(residue.fuel_volume))
-                    else:
+                    if residue.fuel_volume is None or residue.fuel_volume is 0:
                         print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
-
-                    if realisation.fuel_realisation_1_days is not None and realisation.fuel_realisation_1_days is not 0:
-                        print('Реализация на АЗС №' + str(azs.number) + ':')
-                        print('   Резервуар №' + str(tank.tank_number) + ' = ' + str(realisation.fuel_realisation_1_days))
-                    else:
+                        errors = errors + 1
+                    if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days is 0:
                         print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
                     priority_list = PriorityList.query.all()
                     for priority in priority_list:
                         if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
                             this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
-                            if this_priority.id:
-                                print('   Резервуар №' + str(tank.tank_number) +
-                                      ' попадает в диапазон приоритетов и имеет значение ' + str(this_priority))
-                            else:
+                            if not this_priority.id:
+                                errors = errors + 1
                                 print('   Резервуар №' + str(tank.tank_number) +
                                       ' не попадает в диапазон приоритетов!!!')
-                                print(realisation.days_stock_min)
     return redirect(url_for('main.index'))
+
+
+@bp.route('/manual/id<id>', methods=['GET', 'POST'])
+@login_required
+def manual_input(id):
+    form = ManualInputForm()
+    if form.validate_on_submit():
+        input = ManualInfo.query.all()
+        input.fuel_volume = form.residue.data
+        input.realisation_max = form.realisation.data
+        input.tank_id = id
+        input.timestamp = datetime.now()
+        db.session.add(input)
+        db.session.commit()
+        return redirect(url_for('main.index'))
+    return render_template('manual.html', title='Ручной ввод', manual_input=True, form=form)

@@ -1,6 +1,6 @@
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField
+from wtforms import StringField, SubmitField, TextAreaField, FloatField
 from wtforms.validators import ValidationError, DataRequired, Length
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
@@ -44,3 +44,9 @@ class MessageForm(FlaskForm):
         DataRequired(), Length(min=1, max=140)])
     submit = SubmitField(_l('Отправить'))
 
+
+class ManualInputForm(FlaskForm):
+    residue = FloatField('Остаток топлива', validators=[DataRequired()])
+    realisation = FloatField('Максимальная реализация по резервуару', validators=[DataRequired()])
+    hour_realisation = FloatField('Примерная реализация в час')
+    sumbit = SubmitField('Сохранить')

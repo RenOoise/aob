@@ -370,7 +370,7 @@ class FuelRealisation(db.Model):
     fuel_realisation_7_days = db.Column(db.Float)  # реализация за 7 суток
     fuel_realisation_10_days = db.Column(db.Float)  # реализация за 10 суток
     fuel_realisation_hour = db.Column(db.Float)  # реадизация за последний час
-    fuel_realisation_max = db.Column(db.Float)  # минимальная реализация за все периоды
+    fuel_realisation_max = db.Column(db.Float)  # максимальная реализация за все периоды
     day_stock_10 = db.Column(db.Float)  # запас суток (10 дней)
     day_stock_7 = db.Column(db.Float)  # запас суток (7 дней)
     day_stock_3 = db.Column(db.Float)  # запас суток (3 дней)
@@ -431,3 +431,11 @@ class Priority(db.Model):
     average_for_azs = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime)
 
+
+class ManualInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'), unique=True)
+    fuel_realisation_max = db.Column(db.Float)  # максимальная реализация за все периоды
+    fuel_volume = db.Column(db.Float)  # количество топлива в литрах
+    timestamp = db.Column(db.DateTime)  # время ввода данных
