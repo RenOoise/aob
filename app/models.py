@@ -428,7 +428,7 @@ class Priority(db.Model):
     day_stock = db.Column(db.Float)  # запас суток
     priority = db.Column(db.Integer, unique=True)  # номер в очереди
     table_priority = db.Column(db.Integer, db.ForeignKey('priority_list.id'))
-    average_for_azs = db.Column(db.Integer)
+    average_for_azs = db.Column(db.Float)
     timestamp = db.Column(db.DateTime)
 
 

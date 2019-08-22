@@ -378,6 +378,7 @@ def start():
                         errors = errors + 1
                     if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days is 0:
                         print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
+                        errors = errors + 1
                     priority_list = PriorityList.query.all()
                     for priority in priority_list:
                         if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
@@ -386,20 +387,27 @@ def start():
                                 errors = errors + 1
                                 print('   Резервуар №' + str(tank.tank_number) +
                                       ' не попадает в диапазон приоритетов!!!')
-    return redirect(url_for('main.index'))
+    if errors > 0:
+        return redirect(url_for('main.manual_input', id=tank.id))
+    else:
+        return redirect(url_for('main.index'))
 
 
 @bp.route('/manual/id<id>', methods=['GET', 'POST'])
 @login_required
 def manual_input(id):
+    tank = Tanks.query.filter_by(id=id).first_or_404()
+    azs = AzsList.query.filter_by(id=tank.azs_id).first_or_404()
     form = ManualInputForm()
     if form.validate_on_submit():
-        input = ManualInfo.query.all()
-        input.fuel_volume = form.residue.data
-        input.realisation_max = form.realisation.data
-        input.tank_id = id
-        input.timestamp = datetime.now()
+        input = ManualInfo(fuel_volume=form.residue.data, fuel_realisation_max=form.realisation.data, tank_id=id,
+                           timestamp=datetime.now())
+
         db.session.add(input)
         db.session.commit()
         return redirect(url_for('main.index'))
-    return render_template('manual.html', title='Ручной ввод', manual_input=True, form=form)
+    return render_template('manual.html', title='Ручной ввод данных',
+                           manual_input=True,
+                           form=form,
+                           azs_number=str(azs.number),
+                           tank_number=str(tank.tank_number))
