@@ -27,27 +27,18 @@ def before_request():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    form = PostForm()
-    if form.validate_on_submit():
-        language = guess_language(form.post.data)
-        if language == 'UNKNOWN' or len(language) > 5:
-            language = ''
-        post = Post(body=form.post.data, author=current_user,
-                    language=language)
-        db.session.add(post)
-        db.session.commit()
-        flash(_('Your post is now live!'))
-        return redirect(url_for('main.index'))
-    page = request.args.get('page', 1, type=int)
-    posts = current_user.followed_posts().paginate(
-        page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.index', page=posts.next_num) \
-        if posts.has_next else None
-    prev_url = url_for('main.index', page=posts.prev_num) \
-        if posts.has_prev else None
-    return render_template('index.html', title=_('Главная'), form=form,
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    priority = Priority.query.order_by('priority').all()
+    azs_list = list()
+    for i in priority:
+        azs_dict = {}
+        if i.day_stock <= 2:
+            azs = AzsList.query.filter_by(id=i.azs_id).first_or_404()
+            tank = Tanks.query.filter_by(id=i.tank_id).first_or_404()
+            azs_dict = {'number': azs.number,
+                        'tank': tank.tank_number,
+                        'day_stock': i.day_stock}
+            azs_list.append(azs_dict)
+    return render_template('index.html', title='Главная', azs_list=azs_list)
 
 
 @bp.route('/explore')

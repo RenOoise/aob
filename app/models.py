@@ -444,10 +444,10 @@ class ManualInfo(db.Model):
 class TruckFalse(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # к какой азс привязан по id
 
 
 class WorkType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(600))  # режим работы прилодения
+    type = db.Column(db.String(600))  # режим работы приложения
     active = db.Column(db.Boolean)  # активен или нет

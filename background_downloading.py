@@ -220,7 +220,6 @@ def download_realisation_info():
                                                           database=azs_config.database,
                                                           connect_timeout=10)
                             cursor = connection.cursor()
-
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " +
                                   str(azs_config.ip_address) + " успешно")
                             try:
@@ -283,7 +282,6 @@ def download_realisation_info():
                                                   'average_3_days': 0,
                                                   'average_1_days': 0,
                                                   'average_week_ago': 0}
-
                                 print("SQL запрос книжных остатков на АЗС №" + str(
                                     azs_config.ip_address) + " выполнен")
 
@@ -322,7 +320,6 @@ def download_realisation_info():
                                     collected_data['product_code'] = row[1]
                                     collected_data['download_time'] = datetime.now()
                                     app.logger.info(collected_data)
-
                                     if add:
                                         add = update_data(add, collected_data)
                                         db.session.add(add)
@@ -339,11 +336,9 @@ def download_realisation_info():
                                     cursor.close()
                                     connection.close()
                                     print("Соединение закрыто")
-
                         except(Exception, psycopg2.Error) as error:
                             print("Ошибка во время получения данных", error)
                             pass
-
                 elif test.system_type == 3:
                     azs_config = CfgDbConnection.query.filter_by(system_type=3, azs_id=i.id).first()
                     if azs_config:  # если есть конфиг
@@ -352,9 +347,7 @@ def download_realisation_info():
                                 dsn=azs_config.ip_address + ':' + azs_config.database,
                                 user=azs_config.username,
                                 password=azs_config.password)
-
                             cursor = connection.cursor()
-
                             print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(
                                 azs_config.ip_address) + " успешно")
                             sql_10_days = "select fuel_id, tank, sum(factvolume) as volume from gsmarchive " \
@@ -403,7 +396,6 @@ def download_realisation_info():
                                               'average_3_days': 0,
                                               'average_1_days': 0,
                                               'average_week_ago': 0}
-
                             for row in query_10:
                                 tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0]).first()
                                 add = FuelRealisation.query.filter_by(shop_id=i.number, tank_id=tankid.id).first()
@@ -463,7 +455,6 @@ def download_realisation_info():
                         except Exception as error:
                             pass
                             print("Ошибка во время получения данных", error)
-
     except:
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
@@ -593,10 +584,8 @@ class QueryFromDb(object):
                                     self.number) +
                                         "and begtime between current_TIMESTAMP - interval '2 day' "
                                         "and current_TIMESTAMP ) GROUP BY pj_td.id_shop, pj_td.product, pj_td.tank")
-
                                 cursor.execute(realisation)
                                 realisation = cursor.fetchall()
-
                                 for row in query:
 
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
@@ -634,7 +623,6 @@ class QueryFromDb(object):
                 except(Exception, psycopg2.Error) as error:
                     print("Ошибка во время получения данных", error)
                     pass
-
         # если система oilix
         elif self.system_type == 2:
             # дергаем конфиги для подключения к БД на АЗС
@@ -651,7 +639,6 @@ class QueryFromDb(object):
                         for id in tanks:  # перебераем резервуары
                             if id.active and id.ams:
                                 # если активен и есть система автоматического измерения, то строим запрос к базе
-
                                 sql = ("SELECT id, calculatedvolume, comment, density, incomeactive, "
                                        "insideincomefillinglitres, level, lmsvolume, stamp, tank, temperature, volume, "
                                        "water "
@@ -663,7 +650,6 @@ class QueryFromDb(object):
                                 print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
                                     self.number) + " выполнен")
                                 query = cursor.fetchall()
-
                                 for row in query:
                                     azsid = AzsList.query.filter_by(number=self.number).first()
                                     tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=id.tank_number).first()
@@ -703,7 +689,6 @@ class QueryFromDb(object):
                                        "order by shiftdate DESC limit 1) order by code;")
                                 cursor.execute(sql)
                                 residue = cursor.fetchall()
-
                                 finished = ("select shiftdate from shiftinfo order by shiftdate DESC limit 1")
                                 cursor.execute(finished)
                                 shiftdate = cursor.fetchall()
@@ -711,7 +696,6 @@ class QueryFromDb(object):
                                 print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
                                     self.number) + " выполнен")
                                 print(residue)
-
                                 # и делаем выборку по реализации с начала смены
                                 realisation = ("select tank, gas, sum(litres) volume from filling fl "
                                                "join payment pm on fl.payment_id = pm.id "
@@ -722,7 +706,6 @@ class QueryFromDb(object):
 
                                 cursor.execute(realisation)
                                 realisation = cursor.fetchall()
-
                                 for row in residue:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[0]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
@@ -873,11 +856,8 @@ def sum_time(first, second):
 
 def priority_sort(sorted_list):
     counterX = 0
-
     priority_list = PriorityList.query.order_by('priority').all()
-
     final_list = list()
-
     for pl in priority_list:
         temp_list = list()
         counterX = counterX + 1
@@ -992,7 +972,6 @@ def azs_priority():
         db.session.commit()
     counter = 1
     for priority in final:
-
         if counter <= realisation_count:
 
             priority_sorted = Priority(azs_id=priority['azs_id'], day_stock=priority['day_stock'],
@@ -1007,7 +986,6 @@ def azs_priority():
             except Exception as error:
                 print(error)
                 pass
-
         counter += 1
 
 

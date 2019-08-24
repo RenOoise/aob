@@ -2,68 +2,50 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <div class="row py-4 d-flex justify-content-center">
+        <div class="card">
+            <div class="card-header">
+                <h5 class=" float-left">Транспортные средства</h5>
+                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/truck/add" >Добавить ТС</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead>
+                    <tr>
+                        <th>Регистрационный номер ТС</th>
+                        <th>Регистрационный номер прицепа</th>
+                        <th>Пломбы (шт.)</th>
+                        <th>Сухая масса (без груза, кг)</th>
+                        <th>Максимальная масса (с грузом, кг)</th>
+                        <th>ФИО водителя</th>
+                        <th>Активен?</th>
+                        <th>Редактировать</th>
+                        <th>Удалить</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in trucks_list %}
+                        <tr>
+                            <th scope="row"><a href="{{ url_for('admin.truck', id=i.id) }}">{{ i.reg_number}}</a> </th>
+                            <td>{{ i.trailer_reg_number }}</td>
+                            <td>{{ i.seals}}</td>
+                            <td>{{ i.weight }}</td>
+                            <td>{{ i.weight_limit }}</td>
+                            <td> {{ i.driver }}</td>
+                            <td>{% if i.active == True %}
+                                Да
+                            {% else %}
+                                Нет
+                            {% endif %}
+                            </td>
+                            <td><a href="{{ url_for('admin.truck_edit', id=i.id) }}">Редактировать</a></td>
 
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
-
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h4>Транспортные средства</h4>
-                            </div>
-                            <div class="col-md-2">
-                                <a href="/admin/truck/add" type="button" class="btn btn-primary btn-sm">Добавить ТС</a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table class="table table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th>Регистрационный номер ТС</th>
-                                            <th>Регистрационный номер прицепа</th>
-                                            <th>Пломбы (шт.)</th>
-                                            <th>Сухая масса (без груза, кг)</th>
-                                            <th>Максимальная масса (с грузом, кг)</th>
-                                            <th>ФИО водителя</th>
-                                            <th>Активен?</th>
-                                            <th>Редактировать</th>
-                                            <th>Удалить</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in trucks_list %}
-                                        <tr>
-                                            <th scope="row"><a href="{{ url_for('admin.truck', id=i.id) }}">{{ i.reg_number}}</a> </th>
-                                            <td>{{ i.trailer_reg_number }}</td>
-                                            <td>{{ i.seals}}</td>
-                                            <td>{{ i.weight }}</td>
-                                            <td>{{ i.weight_limit }}</td>
-                                            <td> {{ i.driver }}</td>
-                                            <td>{% if i.active == True %}
-                                                Да
-                                                {% else %}
-                                                Нет
-                                                {% endif %}
-                                            </td>
-                                            <td><a href="{{ url_for('admin.truck_edit', id=i.id) }}">Редактировать</a></td>
-
-                                            <td><a href="{{ url_for('admin.truck_delete', id=i.id) }}">Удалить</a></td>
-                                        </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            <td><a href="{{ url_for('admin.truck_delete', id=i.id) }}">Удалить</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

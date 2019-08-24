@@ -499,6 +499,18 @@ def edit_trip(id):
 def work_type():
     form = WorkTypeForm()
     work_type_table = WorkType.query.all()
-    categories = [(c.id, c.number) for c in WorkType.query.order_by("id").all()]
+    categories = [(c.id, c.type) for c in WorkType.query.order_by("id").all()]
+    form.type.choices = categories
+    active = WorkType.query.filter_by(active=True).first()
+
     if form.validate_on_submit():
-        s = 1
+        for i in work_type_table:
+            i.active = 0
+        id = form.type.data
+        type = WorkType.query.filter_by(id=id).first()
+        type.active = True
+        db.session.commit()
+    else:
+        form.type.data = active.id
+
+    return render_template('admin/work_type.html', form=form)

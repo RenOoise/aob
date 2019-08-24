@@ -2,45 +2,24 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div class="row">
+    <div class="row py-4">
         <div class="col-lg-6">
-            <h3>{{ _('Добро пожаловать, %(username)s!', username=current_user.username) }}</h3>
-            {% if form %}
-                {{ wtf.quick_form(form) }}
-                <br>
-            {% endif %}
-            {% for post in posts %}
-                {% include '_post.html' %}
-            {% endfor %}
-            <nav aria-label="...">
-                <ul class="pager">
-                    <li class="previous{% if not prev_url %} disabled{% endif %}">
-                        <a href="{{ prev_url or '#' }}">
-                            <span aria-hidden="true">&larr;</span> {{ _('К новым') }}
-                        </a>
-                    </li>
-                    <li class="next{% if not next_url %} disabled{% endif %}">
-                        <a href="{{ next_url or '#' }}">
-                            {{ _('К старым') }} <span aria-hidden="true">&rarr;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <a href="{{ url_for('main.start') }}" type="button" class="btn btn-success btn-sm">Запуск скрипта</a>
         </div>
-        <div class="col-lg-6">
-            <div class="row">
+        <div class="col-lg-6 float-right">
 
-            </div>
-            <div class="row">
-                <div class="col-lg-4">
+            <div class="card">
+                <h5 class="card-header">Предупреждения</h5>
+                <div class="card-body">
+                    <table class="table table-sm table-striped">
+                        {% for i in azs_list %}
+                            <tr>
+                                <td>Запас суток резервуара № {{ i['tank'] }} на АЗС № {{ i['number'] }} меньше {{ i['day_stock'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
 
-                </div>
-                <div class="col-lg-4">
-                    <a href="{{ url_for('main.start') }}" type="button" class="btn btn-success btn-sm">Запуск скрипта</a>
-                </div>
-                <div class="col-lg-4">
-
-                </div>
             </div>
 
         </div>

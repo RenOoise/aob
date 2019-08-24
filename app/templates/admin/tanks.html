@@ -2,79 +2,62 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
-
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h4>Список резервуаров</h4>
-                            </div>
-                            <div class="col-md-2">
-                                <a href="/admin/addtank" type="button" class="btn btn-primary btn-sm">Добавить резервуар</a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table id="example" class="table table-striped table-sm" style="width:100%">
-                                        <thead>
-                                        <tr>
-                                            <th>Номер АЗС</th>
-                                            <th>Номер резервуара</th>
-                                            <th>Вид топлива</th>
-                                            <th>Номинальный объем (л)</th>
-                                            <th>Действующий объем (л)</th>
-                                            <th>Скорректированный объем (л)</th>
-                                            <th>Мертвый остаток</th>
-                                            <th>Время слива (мин)</th>
-                                            <th>Время после слива (мин)</th>
-                                            <th>АИС</th>
-                                            <th>Смешение</th>
-                                            <th>Активен</th>
-                                            <th>Редактироваать</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in tank_list %}
-                                        <tr>
-                                            <th scope="row">
-                                                {% for x in azs_list %}
-                                                {% if x.id == i.azs_id %}
+    <div class="row py-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class=" float-left">Список резервуаров</h5>
+                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/addtank" >Добавить резервуар</a>
+            </div>
+            <div class="card-body">
+                <div class="col-md-12">
+                    <div class="row">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                            <tr>
+                                <th>Номер АЗС</th>
+                                <th>Номер резервуара</th>
+                                <th>Вид топлива</th>
+                                <th>Номинальный объем (л)</th>
+                                <th>Действующий объем (л)</th>
+                                <th>Скорректированный объем (л)</th>
+                                <th>Мертвый остаток</th>
+                                <th>Время слива (мин)</th>
+                                <th>Время после слива (мин)</th>
+                                <th>АИС</th>
+                                <th>Смешение</th>
+                                <th>Активен</th>
+                                <th>Редактировать</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for i in tank_list %}
+                                <tr>
+                                    <th scope="row">
+                                        {% for x in azs_list %}
+                                            {% if x.id == i.azs_id %}
                                                 {{ x.number }}
-                                                {% endif %}
-                                                {% endfor %}
-                                            </th>
-                                            <td>{{ i.tank_number }}</td>
-                                            <td>{{ i.fuel_type }}</td>
-                                            <td>{{ i.nominal_capacity }}</td>
-                                            <td>{{ i.real_capacity }}</td>
-                                            <td>{{ i.corrected_capacity }}</td>
-                                            <td>{{i.dead_capacity }}</td>
-                                            <td>{{ i.drain_time }}</td>
-                                            <td>{{ i.after_drain_time }}</td>
-                                            <td>{{ i.ams }}</td>
-                                            <td>{{ i.mixing }}</td>
-                                            <td>{{ i.active }}</td>
-                                            <td><a href="{{ url_for('admin.edit_tank', tank_id=i.id) }}">Редактировать</a></td>
-
-                                        </tr>
+                                            {% endif %}
                                         {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
+                                    </th>
+                                    <td>{{ i.tank_number }}</td>
+                                    <td>{{ i.fuel_type }}</td>
+                                    <td>{{ i.nominal_capacity }}</td>
+                                    <td>{{ i.real_capacity }}</td>
+                                    <td>{{ i.corrected_capacity }}</td>
+                                    <td>{{i.dead_capacity }}</td>
+                                    <td>{{ i.drain_time }}</td>
+                                    <td>{{ i.after_drain_time }}</td>
+                                    <td>{{ i.ams }}</td>
+                                    <td>{{ i.mixing }}</td>
+                                    <td>{{ i.active }}</td>
+                                    <td><a href="{{ url_for('admin.edit_tank', tank_id=i.id) }}">Редактировать</a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
 {% endblock %}

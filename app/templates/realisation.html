@@ -3,56 +3,47 @@
 
 {% block app_content %}
 
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
+    <div class="row py-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class=" float-left">Реализация топлива на АЗС по резервуарам</h5>
+                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="/download_realisation_info" >Обновить</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
 
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h4>Реализация топлива на АЗС по резервуарам</h4>
-                            </div>
-                            <div class="col-md-2">
-                                <a href="/download_realisation_info" type="button" class="btn btn-info btn-sm">Обновить</a>
-                            </div>
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Номер АЗС</th>
+                                        <th>Номер резервуара</th>
+                                        <th>Вид топлива</th>
+                                        <th>Сред. за 10 дней (л.)</th>
+                                        <th>Сред. за 7 дней (л.)</th>
+                                        <th>Сред. за 3 дня (л.)</th>
+                                        <th>Реализ. за 1 день (л.)</th>
+                                        <th>Реализ. за 1 день неделю назад (л.)</th>
+                                        <th>Реализ. за последний час</th>
+                                        <th>Мин. запас суток</th>
+                                        <th>Время выгрузки</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for i in realisation %}
+                                        <tr>
 
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table class="table table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th>Номер АЗС</th>
-                                            <th>Номер резервуара</th>
-                                            <th>Вид топлива</th>
-                                            <th>Сред. реализация за 10 дней (л.)</th>
-                                            <th>Сред. реализация за 7 дней (л.)</th>
-                                            <th>Сред. реализация за 3 дня (л.)</th>
-                                            <th>Реализация за 1 день (л.)</th>
-                                            <th>Реализация за 1 день неделю назад (л.)</th>
-                                            <th>Реализация за последний час</th>
-                                            <th>Минимальный запас суток</th>
-                                            <th>Время выгрузки</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in realisation %}
-                                        <tr>
-                                            <th scope="row">
-                                                {% for x in azs_list %}
+                                            <td>{% for x in azs_list %}
                                                 {% if x.number == i.shop_id %}
-                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                    <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
                                                 {% endif %}
-                                                {% endfor %}
-
+                                            {% endfor %}
+                                            </td>
                                             <td>
                                                 {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                {{ z.tank_number }}
-                                                {% endif %}
+                                                    {% if z.id == i.tank_id %}
+                                                        {{ z.tank_number }}
+                                                    {% endif %}
                                                 {% endfor %}
                                             </td>
                                             <td>{{ i.product_code }}</td>
@@ -64,19 +55,15 @@
                                             <td>{{ i.fuel_realisation_hour }}</td>
                                             <td>{{i.days_stock_min}}</td>
                                             <td>{{ i.download_time }}</td>
-
                                         </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+
+
 {% endblock %}

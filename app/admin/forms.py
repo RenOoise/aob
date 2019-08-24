@@ -156,4 +156,11 @@ class AddTripForm(FlaskForm):
 
 
 class WorkTypeForm(FlaskForm):
-    type = RadioField('Label', choices=[('value', 'description'), ('value_two', 'whatever')])
+    type = RadioField('Режим работы', choices=[], coerce=int)
+    submit = SubmitField('Сохранить')
+
+
+class TruckFalseForm(FloatField):
+    truck = SelectField('Бензовоз', choices=[], coerce=int)
+    azs = SelectField('АЗС', choices=[], coerce=int)
+    submit = SubmitField('Сохранить')
