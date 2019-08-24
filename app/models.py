@@ -439,3 +439,15 @@ class ManualInfo(db.Model):
     fuel_realisation_max = db.Column(db.Float)  # максимальная реализация за все периоды
     fuel_volume = db.Column(db.Float)  # количество топлива в литрах
     timestamp = db.Column(db.DateTime)  # время ввода данных
+
+
+class TruckFalse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+
+
+class WorkType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(600))  # режим работы прилодения
+    active = db.Column(db.Boolean)  # активен или нет

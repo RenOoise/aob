@@ -3,9 +3,9 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, FuelRealisation, FuelResidue
+    PriorityList, FuelRealisation, FuelResidue, WorkType
 from app.admin import bp
 import jsonify
 from sqlalchemy import desc
@@ -489,10 +489,16 @@ def edit_trip(id):
         form.time_to.data = trip_list.time_to
         form.time_from.data = trip_list.time_from
         form.weigher.data = trip_list.weigher
-    return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True, settings_active=True,
+    return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True,
+                           settings_active=True,
                            form=form)
 
 
-
-
-
+@bp.route('/admin/work_type', methods=['POST', 'GET'])
+@login_required
+def work_type():
+    form = WorkTypeForm()
+    work_type_table = WorkType.query.all()
+    categories = [(c.id, c.number) for c in WorkType.query.order_by("id").all()]
+    if form.validate_on_submit():
+        s = 1

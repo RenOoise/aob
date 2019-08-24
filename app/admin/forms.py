@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField, FieldList
+    BooleanField, FieldList, RadioField
 from wtforms_components import TimeField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
@@ -155,3 +155,5 @@ class AddTripForm(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
+class WorkTypeForm(FlaskForm):
+    type = RadioField('Label', choices=[('value', 'description'), ('value_two', 'whatever')])
