@@ -38,7 +38,7 @@ def index():
                         'tank': tank.tank_number,
                         'day_stock': i.day_stock}
             azs_list.append(azs_dict)
-    return render_template('index.html', title='Главная', azs_list=azs_list)
+    return render_template('index.html', title='Главная', azs_list=azs_list, index=True)
 
 
 @bp.route('/explore')
@@ -348,7 +348,7 @@ def priority():
     tanks_list = Tanks.query.all()
     priority = Priority.query.order_by("priority").all()
     priority_list = PriorityList.query.all()
-    return render_template('priority.html', title='Список АЗС по приоритету', realisation_active=True,
+    return render_template('priority.html', title='Список АЗС по приоритету', priority_active=True,
                            azs_list=azs_list, priority=priority, tanks_list=tanks_list, priority_list=priority_list)
 
 

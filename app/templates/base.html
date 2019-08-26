@@ -15,16 +15,16 @@
             <ul class="navbar-nav mr-auto">
                 {% if current_user.is_anonymous %}
                 {% else %}
-                    <li class="nav-item active">
+                    <li class="nav-item {% if index %}active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('Главная') }}</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item {% if online_active %}active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.online') }}">{{ 'Online остатки' }}</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item {% if realisation_active %}active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.realisation') }}">{{ _('Реализация') }}</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item {% if priority_active %} active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.priority') }}">{{ _('Приоритеты') }}</a>
                     </li>
 
@@ -51,12 +51,11 @@
                         </a>
                     </li>
                     {% if current_user.role == "admin" %}
-                        <li class="nav-item dropdown">
+                        <li class="nav-item {% if settings_active %}active{% endif %} dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Админ панель
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-
                                 <a href="/admin/azslist" class="dropdown-item">Список АЗС</a>
                                 <a href="/admin/tanks" class="dropdown-item">Список резервуаров</a>
                                 <a href="/admin/config_list" class="dropdown-item">Конфиги подключения к БД</a>

@@ -2,26 +2,35 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div class="row py-4">
-        <div class="col-lg-6">
-            <a href="{{ url_for('main.start') }}" type="button" class="btn btn-success btn-sm">Запуск скрипта</a>
-        </div>
-        <div class="col-lg-6 float-right">
+    <div class="container">
+        <div class="row py-4">
+            <div class="col-lg-6">
+                <a href="{{ url_for('main.start') }}" type="button" class="btn btn-success btn-sm">Запуск скрипта</a>
+            </div>
+            <div class="col-lg-6 float-right">
 
-            <div class="card">
-                <h5 class="card-header">Предупреждения</h5>
-                <div class="card-body">
-                    <table class="table table-sm table-striped">
-                        {% for i in azs_list %}
-                            <tr>
-                                <td>Запас суток резервуара № {{ i['tank'] }} на АЗС № {{ i['number'] }} меньше {{ i['day_stock'] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
+                <div class="card">
+                    <h5 class="card-header">Предупреждения</h5>
+                    <div class="card-body">
+                        <table class="table table-sm table-striped">
+                            {% for i in azs_list %}
+                                {% if i['day_stock'] < 1 %}
+                                <tr class="bg-danger">
+                                    <td>Запас суток резервуара № {{ i['tank'] }} на АЗС № {{ i['number'] }} меньше {{ i['day_stock'] }}</td>
+                                </tr>
+                                {% else %}
+                                    <tr>
+                                    <td>Запас суток резервуара № {{ i['tank'] }} на АЗС № {{ i['number'] }} меньше {{ i['day_stock'] }}</td>
+                                </tr>
+                                {% endif %}
+                                
+                            {% endfor %}
+                        </table>
+                    </div>
+
                 </div>
 
             </div>
-
         </div>
     </div>
 {% endblock %}
