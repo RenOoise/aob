@@ -2,10 +2,12 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h3>{{ _('Добавление резервуара') }}</h3>
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+    <div class="row py-4">
+        <div class="card w-32 mx-auto">
+            <div class="card-body">
+                <h5 class="card-title">{{ _('Добавление резервуара') }}</h5>
+                {{ wtf.quick_form(form) }}
+            </div>
         </div>
     </div>
 {% endblock %}
