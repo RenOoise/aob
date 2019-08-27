@@ -954,7 +954,7 @@ def azs_priority():
                 pr['table_priority'] = priority_id.id
         if tank.active is not None or tank.active is True:
             if counter <= realisation_count:
-                priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=float(pr['day_stock']),
+                priority_sorted = Priority(azs_id=int(pr['azs_id']), day_stock=pr['day_stock'],
                                            tank_id=int(pr['tank_id']),
                                            priority=counter, table_priority=int(pr['table_priority']),
                                            average_for_azs=float(pr['day_stock_average_by_tank']),
@@ -1004,7 +1004,7 @@ def average_day_stock_by_tanks(azs_id):
 
             average_stock = sum(stock_list) / len(stock_list)
             print("Айди резервуара " + str(tank.id)+ " запас суток " + str(average_stock))
-            add.average_for_azs = average_stock
+            add.average_for_azs = round(average_stock, 1)
             try:
                 db.session.add(add)
                 db.session.commit()
@@ -1031,4 +1031,3 @@ test = AzsList.query.filter_by(active=True).all()
 for azs in test:
     azs_dict.append(azs.id)
 print(azs_dict)
-
