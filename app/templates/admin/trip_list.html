@@ -3,74 +3,73 @@
 
 {% block app_content %}
 
-    <div class="content">
-        <div class="container">
-            <div class="row py-4">
+    <div class="row py-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class=" float-left">Параметры времени и пути</h5>
+                    <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/trip/add" >Добавить новый</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <h4></h4>
+                        </div>
+                        <div class="col-md-2">
 
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-body">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
                             <div class="row">
-                                <div class="col-md-10">
-                                    <h4>Параметры времени и пути</h4>
-                                </div>
-                                <div class="col-md-2">
-                                    <a href="/admin/trip/add" type="button" class="btn btn-primary btn-sm">Добавить новый</a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="row">
-                                        <table id="example" class="table table-striped table-sm" style="width:100%">
-                                            <thead>
-                                            <tr>
-                                                <th>Номер АЗС</th>
-                                                <th>Расстояние до АЗС (км)</th>
-                                                <th>Время до АЗС (до обеда) (ч)</th>
-                                                <th>Время с АЗС (до обеда) (ч)</th>
-                                                <th>Время до АЗС (после обеда) (ч)</th>
-                                                <th>Время с АЗС (после обеда) (ч)</th>
-                                                <th>Весы</th>
-                                                <th>Редактировать</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for i in trip_list %}
-                                                <tr>
-                                                    <th scope="row">
-                                                        {% for x in azs_list %}
-                                                            {% if x.id == i.azs_id %}
-                                                                АЗС № {{ x.number }}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </th>
-                                                    <td>{{ i.distance }}</td>
-                                                    <td>{{ i.time_to_before_lunch }}</td>
-                                                    <td>{{ i.time_from_before_lunch }}</td>
-                                                    <td>{{ i.time_to }}</td>
-                                                    <td>{{ i.time_from }}</td>
-                                                    {% if i.weigher == 1 %}
-                                                        <td>Есть</td>
-                                                    {% elif i.weigher == 0%}
-                                                        <td>Нет</td>
-                                                    {% else %}
-                                                        <td>Не задано</td>
+                                <table id="example" class="table table-striped table-sm" style="width:100%">
+                                    <thead>
+                                    <tr>
+                                        <th>Номер АЗС</th>
+                                        <th>Расстояние до АЗС (км)</th>
+                                        <th>Время до АЗС (до обеда) (ч)</th>
+                                        <th>Время с АЗС (до обеда) (ч)</th>
+                                        <th>Время до АЗС (после обеда) (ч)</th>
+                                        <th>Время с АЗС (после обеда) (ч)</th>
+                                        <th>Весы</th>
+                                        <th>Редактировать</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for i in trip_list %}
+                                        <tr>
+                                            <th scope="row">
+                                                {% for x in azs_list %}
+                                                    {% if x.id == i.azs_id %}
+                                                        АЗС № {{ x.number }}
                                                     {% endif %}
-                                                    <td><a href="{{ url_for('admin.edit_trip', id=i.id) }}">Редактировать</a></td>
+                                                {% endfor %}
+                                            </th>
+                                            <td>{{ i.distance }}</td>
+                                            <td>{{ i.time_to_before_lunch }}</td>
+                                            <td>{{ i.time_from_before_lunch }}</td>
+                                            <td>{{ i.time_to }}</td>
+                                            <td>{{ i.time_from }}</td>
+                                            {% if i.weigher == 1 %}
+                                                <td>Есть</td>
+                                            {% elif i.weigher == 0%}
+                                                <td>Нет</td>
+                                            {% else %}
+                                                <td>Не задано</td>
+                                            {% endif %}
+                                            <td><a href="{{ url_for('admin.edit_trip', id=i.id) }}">Редактировать</a></td>
 
-                                                </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
 {% endblock %}

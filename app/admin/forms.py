@@ -52,7 +52,7 @@ class AddAzsForm(FlaskForm):
     number = IntegerField(_l('Номер АЗС'), validators=[DataRequired()])
     address = StringField(_l('Адрес'), validators=[DataRequired()])
     phone = StringField(_l('Телефон'), validators=[DataRequired()])
-    email = StringField(_l('Email'), Email())
+    email = StringField(_l('Email'), validators=[DataRequired(), Email()])
     active = BooleanField(_l('Активна?'), validators=[DataRequired()])
     submit = SubmitField('Добавить')
 
@@ -160,7 +160,8 @@ class WorkTypeForm(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
-class TruckFalseForm(FloatField):
+class TruckFalseForm(FlaskForm):
     truck = SelectField('Бензовоз', choices=[], coerce=int)
     azs = SelectField('АЗС', choices=[], coerce=int)
+    reason = StringField('Причина')
     submit = SubmitField('Сохранить')

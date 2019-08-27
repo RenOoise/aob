@@ -62,6 +62,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a href="/admin/trucks_list" class="dropdown-item">Бензовозы</a>
                                 <a href="/admin/trip" class="dropdown-item">Расстояния до АЗС</a>
+                                <a href="{{ url_for('admin.trucks_false') }}" class="dropdown-item">Исключения для бензовозов</a>
                                 <a href="/admin/users" class="dropdown-item">Пользователи</a>
                                 <div class="dropdown-divider"></div>
                                 <a href="/online" class="dropdown-item">Онлайн остатки</a>
@@ -239,4 +240,5 @@
             $('#myTest .deleted').remove();
         });
     </script>
+    <script src="{{ url_for('static', filename='js/moment.locale.ru.js') }}"></script>
 {% endblock %}

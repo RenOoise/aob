@@ -5,7 +5,7 @@
     <div class="container">
         <div class="row py-4">
             <div class="col-lg-6">
-                <a href="{{ url_for('main.start') }}" type="button" class="btn btn-success btn-sm">Запуск скрипта</a>
+                <a href="{{ url_for('main.start') }}" class="btn btn-outline-primary my-2 my-sm-0">Запуск скрипта</a>
             </div>
             <div class="col-lg-6 float-right">
 
@@ -15,7 +15,7 @@
                         <table class="table table-sm table-striped">
                             {% for i in azs_list %}
                                 {% if i['day_stock'] < 1 %}
-                                <tr class="bg-danger">
+                                <tr class="table-danger">
                                     <td>Запас суток резервуара № {{ i['tank'] }} на АЗС № {{ i['number'] }} меньше {{ i['day_stock'] }}</td>
                                 </tr>
                                 {% else %}

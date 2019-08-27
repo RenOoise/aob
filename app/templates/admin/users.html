@@ -3,56 +3,50 @@
 
 {% block app_content %}
 
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
-
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h4>Зарегистрированые пользователи</h4>
-                            </div>
-                            <div class="col-md-2">
-                                <a href="/admin/adduser" type="button" class="btn btn-primary btn-sm">Добавить пользователя</a>
-                            </div>
+    <div class="content">
+        <div class="container">
+            <div class="row py-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="float-left">Зарегистрированые пользователи</h5>
+                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="{{ url_for('admin.adduser') }}" >Добавить пользователя</a>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table class="table table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Логин</th>
-                                            <th>Email</th>
-                                            <th>Онлайн</th>
-                                            <th>Роль</th>
-                                            <th>Профиль</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in users_list %}
-                                        <tr>
-                                            <th scope="row">{{ i.id }}</th>
-                                            <td>{{ i.username }}</td>
-                                            <td>{{ i.email }}</td>
-                                            <td>{{ i.last_seen }}</td>
-                                            <td>{{ i.role }}</td>
-                                            <td> <a href="{{url_for('main.user', username=i.username)}}" class="btn btn-sm btn-primary">Перейти</a></td>
-                                        </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <table class="table table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Логин</th>
+                                                <th>Email</th>
+                                                <th>Онлайн</th>
+                                                <th>Роль</th>
+                                                <th>Профиль</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for i in users_list %}
+                                                <tr>
+                                                    <th scope="row">{{ i.id }}</th>
+                                                    <td>{{ i.username }}</td>
+                                                    <td>{{ i.email }}</td>
+                                                    <td>{{ i.last_seen }}</td>
+                                                    <td>{{ i.role }}</td>
+                                                    <td> <a href="{{url_for('main.user', username=i.username)}}" class="btn btn-sm btn-outline-primary my-2 my-sm-0">Перейти</a></td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

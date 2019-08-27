@@ -445,9 +445,41 @@ class TruckFalse(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # к какой азс привязан по id
+    reason = db.Column(db.String(120))
+    timestamp = db.Column(db.DateTime)
 
 
 class WorkType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(600))  # режим работы приложения
     active = db.Column(db.Boolean)  # активен или нет
+
+
+class TempAzsTrucks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant_id = db.Column(db.Integer)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    fuel_type = db.Column(db.Integer)
+    capacity = db.Column(db.Integer)
+
+
+class TempAzsTrucks2(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant_id = db.Column(db.Integer)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    full_capacity_92 = db.Column(db.Integer)
+    full_capacity_95 = db.Column(db.Integer)
+    full_capacity_50 = db.Column(db.Integer)
+    full_capacity_51 = db.Column(db.Integer)
+    weight = db.Column(db.Integer)
+    distance = db.Column(db.Integer)
+    full_time_to = db.Column(db.Integer)
+    result1 = db.Column(db.Integer)
+    result2 = db.Column(db.Integer)
+    result3 = db.Column(db.Integer)
+    result_average_for_azs = db.Column(db.Integer)
+    sliv_after_trip = db.Column(db.Integer)
+    full_time = db.Column(db.Integer)

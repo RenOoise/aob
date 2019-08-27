@@ -3,9 +3,9 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, FuelRealisation, FuelResidue, WorkType
+    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse
 from app.admin import bp
 import jsonify
 from sqlalchemy import desc
@@ -136,7 +136,8 @@ def config_lst():
 def add_azs():
     form = AddAzsForm()
     if form.validate_on_submit():
-        azs = AzsList(number=form.number.data, active=form.active.data, address=form.address.data, phone=form.phone.data)
+        azs = AzsList(number=form.number.data, active=form.active.data, address=form.address.data,
+                      phone=form.phone.data, email=form.email.data)
         db.session.add(azs)
         db.session.commit()
         flash('АЗС добавлена')
@@ -514,3 +515,50 @@ def work_type():
         form.type.data = active.id
 
     return render_template('admin/work_type.html', form=form)
+
+
+@bp.route('/admin/trucks_false', methods=['POST', 'GET'])
+@login_required
+def trucks_false():
+    trucks_false = TruckFalse.query.order_by("timestamp").all()
+    trucks = list()
+    for truck in trucks_false:
+        reg = Trucks.query.filter_by(id=truck.truck_id).first()
+        azs = AzsList.query.filter_by(id=truck.azs_id).first()
+        truck = {
+            'id': truck.id,
+            'azs_number': reg.reg_number,
+            'truck_number': azs.number,
+            'reason': truck.reason
+        }
+        trucks.append(truck)
+    return render_template('/admin/trucks_false.html', trucks=trucks)
+
+
+@bp.route('/admin/trucks_false/add', methods=['POST', 'GET'])
+@login_required
+def trucks_false_add():
+    false = TruckFalse.query.order_by("timestamp").all()
+
+    categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
+    trucks = [(s.id, s.reg_number) for s in Trucks.query.all()]
+    form = TruckFalseForm(request.form)
+    form.azs.choices = categories
+    form.truck.choices = trucks
+    if form.validate_on_submit():
+        trucks_list = TruckFalse(azs_id=form.azs.data, truck_id=form.truck.data, reason=form.reason.data)
+        db.session.add(trucks_list)
+        db.session.commit()
+        flash('Данные добавлены')
+        return redirect(url_for('admin.trucks_false'))
+    return render_template('/admin/add_trucks_false.html', trucks=trucks, form=form)
+
+
+@bp.route('/admin/trucks_false/delete/id<id>', methods=['POST', 'GET'])
+@login_required
+def trucks_false_delete(id):
+    row = TruckFalse.query.filter_by(id=id).first_or_404()
+    db.session.delete(row)
+    db.session.commit()
+    flash('Данные удалены')
+    return redirect(url_for('admin.trucks_false'))
