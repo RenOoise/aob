@@ -6,8 +6,8 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
-from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority,\
-    PriorityList, ManualInfo
+from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
+    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType
 from app.translate import translate
 from app.main import bp
 import pandas as pd
@@ -177,7 +177,7 @@ def messages():
     page = request.args.get('page', 1, type=int)
     messages = current_user.messages_received.order_by(
         Message.timestamp.desc()).paginate(
-            page, current_app.config['POSTS_PER_PAGE'], False)
+        page, current_app.config['POSTS_PER_PAGE'], False)
     next_url = url_for('main.messages', page=messages.next_num) \
         if messages.has_next else None
     prev_url = url_for('main.messages', page=messages.prev_num) \
@@ -253,13 +253,13 @@ def export_to_xlsx(datetime):
 
     sf.apply_style_by_indexes(indexes_to_style=sf[sf['Текущий остаток (л)'] == 0],
                               cols_to_style=['Время получения данных',
-                                                           'Тип формирования', 'Время замера АИСом',
-                                                           'Свободная емкость (до 95%) (л)',
-                                                           'Резервуар №',
-                                                           '№',
-                                                           'Вид топлива',
-                                                           'Текущий остаток (л)',
-                                                           'Процент (%)'], styler_obj=Styler(bg_color='F5455F'))
+                                             'Тип формирования', 'Время замера АИСом',
+                                             'Свободная емкость (до 95%) (л)',
+                                             'Резервуар №',
+                                             '№',
+                                             'Вид топлива',
+                                             'Текущий остаток (л)',
+                                             'Процент (%)'], styler_obj=Styler(bg_color='F5455F'))
 
     sf.apply_style_by_indexes(indexes_to_style=sf[sf['Тип формирования'] == 'По книжным остаткам'],
                               cols_to_style=['Время получения данных',
@@ -352,38 +352,6 @@ def priority():
                            azs_list=azs_list, priority=priority, tanks_list=tanks_list, priority_list=priority_list)
 
 
-@bp.route('/start', methods=['POST', 'GET'])
-@login_required
-def start():
-    errors = 0
-    azs_list = AzsList.query.all()
-    for azs in azs_list:
-        if azs.active:
-            tanks_list = Tanks.query.filter_by(azs_id=azs.id).all()
-            for tank in tanks_list:
-                if tank.active:
-                    residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
-                    realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
-                    if residue.fuel_volume is None or residue.fuel_volume is 0:
-                        print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
-                        errors = errors + 1
-                    if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days is 0:
-                        print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
-                        errors = errors + 1
-                    priority_list = PriorityList.query.all()
-                    for priority in priority_list:
-                        if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
-                            this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
-                            if not this_priority.id:
-                                errors = errors + 1
-                                print('   Резервуар №' + str(tank.tank_number) +
-                                      ' не попадает в диапазон приоритетов!!!')
-    if errors > 0:
-        return redirect(url_for('main.manual_input', id=tank.id))
-    else:
-        return redirect(url_for('main.index'))
-
-
 @bp.route('/manual/id<id>', methods=['GET', 'POST'])
 @login_required
 def manual_input(id):
@@ -402,3 +370,98 @@ def manual_input(id):
                            form=form,
                            azs_number=str(azs.number),
                            tank_number=str(tank.tank_number))
+
+
+@bp.route('/start', methods=['POST', 'GET'])
+@login_required
+def start():
+    def check():
+        errors = 0
+        azs_list = AzsList.query.all()
+        for azs in azs_list:
+            if azs.active:
+                tanks_list = Tanks.query.filter_by(azs_id=azs.id).all()
+                for tank in tanks_list:
+                    if tank.active:
+                        residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
+                        realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
+                        if residue.fuel_volume is None or residue.fuel_volume is 0:
+                            print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
+                            errors = errors + 1
+                        if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days is 0:
+                            print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
+                            errors = errors + 1
+                        priority_list = PriorityList.query.all()
+                        for priority in priority_list:
+                            if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
+                                this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
+                                if not this_priority.id:
+                                    errors = errors + 1
+                                    print('   Резервуар №' + str(tank.tank_number) +
+                                          ' не попадает в диапазон приоритетов!!!')
+        return errors
+
+    def preparation():
+        truck_list = Trucks.query.all()
+        azs_list = AzsList.query.all()
+        temp_truck_azs = {}
+        variant = 0
+        tanks_list = list()
+        print('started')
+
+        for truck in truck_list:
+            truck_tanks_list = TruckTanks.query.filter_by(truck_id=truck.id).all()
+            truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
+            truck_tanks_volume = {}  # обнуление словаря
+            print('trucks')
+            temp_tanks_list = list()
+            temp_tanks_list.clear()
+            for truck_tank in truck_tanks_list:
+                truck_tanks_volume['truck_id'] = truck_tank.truck_id
+                truck_tanks_volume['truck_tank_id'] = truck_tank.id
+                truck_tanks_volume['capacity'] = truck_tank.capacity
+                tanks_list.append(truck_tanks_volume)
+            if truck_tanks_count is 1:
+                print(tanks_list)
+                # print(truck_tanks_volume['truck_id'])
+                for a in range(1, 3):
+                    for i in tanks_list:
+                        temp_truck_azs['capacity'] = i['capacity']
+                        temp_truck_azs['truck_id'] = i['truck_id']
+                        temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
+                        if a is 1:
+                            temp_truck_azs['fuel_type'] = '95'
+                        elif a is 2:
+                            temp_truck_azs['fuel_type'] = '92'
+                        elif a is 3:
+                            temp_truck_azs['fuel_type'] = 'dt'
+                        temp_tanks_list.append(temp_truck_azs)
+                # print(temp_tanks_list)
+            elif truck_tanks_count is 2:
+                for a in range(1, 3):
+                    for b in range(1, 3):
+                        for i in tanks_list:
+                            temp_truck_azs['capacity'] = i['capacity']
+                            temp_truck_azs['truck_id'] = i['truck_id']
+                            temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
+                            if a is 1:
+                                temp_truck_azs['fuel_type'] = '95'
+                            elif a is 2:
+                                temp_truck_azs['fuel_type'] = '92'
+                            elif a is 3:
+                                temp_truck_azs['fuel_type'] = 'dt'
+
+                            if b is 1:
+                                temp_truck_azs['fuel_type'] = '95'
+                            elif b is 2:
+                                temp_truck_azs['fuel_type'] = '92'
+                            elif b is 3:
+                                temp_truck_azs['fuel_type'] = 'dt'
+                            tanks_list.append(temp_truck_azs)
+
+
+    if check() > 0:
+        return redirect(url_for('main.manual_input'))
+    else:
+        preparation()
+        return redirect(url_for('main.index'))
