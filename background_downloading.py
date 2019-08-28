@@ -553,6 +553,7 @@ class QueryFromDb(object):
                                             db.session.commit()
                                         except Exception as error:
                                             print("Данные по АЗС № " + str(self.number) + " не найдены", error)
+                                            pass
                                     else:
                                         add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                           fuel_level=row[3], fuel_volume=row[4],
@@ -607,6 +608,7 @@ class QueryFromDb(object):
                                             db.session.commit()
                                         except Exception as error:
                                             print("Данные по АЗС № " + str(self.number) + " не найдены", error)
+                                            pass
                                     else:
                                         add = FuelResidue(azs_id=self.id, tank_id=tankid.id, product_code=row[2],
                                                           fuel_level=row[3], fuel_volume=query[0][4] - realisation[0][3],
@@ -671,6 +673,7 @@ class QueryFromDb(object):
                                             db.session.commit()
                                         except Exception as error:
                                             print("Данные по АЗС № " + str(self.number) + " не найдены", error)
+                                            pass
                                     else:
                                         add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id,
                                                           product_code=id.fuel_type, fuel_level=row[6],
@@ -729,6 +732,7 @@ class QueryFromDb(object):
                                                     db.session.commit()
                                                 except Exception as error:
                                                     print("Данные по АЗС № " + str(self.number) + " не найдены", error)
+                                                    pass
                                         else:
                                             if row[0] is tankid.tank_number:
                                                 resid = row[1] - realis[2]
@@ -748,7 +752,7 @@ class QueryFromDb(object):
                             print("Соединение закрыто")
 
                 except (Exception, psycopg2.Error) as error:
-                    print("Ошибка подключения к серверу" + error)
+                    print("Ошибка подключения к серверу", error)
                     pass
         # если система serviopump
         elif self.system_type == 3:
