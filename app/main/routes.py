@@ -401,60 +401,113 @@ def start():
                                           ' не попадает в диапазон приоритетов!!!')
         return errors
 
+    def temp_tank(tank, fuel, azs):
+        temp_truck_azs = dict()
+        temp_truck_azs['azs_id'] = azs
+        temp_truck_azs['capacity'] = tank.capacity
+        temp_truck_azs['truck_id'] = tank.truck_id
+        temp_truck_azs['truck_tank_id'] = tank.id
+        temp_truck_azs['fuel_type'] = fuel
+        return temp_truck_azs
+
     def preparation():
-        truck_list = Trucks.query.all()
+        truck_list = Trucks.query.filter_by(active=True).all()
         azs_list = AzsList.query.filter_by(active=True).all()
-        temp_truck_azs = {}
-        tanks_list = list()
         print('started')
+        temp_tanks_list = list()
+        temp_tanks_list.clear()
+        count_variant = 1
         for azs in azs_list:
             for truck in truck_list:
                 truck_tanks_list = TruckTanks.query.filter_by(truck_id=truck.id).all()
                 truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
-                print(truck_tanks_count)
-                truck_tanks_volume = {}  # обнуление словаря
-                temp_tanks_list = list()
-                temp_tanks_list.clear()
-                for truck_tank in truck_tanks_list:
-                    truck_tanks_volume['truck_id'] = truck_tank.truck_id
-                    truck_tanks_volume['truck_tank_id'] = truck_tank.id
-                    truck_tanks_volume['fuel_type'] = None
-                    truck_tanks_volume['capacity'] = truck_tank.capacity
-                    tanks_list.append(truck_tanks_volume)
-
-                if truck_tanks_count is 1:
-                    for i in tanks_list:
-                        for a in range(1, 3):
-                            temp_truck_azs['capacity'] = i['capacity']
-                            temp_truck_azs['truck_id'] = i['truck_id']
-                            temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
+                print(truck.id, truck_tanks_count)
+                for tank in truck_tanks_list:
+                    if truck_tanks_count == 1:
+                        for a in range(1, 4):
                             if a is 1:
-                                temp_truck_azs['fuel_type'] = '95'
+                                temp_tanks_list.append(temp_tank(tank, '92', azs.id))
                             elif a is 2:
-                                temp_truck_azs['fuel_type'] = '92'
+                                temp_tanks_list.append(temp_tank(tank, '95', azs.id))
                             elif a is 3:
-                                temp_truck_azs['fuel_type'] = 'dt'
-                            temp_tanks_list.append(temp_truck_azs)
-                elif truck_tanks_count is 2:
-                    for i in tanks_list:
-                        for a in range(1, 3):
-                            for b in range(1, 3):
-                                print(b, a)
-                                print(i)
-                                temp_truck_azs['capacity'] = i['capacity']
-                                temp_truck_azs['truck_id'] = i['truck_id']
-                                temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
+                                temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                            count_variant = count_variant + 1
+                    elif truck_tanks_count == 2:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
                                 if a is 1:
-                                    temp_truck_azs['fuel_type'] = '95'
+                                    temp_tanks_list.append(temp_tank(tank, '92', azs.id))
                                 elif a is 2:
-                                    temp_truck_azs['fuel_type'] = '92'
+                                    temp_tanks_list.append(temp_tank(tank, '95', azs.id))
                                 elif a is 3:
-                                    temp_truck_azs['fuel_type'] = 'dt'
-                                print(temp_truck_azs['fuel_type'])
+                                    temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                if b is 1:
+                                    temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                elif b is 2:
+                                    temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                elif b is 3:
+                                    temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                count_variant = count_variant + 1
+                    elif truck_tanks_count == 3:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
+                                for c in range(1, 4):
+                                    if a is 1:
+                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                    elif a is 2:
+                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                    elif a is 3:
+                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                    if b is 1:
+                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                    elif b is 2:
+                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                    elif b is 3:
+                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                    if c is 1:
+                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                    elif c is 2:
+                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                    elif c is 3:
+                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                    count_variant = count_variant + 1
 
-                                tanks_list.append(temp_truck_azs)
-                print(temp_truck_azs)
+                    elif truck_tanks_count == 4:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
+                                for c in range(1, 4):
+                                    for d in range(1, 4):
+                                        if a is 1:
+                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                        elif a is 2:
+                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                        elif a is 3:
+                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                        if b is 1:
+                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                        elif b is 2:
+                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                        elif b is 3:
+                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                        if c is 1:
+                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                        elif c is 2:
+                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                        elif c is 3:
+                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                        if d is 1:
+                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
+                                        elif d is 2:
+                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
+                                        elif d is 3:
+                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
+                                        count_variant = count_variant + 1
 
+        for i in temp_tanks_list:
+            sql = TempAzsTrucks(azs_id=i['azs_id'], truck_id=i['truck_id'], truck_tank_id=i['truck_tank_id'],
+                                fuel_type=i['fuel_type'], capacity=i['capacity'])
+            db.session.add(sql)
+            db.session.commit()
     if check() > 0:
         return redirect(url_for('main.manual_input'))
     else:
