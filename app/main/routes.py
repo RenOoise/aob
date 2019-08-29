@@ -307,7 +307,8 @@ def online():
     online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
     tanks_list = Tanks.    query.all()
     return render_template('online.html', title='Online остатки', online_active=True,
-                           online=online, azs_list=azs_list, tanks_list=tanks_list, datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
+                           online=online, azs_list=azs_list, tanks_list=tanks_list,
+                           datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
 
 @bp.route('/page/azs/id<id>', methods=['POST', 'GET'])
@@ -316,8 +317,9 @@ def page_azs(id):
     azs_list = AzsList.query.filter_by(id=id).first()
     tanks_list = Tanks.query.filter_by(azs_id=id).all()
     online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
+    realisation = FuelRealisation.query.all()
     return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
-                           online=online, azs_list=azs_list, tanks_list=tanks_list)
+                           online=online, realisation=realisation, azs_list=azs_list, tanks_list=tanks_list)
 
 
 @bp.route('/download_realisation_info')

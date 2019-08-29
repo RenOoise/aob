@@ -14,10 +14,16 @@
                                 {%- for z in online -%}
                                     {%- if z.tank_id == i.id -%}
 
-                                        <p>Тип топлива: {{z.product_code}}</p>
+                                        <p>Вип топлива: {{z.product_code}}</p>
                                         <p>Остаток топлива: {{z.fuel_volume}} л.</p>
                                         <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>
                                         <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
+                                        {% for x in realisation %}
+                                            {% if x.tank_id == i.id %}
+                                                <p>Реализация за сутки {{ x.fuel_realisation_1_days }} л.</p>
+                                            {%- endif -%}
+                                        {%- endfor -%}
+
                                     {%- endif -%}
                                 {%- endfor -%}
                             </div>
