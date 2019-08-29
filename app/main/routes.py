@@ -411,103 +411,214 @@ def start():
         return temp_truck_azs
 
     def preparation():
-        truck_list = Trucks.query.filter_by(active=True).all()
+        print("Подготовка начата")
+        db.session.query(TempAzsTrucks).delete()
+        db.session.commit()
         azs_list = AzsList.query.filter_by(active=True).all()
-        print('started')
-        temp_tanks_list = list()
-        temp_tanks_list.clear()
-        count_variant = 1
+        truck_list = Trucks.query.filter_by(active=True).all()
+        variant_counter = 1
         for azs in azs_list:
             for truck in truck_list:
-                truck_tanks_list = TruckTanks.query.filter_by(truck_id=truck.id).all()
+                fuel_types = list()
+                truck_tanks = TruckTanks.query.filter_by(truck_id=truck.id).all()
                 truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
-                print(truck.id, truck_tanks_count)
-                for tank in truck_tanks_list:
-                    if truck_tanks_count == 1:
-                        for a in range(1, 4):
-                            if a is 1:
-                                temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                            elif a is 2:
-                                temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                            elif a is 3:
-                                temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                            count_variant = count_variant + 1
-                    elif truck_tanks_count == 2:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                if a is 1:
-                                    temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                elif a is 2:
-                                    temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                elif a is 3:
-                                    temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                if b is 1:
-                                    temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                elif b is 2:
-                                    temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                elif b is 3:
-                                    temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                count_variant = count_variant + 1
-                    elif truck_tanks_count == 3:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                for c in range(1, 4):
-                                    if a is 1:
-                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                    elif a is 2:
-                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                    elif a is 3:
-                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                    if b is 1:
-                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                    elif b is 2:
-                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                    elif b is 3:
-                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                    if c is 1:
-                                        temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                    elif c is 2:
-                                        temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                    elif c is 3:
-                                        temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                    count_variant = count_variant + 1
+                if truck_tanks_count == 1:
+                    for a in range(1, 4):
+                        fuel_types = [a]
+                        for index, type in enumerate(fuel_types):
+                            if type is 1:
+                                fuel_types[index] = 92
+                            elif type is 2:
+                                fuel_types[index] = 95
+                            elif type is 3:
+                                fuel_types[index] = 50
 
-                    elif truck_tanks_count == 4:
+                            tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                   number=index + 1).first()
+
+                            sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=tanks_row.id,
+                                                truck_id=truck.id, fuel_type=fuel_types[index],
+                                                capacity=tanks_row.capacity)
+                            db.session.add(sql)
+                            db.session.commit()
+
+                        variant_counter = variant_counter + 1
+                if truck_tanks_count == 3:
+                    for a in range(1, 4):
+                        for b in range(1, 4):
+                            fuel_types = [a, b]
+                            for index, type in enumerate(fuel_types):
+                                if type is 1:
+                                    fuel_types[index] = 92
+                                elif type is 2:
+                                    fuel_types[index] = 95
+                                elif type is 3:
+                                    fuel_types[index] = 50
+
+                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id, number=index + 1).first()
+                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                    truck_tank_id=tanks_row.id,
+                                                    truck_id=truck.id, fuel_type=fuel_types[index],
+                                                    capacity=tanks_row.capacity)
+                                db.session.add(sql)
+                                db.session.commit()
+
+                            variant_counter = variant_counter + 1
+
+                if truck_tanks_count == 3:
+                    for a in range(1, 4):
+                        for b in range(1, 4):
+                            for c in range(1, 4):
+                                fuel_types = [a, b, c]
+                                for index, type in enumerate(fuel_types):
+                                    if type is 1:
+                                        fuel_types[index] = 92
+                                    elif type is 2:
+                                        fuel_types[index] = 95
+                                    elif type is 3:
+                                        fuel_types[index] = 50
+
+                                    tanks_row = TruckTanks.query.filter_by(truck_id=truck.id, number=index + 1).first()
+
+                                    sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                        truck_tank_id=tanks_row.id,
+                                                        truck_id=truck.id, fuel_type=fuel_types[index],
+                                                        capacity=tanks_row.capacity)
+                                    db.session.add(sql)
+                                    db.session.commit()
+
+                                variant_counter = variant_counter + 1
+                if truck_tanks_count == 4:
+                    for a in range(1, 4):
+                        for b in range(1, 4):
+                            for c in range(1, 4):
+                                for d in range(1, 4):
+                                    fuel_types = [a, b, c, d]
+                                    for index, type in enumerate(fuel_types):
+                                        if type is 1:
+                                            fuel_types[index] = 92
+                                        elif type is 2:
+                                            fuel_types[index] = 95
+                                        elif type is 3:
+                                            fuel_types[index] = 50
+
+                                        tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                               number=index + 1).first()
+
+                                        sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                            truck_tank_id=tanks_row.id,
+                                                            truck_id=truck.id, fuel_type=fuel_types[index],
+                                                            capacity=tanks_row.capacity)
+                                        db.session.add(sql)
+                                        db.session.commit()
+                                    variant_counter = variant_counter + 1
+                    if truck_tanks_count == 5:
                         for a in range(1, 4):
                             for b in range(1, 4):
                                 for c in range(1, 4):
                                     for d in range(1, 4):
-                                        if a is 1:
-                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                        elif a is 2:
-                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                        elif a is 3:
-                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                        if b is 1:
-                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                        elif b is 2:
-                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                        elif b is 3:
-                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                        if c is 1:
-                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                        elif c is 2:
-                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                        elif c is 3:
-                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                        if d is 1:
-                                            temp_tanks_list.append(temp_tank(tank, '92', azs.id))
-                                        elif d is 2:
-                                            temp_tanks_list.append(temp_tank(tank, '95', azs.id))
-                                        elif d is 3:
-                                            temp_tanks_list.append(temp_tank(tank, '50', azs.id))
-                                        count_variant = count_variant + 1
+                                        for e in range(1, 4):
+                                            fuel_types = [a, b, c, d, e]
+                                            for index, type in enumerate(fuel_types):
+                                                if type is 1:
+                                                    fuel_types[index] = 92
+                                                elif type is 2:
+                                                    fuel_types[index] = 95
+                                                elif type is 3:
+                                                    fuel_types[index] = 50
 
-        for i in temp_tanks_list:
-            sql = TempAzsTrucks(azs_id=i['azs_id'], truck_id=i['truck_id'], truck_tank_id=i['truck_tank_id'],
-                                fuel_type=i['fuel_type'], capacity=i['capacity'])
-            db.session.add(sql)
-            db.session.commit()
+                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                                       number=index + 1).first()
+
+                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
+                                                                    capacity=tanks_row.capacity)
+                                                db.session.add(sql)
+                                                db.session.commit()
+                                            variant_counter = variant_counter + 1
+                    if truck_tanks_count == 6:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
+                                for c in range(1, 4):
+                                    for d in range(1, 4):
+                                        for e in range(1, 4):
+                                            for f in range(1, 4):
+                                                fuel_types = [a, b, c, d, e, f]
+                                            for index, type in enumerate(fuel_types):
+                                                if type is 1:
+                                                    fuel_types[index] = 92
+                                                elif type is 2:
+                                                    fuel_types[index] = 95
+                                                elif type is 3:
+                                                    fuel_types[index] = 50
+
+                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                                       number=index + 1).first()
+
+                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
+                                                                    capacity=tanks_row.capacity)
+                                                db.session.add(sql)
+                                                db.session.commit()
+                                            variant_counter = variant_counter + 1
+                    if truck_tanks_count == 7:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
+                                for c in range(1, 4):
+                                    for d in range(1, 4):
+                                        for e in range(1, 4):
+                                            for f in range(1, 4):
+                                                for g in range(1, 4):
+                                                    fuel_types = [a, b, c, d, e, f, g]
+                                            for index, type in enumerate(fuel_types):
+                                                if type is 1:
+                                                    fuel_types[index] = 92
+                                                elif type is 2:
+                                                    fuel_types[index] = 95
+                                                elif type is 3:
+                                                    fuel_types[index] = 50
+
+                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                                       number=index + 1).first()
+
+                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
+                                                                    capacity=tanks_row.capacity)
+                                                db.session.add(sql)
+                                                db.session.commit()
+                                            variant_counter = variant_counter + 1
+                    if truck_tanks_count == 8:
+                        for a in range(1, 4):
+                            for b in range(1, 4):
+                                for c in range(1, 4):
+                                    for d in range(1, 4):
+                                        for e in range(1, 4):
+                                            for f in range(1, 4):
+                                                for g in range(1, 4):
+                                                    for h in range(1, 4):
+                                                        fuel_types = [a, b, c, d, e, f, g, h]
+                                            for index, type in enumerate(fuel_types):
+                                                if type is 1:
+                                                    fuel_types[index] = 92
+                                                elif type is 2:
+                                                    fuel_types[index] = 95
+                                                elif type is 3:
+                                                    fuel_types[index] = 50
+
+                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
+                                                                                       number=index + 1).first()
+
+                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
+                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
+                                                                    capacity=tanks_row.capacity)
+                                                db.session.add(sql)
+                                                db.session.commit()
+                                            variant_counter = variant_counter + 1
+        print("Подготовка закончена")
     if check() > 0:
         return redirect(url_for('main.manual_input'))
     else:
