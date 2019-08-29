@@ -87,7 +87,7 @@ def addtank():
 
             tank = Tanks(azs_id=form.azs_id.data, tank_number=form.tank.data, fuel_type=form.fuel_type.data,
                          nominal_capacity=form.nominal_capacity.data, real_capacity=form.real_capacity.data,
-                         corrected_capacity=form.real_capacity.data/100*95, drain_time=form.drain_time.data,
+                         corrected_capacity=(form.real_capacity.data/100)*95, drain_time=form.drain_time.data,
                          after_drain_time=form.after_drain_time.data, mixing=form.mixing.data, active=form.active.data,
                          ams=form.ams.data, dead_capacity=form.dead_capacity.data)
             db.session.add(tank)

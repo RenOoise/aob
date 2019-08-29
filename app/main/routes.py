@@ -403,44 +403,28 @@ def start():
 
     def preparation():
         truck_list = Trucks.query.all()
-        azs_list = AzsList.query.all()
+        azs_list = AzsList.query.filter_by(active=True).all()
         temp_truck_azs = {}
-        variant = 0
         tanks_list = list()
         print('started')
+        for azs in azs_list:
+            for truck in truck_list:
+                truck_tanks_list = TruckTanks.query.filter_by(truck_id=truck.id).all()
+                truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
+                print(truck_tanks_count)
+                truck_tanks_volume = {}  # обнуление словаря
+                temp_tanks_list = list()
+                temp_tanks_list.clear()
+                for truck_tank in truck_tanks_list:
+                    truck_tanks_volume['truck_id'] = truck_tank.truck_id
+                    truck_tanks_volume['truck_tank_id'] = truck_tank.id
+                    truck_tanks_volume['fuel_type'] = None
+                    truck_tanks_volume['capacity'] = truck_tank.capacity
+                    tanks_list.append(truck_tanks_volume)
 
-        for truck in truck_list:
-            truck_tanks_list = TruckTanks.query.filter_by(truck_id=truck.id).all()
-            truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
-            truck_tanks_volume = {}  # обнуление словаря
-            print('trucks')
-            temp_tanks_list = list()
-            temp_tanks_list.clear()
-            for truck_tank in truck_tanks_list:
-                truck_tanks_volume['truck_id'] = truck_tank.truck_id
-                truck_tanks_volume['truck_tank_id'] = truck_tank.id
-                truck_tanks_volume['capacity'] = truck_tank.capacity
-                tanks_list.append(truck_tanks_volume)
-            if truck_tanks_count is 1:
-                print(tanks_list)
-                # print(truck_tanks_volume['truck_id'])
-                for a in range(1, 3):
+                if truck_tanks_count is 1:
                     for i in tanks_list:
-                        temp_truck_azs['capacity'] = i['capacity']
-                        temp_truck_azs['truck_id'] = i['truck_id']
-                        temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
-                        if a is 1:
-                            temp_truck_azs['fuel_type'] = '95'
-                        elif a is 2:
-                            temp_truck_azs['fuel_type'] = '92'
-                        elif a is 3:
-                            temp_truck_azs['fuel_type'] = 'dt'
-                        temp_tanks_list.append(temp_truck_azs)
-                # print(temp_tanks_list)
-            elif truck_tanks_count is 2:
-                for a in range(1, 3):
-                    for b in range(1, 3):
-                        for i in tanks_list:
+                        for a in range(1, 3):
                             temp_truck_azs['capacity'] = i['capacity']
                             temp_truck_azs['truck_id'] = i['truck_id']
                             temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
@@ -450,15 +434,26 @@ def start():
                                 temp_truck_azs['fuel_type'] = '92'
                             elif a is 3:
                                 temp_truck_azs['fuel_type'] = 'dt'
+                            temp_tanks_list.append(temp_truck_azs)
+                elif truck_tanks_count is 2:
+                    for i in tanks_list:
+                        for a in range(1, 3):
+                            for b in range(1, 3):
+                                print(b, a)
+                                print(i)
+                                temp_truck_azs['capacity'] = i['capacity']
+                                temp_truck_azs['truck_id'] = i['truck_id']
+                                temp_truck_azs['truck_tank_id'] = i['truck_tank_id']
+                                if a is 1:
+                                    temp_truck_azs['fuel_type'] = '95'
+                                elif a is 2:
+                                    temp_truck_azs['fuel_type'] = '92'
+                                elif a is 3:
+                                    temp_truck_azs['fuel_type'] = 'dt'
+                                print(temp_truck_azs['fuel_type'])
 
-                            if b is 1:
-                                temp_truck_azs['fuel_type'] = '95'
-                            elif b is 2:
-                                temp_truck_azs['fuel_type'] = '92'
-                            elif b is 3:
-                                temp_truck_azs['fuel_type'] = 'dt'
-                            tanks_list.append(temp_truck_azs)
-
+                                tanks_list.append(temp_truck_azs)
+                print(temp_truck_azs)
 
     if check() > 0:
         return redirect(url_for('main.manual_input'))

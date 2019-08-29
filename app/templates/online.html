@@ -10,81 +10,81 @@
                     <h5 class=" float-left">Online остатки топлива</h5>
                     <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.export_to_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
                 </div>
-
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="row">
-                                <table id="myTest" class="table table-sm table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Номер АЗС</th>
-                                        <th>Номер резервуара</th>
-                                        <th>Вид топлива</th>
-                                        <th>Процент заполнения (%)</th>
-                                        <th>Текущий остаток (л)</th>
-                                        <th>Свободная емкость (до 95%) (л)</th>
-                                        <th>Время замера</th>
-                                        <th>Время выгрузки</th>
-                                        <th>Тип формирования</th>
+                                    <table id="myTest" class="table table-sm table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>Номер АЗС</th>
+                                            <th>Номер резервуара</th>
+                                            <th>Вид топлива</th>
+                                            <th>Процент заполнения (%)</th>
+                                            <th>Текущий остаток (л)</th>
+                                            <th>Свободная емкость (до 95%) (л)</th>
+                                            <th>Время замера</th>
+                                            <th>Время выгрузки</th>
+                                            <th>Тип формирования</th>
 
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for i in online %}
-                                        {% if i.auto %}
-                                            <tr>
-                                                {% else %}
-                                            <tr class="table-warning">
-                                        {% endif %}
-                                    <td>
-                                        {% for x in azs_list %}
-                                            {% if x.id == i.azs_id %}
-                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for i in online %}
+                                            {% if i.auto %}
+                                                <tr>
+                                                    {% else %}
+                                                <tr class="table-warning">
                                             {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>
-                                        {% for z in tanks_list %}
-                                            {% if z.id == i.tank_id %}
-                                                {{ z.tank_number }}
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ i.product_code }}</td>
-                                    <td>
+                                        <td>
+                                            {% for x in azs_list %}
+                                                {% if x.id == i.azs_id %}
+                                                    <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                    {{ z.tank_number }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ i.product_code }}</td>
+                                        <td>
+                                            {% for z in tanks_list %}
+                                                {% if z.id == i.tank_id %}
+                                                    {% if i.fuel_volume == None %}
+                                                        None
+                                                    {% else %}
+                                                        {{ i.percent }}%
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ i.fuel_volume }}</td>
                                         {% for z in tanks_list %}
                                             {% if z.id == i.tank_id %}
                                                 {% if i.fuel_volume == None %}
-                                                    None
+                                                    <td>None</td>
                                                 {% else %}
-                                                    {{ i.percent }}%
+                                                    <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
                                                 {% endif %}
                                             {% endif %}
                                         {% endfor %}
-                                    </td>
-                                    <td>{{ i.fuel_volume }}</td>
-                                    {% for z in tanks_list %}
-                                        {% if z.id == i.tank_id %}
-                                            {% if i.fuel_volume == None %}
-                                                <td>None</td>
-                                            {% else %}
-                                                <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    <td>{{ i.datetime }}</td>
-                                    <td>{{ i.download_time }}</td>
-                                    <td>{% if i.auto %}
-                                        Автоматически
-                                    {% else %}
-                                        По книжным остаткам
-                                    {% endif%}
-                                    </td>
-                                    </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+                                        <td>{{ i.datetime }}</td>
+                                        <td>{{ i.download_time }}</td>
+                                        <td>{% if i.auto %}
+                                            Автоматически
+                                        {% else %}
+                                            По книжным остаткам
+                                        {% endif%}
+                                        </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
                             </div>
                         </div>
                     </div>
