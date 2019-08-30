@@ -3,33 +3,39 @@
 
 {% block app_content %}
 
-<div class="content">
-    <div class="container">
-        <div class="row py-4">
-            <div class="card">
-                <div class="card-body">
-
-                    <div class="row py-4">
-                        <div class="col col-lg-8">
-                            <h3><b>Бензовоз с регистрационным номером {{ truck.reg_number }}</b></h3>
-                            <hr>
-                            <p>  Регистрационный номер трака: {{truck.reg_number}}</p>
-                            <p>  Регистрационный номер прицепа: {{truck.trailer_reg_number}}</p>
-                            <p>  Количество резервуаров: {{truck_tanks_count}}</p>
-                            <p>  Максимальная снаряженная масса (с грузом, кг): {{truck.weight_limit}}</p>
-                            <p>  Водитель: {{truck.driver}}</p>
-
-                            {% for i in truck_tanks_list %}
-                            <p>Резервуар {{ i.number }}: {{ i.capacity }}</p>
-                            {% endfor %}
-                            <hr>
-                            <a href="{{ url_for('admin.truck_tanks_add', id=truck.id) }}">Добавить резервуар</a>
-                            <a href="{{ url_for('admin.truck_edit', id=truck.id) }}">Редактировать ТС</a>
-                        </div>
-                    </div>
-                </div>
+    <div class="row py-4">
+        <div class="card w-50 mx-auto">
+            <div class="card-header">
+                <h5 class=" float-left">Бензовоз с регистрационным номером {{ truck.reg_number }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <tbody>
+                    <tr>
+                        <td> Регистрационный номер трака: {{truck.reg_number}} </td>
+                    </tr>
+                    <tr>
+                        <td>Регистрационный номер прицепа: {{truck.trailer_reg_number}}</td>
+                    </tr>
+                    <tr>
+                        <td>Количество резервуаров: {{truck_tanks_count}}</td>
+                    </tr>
+                    <tr>
+                        <td>Максимальная снаряженная масса (с грузом, кг): {{truck.weight_limit}}</td>
+                    </tr>
+                    <tr>
+                        <td>Водитель: {{truck.driver}}</td>
+                    </tr>
+                    {% for i in truck_tanks_list %}
+                        <tr> <td>Резервуар {{ i.number }}: {{ i.capacity }} л.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-left"  href="{{ url_for('admin.truck_tanks_add', id=truck.id) }}">Добавить резервуар</a>
+                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="{{ url_for('admin.truck_edit', id=truck.id) }}">Редактировать ТС</a>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

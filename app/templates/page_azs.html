@@ -3,7 +3,7 @@
 
 {% block app_content %}
     {% for i in tanks_list %}
-        <div class="col-lg-6">
+        <div class="col-lg-7">
             <div class="row py-3">
                 <div class="card">
                     <h5 class="card-header">Резервуар №{{ i.tank_number }}</h5>
@@ -20,7 +20,7 @@
                                         <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
                                         {% for x in realisation %}
                                             {% if x.tank_id == i.id %}
-                                                <p>Реализация за сутки {{ x.fuel_realisation_1_days }} л.</p>
+                                                <p>Средняя реализация за 7 дней {{ x.average_7_days }} л.</p>
                                             {%- endif -%}
                                         {%- endfor -%}
 

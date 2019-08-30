@@ -382,7 +382,7 @@ def start():
         azs_list = AzsList.query.all()
         for azs in azs_list:
             if azs.active:
-                tanks_list = Tanks.query.filter_by(azs_id=azs.id).all()
+                tanks_list = Tanks.query.filter_by(azs_id=azs.id, active=True).all()
                 for tank in tanks_list:
                     if tank.active:
                         residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
@@ -403,14 +403,6 @@ def start():
                                           ' не попадает в диапазон приоритетов!!!')
         return errors
 
-    def temp_tank(tank, fuel, azs):
-        temp_truck_azs = dict()
-        temp_truck_azs['azs_id'] = azs
-        temp_truck_azs['capacity'] = tank.capacity
-        temp_truck_azs['truck_id'] = tank.truck_id
-        temp_truck_azs['truck_tank_id'] = tank.id
-        temp_truck_azs['fuel_type'] = fuel
-        return temp_truck_azs
 
     def preparation():
         print("Подготовка начата")
@@ -621,6 +613,7 @@ def start():
                                                 db.session.commit()
                                             variant_counter = variant_counter + 1
         print("Подготовка закончена")
+
     if check() > 0:
         return redirect(url_for('main.manual_input'))
     else:

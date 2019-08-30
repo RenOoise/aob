@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
-
 {% block app_content %}
     <div class="row py-4">
-        <div class="card w-32 mx-auto">
+        <div class="card w-50 mx-auto">
+            <div class="card-header">
+                <h5 class=" float-left">{{ title }}</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">{{ _('Добавление конфига БД') }}</h5>
                 {{ wtf.quick_form(form) }}
             </div>
         </div>

@@ -53,7 +53,7 @@ def edit_profile():
         form.first_name.data = current_user.first_name
         form.last_name.data = current_user.last_name
         form.about_me.data = current_user.about_me
-    return render_template('settings/edit_profile.html', title='Редактирование профиля', edit_profile=True,
+    return render_template('settings/editor.html', title='Редактирование профиля', edit_profile=True,
                            settings_active=True, form=form)
 
 
@@ -68,7 +68,7 @@ def adduser():
         db.session.commit()
         flash('Пользователь добавлен')
         return redirect(url_for('admin.adduser'))
-    return render_template('admin/register.html', title='Добавление пользователя',
+    return render_template('admin/adder.html', title='Добавление пользователя',
                            form=form)
 
 
@@ -94,23 +94,8 @@ def addtank():
             db.session.commit()
             flash('Резервуар добавлен')
             return redirect(url_for('admin.tanks'))
-    return render_template('admin/addtank.html', title='Добавление резервуара',
+    return render_template('admin/adder.html', title='Добавление резервуара',
                            form=form)
-
-
-@bp.route('/admin/<number>')
-@login_required
-def pick_line(number):
-    azs_list = AzsList.query.filter_by(number=number).all()
-    azsArray = []
-    for azs in azs_list:
-        azsObj = {}
-        azsObj['id'] = azs.id
-        azsObj['number'] = azs.name
-        azsArray.append([azsObj])
-
-    return 0
-    '''jsonify({'azs': azsArray})'''
 
 
 @bp.route('/admin/tanks', methods=['POST', 'GET'])
@@ -142,7 +127,7 @@ def add_azs():
         db.session.commit()
         flash('АЗС добавлена')
         return redirect(url_for('admin.azslist'))
-    return render_template('admin/addazs.html', title='Добавление АЗС', form=form)
+    return render_template('admin/adder.html', title='Добавление АЗС', form=form)
 
 
 @bp.route('/admin/add_db_config', methods=['GET', 'POST'])
@@ -163,7 +148,7 @@ def add_cfg():
         db.session.commit()
         flash('Конфиг добавлен')
         return redirect(url_for('admin.config_lst'))
-    return render_template('admin/add_db_config.html', title='Добавление параметров подключения к базе', form=form)
+    return render_template('admin/adder.html', title='Добавление параметров подключения к базе', form=form)
 
 
 @bp.route('/admin/<azs_id>/edit', methods=['POST', 'GET'])
@@ -195,7 +180,7 @@ def edit_db_config(azs_id):
         form.username.data = config.username
         form.password.data = config.password
         form.system.data = config.system_type
-    return render_template('admin/edit_db_config.html', title='Редактирование конфига', edit_db_config=True, form=form,
+    return render_template('admin/editor.html', title='Редактирование конфига', edit_db_config=True, form=form,
                            settings_active=True)
 
 
@@ -234,7 +219,7 @@ def edit_tank(tank_id):
         form.ams.data = tank.ams
         form.mixing.data = tank.mixing
         form.active.data = tank.active
-    return render_template('admin/edit_tank.html', title='Редактирование резервуара', edit_db_config=True, form=form,
+    return render_template('admin/editor.html', title='Редактирование резервуара', edit_db_config=True, form=form,
                            settings_active=True)
 
 
@@ -258,8 +243,8 @@ def edit_azs(azs_id):
         form.address.data = azs_list.address
         form.email.data = azs_list.email
         form.active.data = azs_list.active
-    return render_template('admin/edit_azs.html', title='Редактирование параметров АЗС', edit_azs=True, form=form,
-                           settings_active=True)
+    return render_template('admin/editor.html', title='Редактирование параметров АЗС № ' + str(azs_list.number),
+                           edit_azs=True, form=form, settings_active=True)
 
 
 @bp.route('/admin/truck/add', methods=['POST', 'GET'])
@@ -275,7 +260,7 @@ def add_truck():
         db.session.commit()
         flash('ТС добавлено в базу')
         return redirect(url_for('admin.trucks_list'))
-    return render_template('admin/add_truck.html', title='Добавление бензовоза', add_truck=True, settings_active=True,
+    return render_template('admin/adder.html', title='Добавление бензовоза', add_truck=True, settings_active=True,
                            form=form)
 
 
@@ -338,8 +323,8 @@ def truck_edit(id):
         form.active.data = truck.active
         form.weight_limit.data = truck.weight_limit
 
-    return render_template('admin/edit_truck.html', title='Редактирование ТС', truck_edit=True,
-                           settings_active=True, truck=truck, form=form)
+    return render_template('admin/editor.html', title='Редактирование бензовоза '+str(truck.reg_number),
+                           truck_edit=True, settings_active=True, truck=truck, form=form)
 
 
 @bp.route('/admin/truck/id<id>', methods=['POST', 'GET'])
@@ -364,7 +349,7 @@ def add_priority():
         db.session.commit()
         flash('Приоритет добавлен')
         return redirect(url_for('admin.priority'))
-    return render_template('admin/add_priority.html', title='Добавление приоритетов', add_priority=True,
+    return render_template('admin/adder.html', title='Добавление приоритетов', add_priority=True,
                            settings_active=True, form=form)
 
 
@@ -373,7 +358,7 @@ def add_priority():
 def priority():
     priority_list = PriorityList.query.order_by("priority").all()
     form = PriorityList()
-    return render_template('admin/edit_priority.html', title='Список приоритетов', priority=True,
+    return render_template('admin/priority_list.html', title='Список приоритетов', priority=True,
                            settings_active=True, priority_list=priority_list, form=form)
 
 
@@ -397,7 +382,7 @@ def edit_priority(id):
         form.day_stock_to.data = priority_list.day_stock_to
         form.priority.data = priority_list.priority
         form.sort_method.data = priority_list.sort_method
-    return render_template('admin/edit_truck.html', title='Редактирование приоритета', priority_edit=True,
+    return render_template('admin/editor.html', title='Редактирование приоритета', priority_edit=True,
                            settings_active=True, priority_list=priority_list, form=form)
 
 
@@ -450,7 +435,7 @@ def add_trip():
         db.session.commit()
         flash('Конфигурация добавлена в базу')
         return redirect(url_for('admin.trip_list'))
-    return render_template('admin/add_trip.html', title='Добавление пути и времени', add_trip=True, settings_active=True,
+    return render_template('admin/adder.html', title='Добавление пути и времени', add_trip=True, settings_active=True,
                            form=form)
 
 
@@ -490,7 +475,7 @@ def edit_trip(id):
         form.time_to.data = trip_list.time_to
         form.time_from.data = trip_list.time_from
         form.weigher.data = trip_list.weigher
-    return render_template('admin/edit_trip.html', title='Изменение пути и времени', edit_trip=True,
+    return render_template('admin/editor.html', title='Изменение пути и времени', edit_trip=True,
                            settings_active=True,
                            form=form)
 
@@ -551,7 +536,7 @@ def trucks_false_add():
         db.session.commit()
         flash('Данные добавлены')
         return redirect(url_for('admin.trucks_false'))
-    return render_template('/admin/add_trucks_false.html', trucks=trucks, form=form)
+    return render_template('/admin/adder.html', title="Добавление исключения для бензовоза", trucks=trucks, form=form)
 
 
 @bp.route('/admin/trucks_false/delete/id<id>', methods=['POST', 'GET'])
