@@ -221,9 +221,9 @@ def notifications():
     } for n in notifications])
 
 
-@bp.route('/export_to_xlsx/<datetime>')
+@bp.route('/residue_xlsx/остатки_<datetime>')
 @login_required
-def export_to_xlsx(datetime):
+def residue_xlsx(datetime):
     timenow = datetime
 
     online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
@@ -300,6 +300,51 @@ def export_to_xlsx(datetime):
     return send_file(path)
 
 
+@bp.route('/realisation_xlsx/реализация_<datetime>')
+@login_required
+def realisation_xlsx(datetime):
+    timenow = datetime
+
+    realisation = FuelRealisation.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
+    realisation_list = list()
+    for data in realisation:
+        azs_number = AzsList.query.filter_by(id=data.azs_id).first()
+        tank_number = Tanks.query.filter_by(id=data.tank_id).first()
+        realisation_dict = {
+            '№': 'АЗС № ' + str(azs_number.number),
+            'Резервуар №': tank_number.tank_number,
+            'Вид топлива': data.product_code,
+            'Сред. за 10 дней(л)': data.average_10_days,
+            'Сред. за 7 дней(л)': data.average_7_days,
+            'Сред. за 3 дня(л)': data.average_3_days,
+            'Реализация за 1 день(л)': data.fuel_realisation_1_days,
+            'Реализация за 1 день(л) неделю назад': data.fuel_realisation_week_ago,
+            'Реализация за 1 час': data.fuel_realisation_hour,
+            'Мин. запас суток':  data.days_stock_min,
+            'Время выгрузки': data.download_time
+        }
+        realisation_list.append(realisation_dict)
+    df = pd.DataFrame(realisation_list)
+    excel_writer = StyleFrame.ExcelWriter(r'/home/administrator/aob-test/files/реализация_'+str(timenow)+'.xlsx')
+    sf = StyleFrame(df)
+    sf.to_excel(excel_writer=excel_writer, row_to_add_filters=0,
+                columns_and_rows_to_freeze='A1', best_fit=['№',
+                                                           'Резервуар №',
+                                                           'Вид топлива',
+                                                           'Сред. за 10 дней(л)',
+                                                           'Сред. за 7 дней(л)',
+                                                           'Сред. за 3 дня(л)',
+                                                           'Реализация за 1 день(л)',
+                                                           'Реализация за 1 день(л) неделю назад',
+                                                           'Реализация за 1 час',
+                                                           'Мин. запас суток',
+                                                           'Время выгрузки'
+                                                           ])
+    excel_writer.save()
+    path = '/home/administrator/aob-test/files/реализация_'+str(timenow)+'.xlsx'
+    return send_file(path)
+
+
 @bp.route('/online', methods=['POST', 'GET'])
 @login_required
 def online():
@@ -340,7 +385,8 @@ def realisation():
     realisation = FuelRealisation.query.order_by(FuelRealisation.shop_id).all()
     tanks_list = Tanks.query.all()
     return render_template('realisation.html', title='Реализация топлива', realisation_active=True,
-                           realisation=realisation, azs_list=azs_list, tanks_list=tanks_list)
+                           realisation=realisation, azs_list=azs_list, tanks_list=tanks_list,
+                           datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
 
 @bp.route('/priority', methods=['GET', 'POST'])
@@ -402,7 +448,6 @@ def start():
                                     print('   Резервуар №' + str(tank.tank_number) +
                                           ' не попадает в диапазон приоритетов!!!')
         return errors
-
 
     def preparation():
         print("Подготовка начата")

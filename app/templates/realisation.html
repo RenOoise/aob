@@ -8,7 +8,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class=" float-left">Реализация топлива на АЗС по резервуарам</h5>
-                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="/download_realisation_info" >Обновить</a>
+                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.realisation_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
                     <div class="row">

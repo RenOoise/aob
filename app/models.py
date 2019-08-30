@@ -356,7 +356,7 @@ class FuelResidue(db.Model):
 # реализация топлива на азс
 class FuelRealisation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, index=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'), index=True)
     shop_id = db.Column(db.Integer, index=True)  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза и связать с AzsList
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
