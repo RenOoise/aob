@@ -7,11 +7,12 @@ from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
-    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType
+    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
 from app.translate import translate
 from app.main import bp
 import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
+from datetime import datetime, timedelta
 
 
 @bp.before_app_request
@@ -27,33 +28,76 @@ def before_request():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
+    def check():
+        errors = 0
+        azs_list = AzsList.query.all()
+        error_tank_list = list()
+        errors_list = list()
+        for azs in azs_list:
+            if azs.active:
+                tanks_list = Tanks.query.filter_by(azs_id=azs.id, active=True).all()
+                for tank in tanks_list:
+                    if tank.active:
+                        residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
+                        realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
+                        if residue.fuel_volume is None or residue.fuel_volume <= 0 \
+                                or residue.download_time < datetime.now()-timedelta(seconds=600):
+                            if residue.download_time < datetime.now()-timedelta(seconds=600):
+                                error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
+                                             " - возможно данные об остатках устерели"
+                            else:
+                                error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) +\
+                                             " - нет данных об остатках"
+                            sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
+                                         tank_id=tank.id, active=True, error_type="residue_error")
+                            db.session.add(sql)
+                            db.session.commit()
+                            errors = errors + 1
+                            error_tank_list.append(tank.id)
+
+                            errors_list.append(error_text)
+
+                        if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0 \
+                                or realisation.download_time < datetime.now()-timedelta(seconds=600):
+                            if realisation.download_time < datetime.now() - timedelta(seconds=600):
+                                error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
+                                             " - возможно данные о реализации устерели"
+                            else:
+                                error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
+                                             " - нет данных о реализации"
+                            sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
+                                             tank_id=tank.id, active=True, error_type="time_error")
+                            db.session.add(sql)
+                            db.session.commit()
+                            errors = errors + 1
+                            error_tank_list.append(tank.id)
+                            errors_list.append(error_text)
+                        priority_list = PriorityList.query.all()
+                        for priority in priority_list:
+                            if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
+                                this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
+                                if not this_priority.id:
+                                    print('Резервуар №' + str(tank.tank_number) +
+                                          ' не попадает в диапазон приоритетов!!!')
+        return errors, errors_list
+
     priority = Priority.query.order_by('priority').all()
     azs_list = list()
+    error_list = list()
     for i in priority:
         azs_dict = {}
         if i.day_stock <= 2:
             azs = AzsList.query.filter_by(id=i.azs_id).first_or_404()
             tank = Tanks.query.filter_by(id=i.tank_id).first_or_404()
             azs_dict = {'number': azs.number,
+                        'azs_id': i.azs_id,
                         'tank': tank.tank_number,
                         'day_stock': i.day_stock}
             azs_list.append(azs_dict)
-    return render_template('index.html', title='Главная', azs_list=azs_list, index=True)
-
-
-@bp.route('/explore')
-@login_required
-def explore():
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.explore', page=posts.next_num) \
-        if posts.has_next else None
-    prev_url = url_for('main.explore', page=posts.prev_num) \
-        if posts.has_prev else None
-    return render_template('index.html', title=_('Explore'),
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    errors_num, errors = check()
+    for error in errors:
+        error_list.append(error)
+    return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True)
 
 
 @bp.route('/user/<username>')
@@ -195,17 +239,6 @@ def export_posts():
         current_user.launch_task('export_posts', _('Exporting posts...'))
         db.session.commit()
     return redirect(url_for('main.user', username=current_user.username))
-
-
-@bp.route('/download_tanks_info')
-@login_required
-def download_tanks_info():
-    if current_user.get_task_in_progress('download_tanks_info'):
-        flash(_('Выгрузка данных уже выполняется!'))
-    else:
-        current_user.launch_task('download_tanks_info', _('Выгружаю данные по остаткам топлива в резервуарах...'))
-        db.session.commit()
-    return redirect(url_for('main.online'))
 
 
 @bp.route('/notifications')
@@ -426,6 +459,7 @@ def start():
     def check():
         errors = 0
         azs_list = AzsList.query.all()
+        error_tank_list = list()
         for azs in azs_list:
             if azs.active:
                 tanks_list = Tanks.query.filter_by(azs_id=azs.id, active=True).all()
@@ -433,21 +467,27 @@ def start():
                     if tank.active:
                         residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
                         realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
-                        if residue.fuel_volume is None or residue.fuel_volume is 0:
+                        if residue.fuel_volume is None or residue.fuel_volume <= 0:
                             print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
+                            '''error_text = "Ошибка при подключении к базе данных АЗС №" + str(i.number)
+                            sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=i.id, active=True,
+                                         error_type="connection_error")
+                            db.session.add(sql)
+                            db.session.commit()'''
                             errors = errors + 1
-                        if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days is 0:
+                            error_tank_list.append(tank.id)
+                        if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0:
                             print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
                             errors = errors + 1
+                            error_tank_list.append(tank.id)
                         priority_list = PriorityList.query.all()
                         for priority in priority_list:
                             if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
                                 this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
                                 if not this_priority.id:
-                                    errors = errors + 1
-                                    print('   Резервуар №' + str(tank.tank_number) +
+                                    print('Резервуар №' + str(tank.tank_number) +
                                           ' не попадает в диапазон приоритетов!!!')
-        return errors
+        return errors, error_tank_list
 
     def preparation():
         print("Подготовка начата")
@@ -658,9 +698,10 @@ def start():
                                                 db.session.commit()
                                             variant_counter = variant_counter + 1
         print("Подготовка закончена")
-
-    if check() > 0:
-        return redirect(url_for('main.manual_input'))
+    error, tanks = check()
+    if error > 0:
+        print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
+        return redirect(url_for('main.index'))
     else:
-        preparation()
+        # preparation()
         return redirect(url_for('main.index'))

@@ -483,3 +483,13 @@ class TempAzsTrucks2(db.Model):
     result_average_for_azs = db.Column(db.Integer)
     sliv_after_trip = db.Column(db.Integer)
     full_time = db.Column(db.Integer)
+
+
+class Errors(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    error_type = db.Column(db.String(60))
+    error_text = db.Column(db.String(500))
+    timestamp = db.Column(db.DateTime)
+    active = db.Column(db.Boolean)

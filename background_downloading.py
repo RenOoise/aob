@@ -1,7 +1,8 @@
 # фоновая загрузка данных
 import sys
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip, \
+    Errors
 import psycopg2
 from datetime import datetime
 import fdb
@@ -204,11 +205,10 @@ def download_realisation_info():
                                 if (connection):
                                     cursor.close()
                                     connection.close()
-
                         except(Exception, psycopg2.Error) as error:
                             print("Ошибка во время получения данных", error)
+
                             pass
-                            print("Соединение закрыто")
 
                 elif test.system_type == 2:
                     azs_config = CfgDbConnection.query.filter_by(system_type=2, azs_id=i.id).first()
@@ -283,7 +283,7 @@ def download_realisation_info():
                                                   'average_1_days': 0,
                                                   'average_week_ago': 0}
                                 print("SQL запрос книжных остатков на АЗС №" + str(
-                                    azs_config.ip_address) + " выполнен")
+                                    i.number) + " выполнен")
 
                                 for row in query_10:
                                     tankid = Tanks.query.filter_by(azs_id=i.id, tank_number=row[0], active=True).first()
@@ -912,6 +912,9 @@ def azs_priority():
     for i in priority:
         db.session.delete(i)
         db.session.commit()
+
+    print("Приоритеты очищены")
+
     realisation_count = FuelRealisation.query.order_by("days_stock_min").count()
     counter_list = 0
     unsorted_list = []
@@ -1016,7 +1019,7 @@ def average_day_stock_by_tanks(azs_id):
                 print(error)
     pass
 
-
+azs_priority()
 download_tanks_info()
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''
