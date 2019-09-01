@@ -705,3 +705,21 @@ def start():
     else:
         # preparation()
         return redirect(url_for('main.index'))
+
+
+@bp.route('/azs', methods=['POST', 'GET'])
+@login_required
+def azs_redirect():
+    azs = AzsList.query.first_or_404()
+    return redirect(url_for('main.azs', id=azs.id))
+
+
+@bp.route('/azs/<id>', methods=['POST', 'GET'])
+@login_required
+def azs(id):
+    azs_list = AzsList.query.all()
+    tank_list = Tanks.query.filter_by(azs_id=id).all()
+    online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
+    realisation = FuelRealisation.query.all()
+    return render_template('azs_list.html', azs_list=azs_list, title="Список АЗС", tank_list=tank_list, online=online,
+                           realisation=realisation, active_id=id)

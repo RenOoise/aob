@@ -5,7 +5,12 @@
     <div class="container">
         <div class="row py-4">
             <div class="col-lg-5">
-                <a href="{{ url_for('main.start') }}" class="btn btn-outline-primary my-2 my-sm-0">Запуск скрипта</a>
+                <div class="card">
+                    <h5 class="card-header">Расстановка бензовозов</h5>
+                    <div class="card-body">
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-primary my-2 my-sm-0">Запуск скрипта</a>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-7 float-right">
                 <div class="card">
@@ -35,9 +40,9 @@
                     <h5 class="card-header">Текущая расстановка</h5>
                     <div class="card-body">
                         <table class="table table-sm table-hover">
-                                <tr class="table">
-                                    <td></td>
-                                </tr>
+                            <tr class="table">
+                                <td></td>
+                            </tr>
                         </table>
                     </div>
                 </div>

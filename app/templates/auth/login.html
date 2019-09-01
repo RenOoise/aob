@@ -3,12 +3,17 @@
 
 {% block app_content %}
 
-<div class="row py-4 d-flex justify-content-center">
+    <div class="row py-4 justify-content-md-center">
 
-    <div class="col-md-6">
-        <img src="{{ url_for('static', filename='surgutshadow.png')}}" class="img-thumbnail" alt="...">
-        {{ wtf.quick_form(form) }}
+        <div class="col-lg-4">
+            <img src="{{ url_for('static', filename='surgutshadow.png')}}" class="rounded mx-auto d-block" alt="...">
+            <div class="row justify-content-md-center">
+                <div class="col-lg-8">
+
+                    {{ wtf.quick_form(form, button_map={'submit': 'success '}) }}
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
 {% endblock %}
