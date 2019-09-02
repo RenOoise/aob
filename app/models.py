@@ -470,6 +470,9 @@ class TempAzsTrucks2(db.Model):
     variant_id = db.Column(db.Integer)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    variant_sliv_id = db.Column(db.Integer)
+    fuel_type_sliv = db.Column(db.Integer)  # тип топлива для слива
+    sliv_id = db.Column(db.Integer)
     full_capacity_92 = db.Column(db.Integer)
     full_capacity_95 = db.Column(db.Integer)
     full_capacity_50 = db.Column(db.Integer)
@@ -498,56 +501,66 @@ class Errors(db.Model):
 class Close1Tank1(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close1Tank2(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close1Tank3(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close1Tank4(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close1Tank5(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close2Tank1(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close2Tank2(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close2Tank3(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close2Tank4(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close2Tank5(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close3Tank1(db.Model):
@@ -555,6 +568,7 @@ class Close3Tank1(db.Model):
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close3Tank2(db.Model):
@@ -562,6 +576,7 @@ class Close3Tank2(db.Model):
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close3Tank3(db.Model):
@@ -569,6 +584,7 @@ class Close3Tank3(db.Model):
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close3Tank4(db.Model):
@@ -576,6 +592,7 @@ class Close3Tank4(db.Model):
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close3Tank5(db.Model):
@@ -583,7 +600,7 @@ class Close3Tank5(db.Model):
     tank1 = db.Column(db.String(120))
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
-
+    sliv_id = db.Column(db.Integer)
 
 
 class Close4Tank1(db.Model):
@@ -592,6 +609,7 @@ class Close4Tank1(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close4Tank2(db.Model):
@@ -600,6 +618,7 @@ class Close4Tank2(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close4Tank3(db.Model):
@@ -608,6 +627,7 @@ class Close4Tank3(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close4Tank4(db.Model):
@@ -616,6 +636,7 @@ class Close4Tank4(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)
 
 
 class Close4Tank5(db.Model):
@@ -624,3 +645,4 @@ class Close4Tank5(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+    sliv_id = db.Column(db.Integer)

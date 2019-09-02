@@ -8,11 +8,17 @@ from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
+from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2,\
+    Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1,\
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5
+
+
 from app.translate import translate
 from app.main import bp
 import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
 from datetime import datetime, timedelta
+from sqlalchemy import desc
 
 
 @bp.before_app_request
@@ -46,7 +52,7 @@ def index():
                                 error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                              " - возможно данные об остатках устерели"
                             else:
-                                error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) +\
+                                error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                              " - нет данных об остатках"
                             sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
                                          tank_id=tank.id, active=True, error_type="residue_error")
@@ -66,7 +72,7 @@ def index():
                                 error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                              " - нет данных о реализации"
                             sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
-                                             tank_id=tank.id, active=True, error_type="time_error")
+                                         tank_id=tank.id, active=True, error_type="time_error")
                             db.session.add(sql)
                             db.session.commit()
                             errors = errors + 1
@@ -454,6 +460,20 @@ def manual_input(id):
                            tank_number=str(tank.tank_number))
 
 
+@bp.route('/azs', methods=['POST', 'GET'])
+@login_required
+def azs_redirect():
+    azs = AzsList.query.first_or_404()
+    return redirect(url_for('main.azs', id=azs.id))
+
+
+@bp.route('/page/azs/', methods=['POST', 'GET'])
+@login_required
+def azs():
+    azs_list = AzsList.query.order_by("number").all()
+    return render_template('azs_list.html', azs_list=azs_list, title="Список АЗС", azs_list_active=True)
+
+
 @bp.route('/start', methods=['POST', 'GET'])
 @login_required
 def start():
@@ -699,24 +719,146 @@ def start():
                                                 db.session.commit()
                                             variant_counter = variant_counter + 1
         print("Подготовка закончена")
+
+    def preparation_two():
+        print("Подготовка 2 начата")
+        preparation_one = TempAzsTrucks.query.all()
+        preparation_one_last = TempAzsTrucks.query.order_by(desc(TempAzsTrucks.variant_id)).first_or_404()
+
+        variant_counter_sliv = 1  # вариант слива для таблицы TempAzsTrucks2
+        for variant in range(919, 920):
+            print(variant)
+            table_temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
+            tanks_counter_92 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=92).count()
+            tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
+            tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
+
+            azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
+            azs_id = azs.azs_id
+            table_tanks = Tanks.query.filter_by(azs_id=azs_id).all()
+            count_92 = 0
+            count_95 = 0
+            count_50 = 0
+
+            for tank in table_tanks:
+                if tank.fuel_type is 92:
+                    count_92 = count_92 + 1
+                elif tank.fuel_type is 95:
+                    count_95 = count_95 + 1
+                elif tank.fuel_type is 50:
+                    count_50 = count_50 + 1
+
+            sum_92 = 0
+            sum_95 = 0
+            sum_50 = 0
+            for row in table_temp_azs_trucks:
+                if row.fuel_type is 92:
+                    sum_92 = sum_92 + row.capacity
+                if row.fuel_type is 95:
+                    sum_92 = sum_95 + row.capacity
+                if row.fuel_type is 50:
+                    sum_92 = sum_50 + row.capacity
+            table_sliv_variant_92 = None
+            table_sliv_variant_50 = None
+            table_sliv_variant_95 = None
+            print(azs_id, count_92, tanks_counter_92)
+            if count_92 == 1 and tanks_counter_92 == 1:
+                table_sliv_variant_92 = Close1Tank1.query.all()
+
+            if count_92 == 1 and tanks_counter_92 == 2:
+                table_sliv_variant_92 = Close1Tank2.query.all()
+
+            if count_92 == 1 and tanks_counter_92 == 3:
+                table_sliv_variant_92 = Close1Tank3.query.all()
+
+            if count_92 == 1 and tanks_counter_92 == 4:
+                table_sliv_variant_92 = Close1Tank4.query.all()
+
+            if count_92 == 2 and tanks_counter_92 == 1:
+                table_sliv_variant_92 = Close2Tank1.query.all()
+
+            if count_92 == 2 and tanks_counter_92 == 2:
+                table_sliv_variant_92 = Close2Tank2.query.all()
+
+            if count_92 == 2 and tanks_counter_92 == 3:
+                table_sliv_variant_92 = Close2Tank3.query.all()
+
+            if count_92 == 2 and tanks_counter_92 == 4:
+                table_sliv_variant_92 = Close2Tank4.query.all()
+
+            '''---------------------------------------------'''
+            if count_95 == 1 and tanks_counter_95 == 1:
+                table_sliv_variant_95 = Close1Tank1.query.all()
+
+            if count_95 == 1 and tanks_counter_95 == 2:
+                table_sliv_variant_95 = Close1Tank2.query.all()
+
+            if count_95 == 1 and tanks_counter_95 == 3:
+                table_sliv_variant_95 = Close1Tank3.query.all()
+
+            if count_95 == 1 and tanks_counter_95 == 4:
+                table_sliv_variant_95 = Close1Tank4.query.all()
+
+            if count_95 == 2 and tanks_counter_95 == 1:
+                table_sliv_variant_95 = Close2Tank1.query.all()
+
+            if count_95 == 2 and tanks_counter_95 == 2:
+                table_sliv_variant_95 = Close2Tank2.query.all()
+
+            if count_95 == 2 and tanks_counter_95 == 3:
+                table_sliv_variant_95 = Close2Tank3.query.all()
+
+            if count_95 == 2 and tanks_counter_95 == 4:
+                table_sliv_variant_95 = Close2Tank4.query.all()
+
+            '''---------------------------------------------'''
+
+            if count_50 == 1 and tanks_counter_50 == 1:
+                table_sliv_variant_50 = Close1Tank1.query.all()
+
+            if count_50 == 1 and tanks_counter_50 == 2:
+                table_sliv_variant_50 = Close1Tank2.query.all()
+
+            if count_50 == 1 and tanks_counter_50 == 3:
+                table_sliv_variant_50 = Close1Tank3.query.all()
+
+            if count_50 == 1 and tanks_counter_50 == 4:
+                table_sliv_variant_50 = Close1Tank4.query.all()
+
+            if count_50 == 2 and tanks_counter_50 == 1:
+                table_sliv_variant_50 = Close2Tank1.query.all()
+
+            if count_50 == 2 and tanks_counter_50 == 2:
+                table_sliv_variant_50 = Close2Tank2.query.all()
+
+            if count_50 == 2 and tanks_counter_50 == 3:
+                table_sliv_variant_50 = Close2Tank3.query.all()
+
+            if count_50 == 2 and tanks_counter_50 == 4:
+                table_sliv_variant_50 = Close2Tank4.query.all()
+
+            if table_sliv_variant_92 is not None:
+                for variant_sliv in table_sliv_variant_92:
+                    print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, variant_sliv.sliv_id)
+            if table_sliv_variant_95 is not None:
+                for variant_sliv in table_sliv_variant_95:
+                    print(variant, azs.truck_id, azs_id, variant_counter_sliv, 95, variant_sliv.sliv_id)
+            if table_sliv_variant_50 is not None:
+                for variant_sliv in table_sliv_variant_50:
+                    print(variant, azs.truck_id, azs_id, variant_counter_sliv, 50, variant_sliv.sliv_id)
+
+            variant_counter_sliv = variant_counter_sliv + 1
+
+        print("Подготовка 2 закончена")
+
     error, tanks = check()
     if error > 0:
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
-        # preparation()
+        preparation()
+        # preparation_two()
         return redirect(url_for('main.index'))
 
 
-@bp.route('/azs', methods=['POST', 'GET'])
-@login_required
-def azs_redirect():
-    azs = AzsList.query.first_or_404()
-    return redirect(url_for('main.azs', id=azs.id))
 
-
-@bp.route('/page/azs/', methods=['POST', 'GET'])
-@login_required
-def azs():
-    azs_list = AzsList.query.order_by("number").all()
-    return render_template('azs_list.html', azs_list=azs_list, title="Список АЗС", azs_list_active=True)
