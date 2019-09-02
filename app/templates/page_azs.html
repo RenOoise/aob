@@ -2,29 +2,40 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    {% for i in tanks_list %}
-        <div class="col-lg-7">
-            <div class="row py-3">
+<div class="container">
+    <div class="row py-1">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.azs') }}">Список АЗС</a></li>
+                <li class="breadcrumb-item active" aria-current="page">АЗС № {{azs_list.number}}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row py-2">
+        {% for i in tanks_list %}
+        <div class="col-lg-12">
+            <div class="row py-2">
                 <div class="card">
                     <h5 class="card-header">Резервуар №{{ i.tank_number }}</h5>
                     <div class="card-body">
 
-                        <div class="row py-4">
+                        <div class="row py-2">
                             <div class="col col-lg-5">
                                 {%- for z in online -%}
-                                    {%- if z.tank_id == i.id -%}
+                                {%- if z.tank_id == i.id -%}
 
-                                        <p>Вип топлива: {{z.product_code}}</p>
-                                        <p>Остаток топлива: {{z.fuel_volume}} л.</p>
-                                        <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>
-                                        <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
-                                        {% for x in realisation %}
-                                            {% if x.tank_id == i.id %}
-                                                <p>Средняя реализация за 7 дней {{ x.average_7_days }} л.</p>
-                                            {%- endif -%}
-                                        {%- endfor -%}
+                                <p>Вип топлива: {{z.product_code}}</p>
+                                <p>Остаток топлива: {{z.fuel_volume}} л.</p>
+                                <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>
+                                <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
+                                {% for x in realisation %}
+                                {% if x.tank_id == i.id %}
+                                <p>Средняя реализация за 7 дней {{ x.average_7_days }} л.</p>
+                                {%- endif -%}
+                                {%- endfor -%}
 
-                                    {%- endif -%}
+                                {%- endif -%}
                                 {%- endfor -%}
                             </div>
                             <div class="col col-lg-7">
@@ -184,6 +195,7 @@
                 </div>
             </div>
         </div>
-    {% endfor %}
-
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

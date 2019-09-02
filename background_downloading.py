@@ -1019,7 +1019,6 @@ def average_day_stock_by_tanks(azs_id):
                 print(error)
     pass
 
-azs_priority()
 download_tanks_info()
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''

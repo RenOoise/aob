@@ -397,7 +397,8 @@ def page_azs(id):
     online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
     realisation = FuelRealisation.query.all()
     return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
-                           online=online, realisation=realisation, azs_list=azs_list, tanks_list=tanks_list)
+                           online=online, realisation=realisation, azs_list=azs_list, tanks_list=tanks_list,
+                           azs_list_active=True)
 
 
 @bp.route('/download_realisation_info')
@@ -714,12 +715,8 @@ def azs_redirect():
     return redirect(url_for('main.azs', id=azs.id))
 
 
-@bp.route('/azs/<id>', methods=['POST', 'GET'])
+@bp.route('/page/azs/', methods=['POST', 'GET'])
 @login_required
-def azs(id):
-    azs_list = AzsList.query.all()
-    tank_list = Tanks.query.filter_by(azs_id=id).all()
-    online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
-    realisation = FuelRealisation.query.all()
-    return render_template('azs_list.html', azs_list=azs_list, title="Список АЗС", tank_list=tank_list, online=online,
-                           realisation=realisation, active_id=id)
+def azs():
+    azs_list = AzsList.query.order_by("number").all()
+    return render_template('azs_list.html', azs_list=azs_list, title="Список АЗС", azs_list_active=True)

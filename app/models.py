@@ -493,3 +493,134 @@ class Errors(db.Model):
     error_text = db.Column(db.String(500))
     timestamp = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
+
+
+class Close1Tank1(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+
+
+class Close1Tank2(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+
+
+class Close1Tank3(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+
+
+class Close1Tank4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+
+
+class Close1Tank5(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+
+
+class Close2Tank1(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+
+
+class Close2Tank2(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+
+
+class Close2Tank3(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+
+
+class Close2Tank4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+
+
+class Close2Tank5(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+
+
+class Close3Tank1(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+
+
+class Close3Tank2(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+
+
+class Close3Tank3(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+
+
+class Close3Tank4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+
+
+class Close3Tank5(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+
+
+
+class Close4Tank1(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
+
+
+class Close4Tank2(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
+
+
+class Close4Tank3(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
+
+
+class Close4Tank4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
+
+
+class Close4Tank5(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
