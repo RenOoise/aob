@@ -543,7 +543,7 @@ def start():
                             db.session.commit()
 
                         variant_counter = variant_counter + 1
-                if truck_tanks_count == 3:
+                if truck_tanks_count == 2:
                     for a in range(1, 4):
                         for b in range(1, 4):
                             fuel_types = [a, b]
@@ -586,8 +586,8 @@ def start():
                                                         capacity=tanks_row.capacity)
                                     db.session.add(sql)
                                     db.session.commit()
-
                                 variant_counter = variant_counter + 1
+
                 if truck_tanks_count == 4:
                     for a in range(1, 4):
                         for b in range(1, 4):
