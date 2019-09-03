@@ -467,6 +467,18 @@ class TempAzsTrucks(db.Model):
 
 class TempAzsTrucks2(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    variant = db.Column(db.Integer)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    variant_sliv = db.Column(db.Integer)
+    fuel_type = db.Column(db.Integer)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
+    str_sliv = db.Column(db.String(120))
+    sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
+
+
+class TempAzsTrucks3(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     variant_id = db.Column(db.Integer)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
