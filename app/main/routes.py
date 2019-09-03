@@ -10,7 +10,7 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2,\
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1,\
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test
 
 
 from app.translate import translate
@@ -540,7 +540,6 @@ def start():
                                                 truck_id=truck.id, fuel_type=fuel_types[index],
                                                 capacity=tanks_row.capacity)
                             db.session.add(sql)
-                            db.session.commit()
 
                         variant_counter = variant_counter + 1
                 if truck_tanks_count == 2:
@@ -561,7 +560,7 @@ def start():
                                                     truck_id=truck.id, fuel_type=fuel_types[index],
                                                     capacity=tanks_row.capacity)
                                 db.session.add(sql)
-                                db.session.commit()
+
 
                             variant_counter = variant_counter + 1
 
@@ -585,7 +584,7 @@ def start():
                                                         truck_id=truck.id, fuel_type=fuel_types[index],
                                                         capacity=tanks_row.capacity)
                                     db.session.add(sql)
-                                    db.session.commit()
+
                                 variant_counter = variant_counter + 1
 
                 if truck_tanks_count == 4:
@@ -610,7 +609,7 @@ def start():
                                                             truck_id=truck.id, fuel_type=fuel_types[index],
                                                             capacity=tanks_row.capacity)
                                         db.session.add(sql)
-                                        db.session.commit()
+
                                     variant_counter = variant_counter + 1
                     if truck_tanks_count == 5:
                         for a in range(1, 4):
@@ -635,7 +634,7 @@ def start():
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
                                                                     capacity=tanks_row.capacity)
                                                 db.session.add(sql)
-                                                db.session.commit()
+
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 6:
                         for a in range(1, 4):
@@ -661,7 +660,7 @@ def start():
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
                                                                     capacity=tanks_row.capacity)
                                                 db.session.add(sql)
-                                                db.session.commit()
+
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 7:
                         for a in range(1, 4):
@@ -688,7 +687,7 @@ def start():
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
                                                                     capacity=tanks_row.capacity)
                                                 db.session.add(sql)
-                                                db.session.commit()
+
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 8:
                         for a in range(1, 4):
@@ -716,8 +715,9 @@ def start():
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
                                                                     capacity=tanks_row.capacity)
                                                 db.session.add(sql)
-                                                db.session.commit()
+
                                             variant_counter = variant_counter + 1
+        db.session.commit()
         print("Подготовка закончена")
 
     def preparation_two():
@@ -856,6 +856,10 @@ def start():
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
+        for i in range(1, 20):
+            sql = Test(tank1=i, tank2=i, tank3=i, tank4=i)
+            db.session.add(sql)
+        db.session.commit()
         preparation()
         # preparation_two()
         return redirect(url_for('main.index'))

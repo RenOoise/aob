@@ -646,3 +646,11 @@ class Close4Tank5(db.Model):
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
     sliv_id = db.Column(db.Integer)
+
+
+class Test(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tank1 = db.Column(db.String(120))
+    tank2 = db.Column(db.String(120))
+    tank3 = db.Column(db.String(120))
+    tank4 = db.Column(db.String(120))
