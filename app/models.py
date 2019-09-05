@@ -475,6 +475,7 @@ class TempAzsTrucks2(db.Model):
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
     str_sliv = db.Column(db.String(120))
     sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
+    truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))  # айдишник отсека бензовоза
 
 
 class TempAzsTrucks3(db.Model):

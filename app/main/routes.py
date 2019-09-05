@@ -722,6 +722,8 @@ def start():
         print("Подготовка закончена")
 
     def preparation_two():
+        db.session.query(TempAzsTrucks2).delete()
+        db.session.commit()
         print("Подготовка 2 начата")
 
         preparation_one = TempAzsTrucks.query.all()
@@ -871,7 +873,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -886,7 +889,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -901,7 +905,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -916,7 +921,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -938,7 +944,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -953,7 +960,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -968,7 +976,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -983,7 +992,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -1005,7 +1015,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -1020,7 +1031,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -1035,7 +1047,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -1051,7 +1064,8 @@ def start():
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv)
+                                                 sum_sliv=sum_sliv,
+                                                 tank_id=element)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
