@@ -346,6 +346,7 @@ class FuelResidue(db.Model):
     percent = db.Column(db.Integer)  # процент заполненности резервуара
     fuel_level = db.Column(db.Float)  # уровень топлива в резервуаре
     fuel_volume = db.Column(db.Float)  # количество топлива в литрах
+    free_volume = db.Column(db.Float)  # Свободный объем резервуара в литрах
     fuel_volume_percents = db.Column(db.Float)
     fuel_temperature = db.Column(db.Float)  #
     datetime = db.Column(db.DateTime)  # время замера в системе АЗС
@@ -475,7 +476,10 @@ class TempAzsTrucks2(db.Model):
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
     str_sliv = db.Column(db.String(120))
     sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
-    truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))  # айдишник отсека бензовоза
+    truck_tank_id_string = db.Column(db.String(60))
+    is_it_fit = db.Column(db.Boolean)
+    new_fuel_volume = db.Column(db.Float)  # новый объем
+    new_days_stock = db.Column(db.Float)  # новый запас суток
 
 
 class TempAzsTrucks3(db.Model):

@@ -540,6 +540,7 @@ class QueryFromDb(object):
                                     if add:
                                         add.fuel_level = row[3]
                                         add.fuel_volume = row[4]
+                                        add.free_volume = tankid.corrected_capacity - float(row[4])
                                         add.fuel_temperature = row[5]
                                         add.datetime = row[6]
                                         add.shop_id = azsid.id
@@ -558,7 +559,9 @@ class QueryFromDb(object):
                                         add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=row[2],
                                                           fuel_level=row[3], fuel_volume=row[4],
                                                           fuel_temperature=row[5], datetime=row[6], percent=percent,
-                                                          download_time=datetime.now(), auto=True)
+                                                          download_time=datetime.now(),
+                                                          free_volume=tankid.corrected_capacity - float(row[4]),
+                                                          auto=True)
                                         db.session.add(add)
                                         db.session.commit()
                             elif id.active and id.ams is False:
@@ -595,6 +598,8 @@ class QueryFromDb(object):
                                     if add:
                                         add.fuel_level = row[3]
                                         add.fuel_volume = query[0][4] - realisation[0][3]
+                                        add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
+                                                          float(realisation[0][3])
                                         add.fuel_temperature = row[5]
                                         add.datetime = row[6]
                                         add.azs_id = self.id
@@ -613,7 +618,10 @@ class QueryFromDb(object):
                                         add = FuelResidue(azs_id=self.id, tank_id=tankid.id, product_code=row[2],
                                                           fuel_level=row[3], fuel_volume=query[0][4] - realisation[0][3],
                                                           fuel_temperature=row[5], datetime=row[6],
-                                                          download_time=datetime.now(), percent=percent, auto=False)
+                                                          download_time=datetime.now(),
+                                                          afree_volume=tankid.corrected_capacity - float(query[0][4]) -
+                                                                       float(realisation[0][3]),
+                                                          percent=percent, auto=False)
                                         db.session.add(add)
                                         db.session.commit()
                     finally:
@@ -660,6 +668,7 @@ class QueryFromDb(object):
                                     if add:
                                         add.fuel_level = row[6]
                                         add.fuel_volume = row[7]
+                                        add.free_volume = tankid.corrected_capacity - float(row[7])
                                         add.fuel_temperature = row[10]
                                         add.datetime = row[8]
                                         add.shop_id = azsid.id
@@ -679,7 +688,9 @@ class QueryFromDb(object):
                                                           product_code=id.fuel_type, fuel_level=row[6],
                                                           fuel_volume=row[7], fuel_temperature=row[10],
                                                           datetime=row[8], download_time=datetime.now(),
-                                                          percent=percent, auto=True)
+                                                          percent=percent,
+                                                          free_volume=tankid.corrected_capacity - float(row[7]),
+                                                          auto=True)
                                         db.session.add(add)
                                         db.session.commit()
 
@@ -719,6 +730,7 @@ class QueryFromDb(object):
                                                 percent = (100 * (float(resid) / tankid.corrected_capacity))
                                                 # add.fuel_level = row[3]
                                                 add.fuel_volume = resid
+                                                add.free_volume = tankid.corrected_capacity - float(resid)
                                                 add.percent = percent
                                                 # add.fuel_temperature = row[5]
                                                 add.datetime = shiftdate[0]
@@ -742,6 +754,7 @@ class QueryFromDb(object):
                                                                   fuel_volume=row[1] - realis[2],
                                                                   datetime=shiftdate[0],
                                                                   download_time=datetime.now(), percent=percent,
+                                                                  afree_volume=tankid.corrected_capacity - float(resid),
                                                                   auto=False)
                                             db.session.add(add)
                                             db.session.commit()
@@ -788,6 +801,7 @@ class QueryFromDb(object):
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
                                     if add:
                                         add.fuel_volume = row[3]
+                                        add.free_volume = tankid.corrected_capacity - float(row[3])
                                         percent = (100 * (float(row[3]) / tankid.corrected_capacity))
                                         print(percent)
                                         add.datetime = row[2]
@@ -823,7 +837,9 @@ class QueryFromDb(object):
                                         add = FuelResidue(azs_id=azsid.id, tank_id=tankid.id, product_code=product_code,
                                                           fuel_level=0, fuel_volume=row[3],
                                                           fuel_temperature=0, datetime=row[2],
-                                                          download_time=datetime.now(), percent=percent, auto=True)
+                                                          download_time=datetime.now(),
+                                                          free_volume=tankid.corrected_capacity - (row[3]),
+                                                          percent=percent, auto=True)
                                         db.session.add(add)
                                         db.session.commit()
                     finally:
@@ -836,8 +852,6 @@ class QueryFromDb(object):
                     pass
                     print("Ошибка во время получения данных", error)
 
-    def download_realisation_info(self):
-        print("realis")
 
     def connection(self):
         connection = psycopg2.connect(user=self.username,
@@ -933,7 +947,7 @@ def azs_priority():
                                  'day_stock': tank.days_stock_min,
                                  'priority': 0,
                                  'day_stock_average_by_tank': average_azs_stock,
-                                 'table_priority': 0}
+                                 'table_priority': 8}
                     min_tank.append(azs_tanks)
                 else:
                     counter_list = counter_list + 1
@@ -943,7 +957,7 @@ def azs_priority():
                                  'day_stock': 0,
                                  'priority': 0,
                                  'day_stock_average_by_tank': average_azs_stock,
-                                 'table_priority': 0}
+                                 'table_priority': 8}
                     min_tank.append(azs_tanks)
         df = pd.DataFrame(min_tank)
         test_list = df.sort_values('day_stock').to_dict('r')
@@ -956,6 +970,7 @@ def azs_priority():
     for pr in sorted_list:
         tank = Tanks.query.filter_by(id=pr['tank_id']).first()
         for tp in priority_list:
+            # проверяем, входит ли запас суток в диапазон из таблицы приоритетов
             if tp.day_stock_from <= pr['day_stock'] <= tp.day_stock_to:
                 priority_id = PriorityList.query.filter_by(priority=tp.priority).first_or_404()
                 pr['table_priority'] = priority_id.id
@@ -1019,7 +1034,9 @@ def average_day_stock_by_tanks(azs_id):
                 print(error)
     pass
 
+
 download_tanks_info()
+
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''
 azs_list = AzsList.query.order_by("number").all()
