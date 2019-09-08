@@ -1095,10 +1095,10 @@ def start():
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
+                                                 str_sliv=variant_sliv.tank2,
                                                  sum_sliv=sum_sliv,
                                                  tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 truck_tank_id_string=str_sliv_cells)
                             db.session.add(sql)
                             '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
                                   sum_sliv)'''
@@ -1116,7 +1116,7 @@ def start():
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
+                                                 str_sliv=variant_sliv.tank3,
                                                  sum_sliv=sum_sliv,
                                                  tank_id=element,
                                                  truck_tank_id_string=str_sliv_cells)
@@ -1137,7 +1137,7 @@ def start():
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
+                                                 str_sliv=variant_sliv.tank4,
                                                  sum_sliv=sum_sliv,
                                                  tank_id=element,
                                                  truck_tank_id_string=str_sliv_cells)
