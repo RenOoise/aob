@@ -1,16 +1,18 @@
-from datetime import datetime
+import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
-from guess_language import guess_language
+from datetime import date
+import threading  # многопоточность
+import random
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
-from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2,\
-    Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1,\
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test
+from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
+    Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday
 import time
 import redis
 from app.translate import translate
@@ -89,6 +91,7 @@ def index():
         return errors, errors_list
 
     priority = Priority.query.order_by('priority').all()
+    trip_for_today = TripForToday.query.order_by("trip_number").all()
     azs_list = list()
     error_list = list()
     for i in priority:
@@ -104,7 +107,8 @@ def index():
     errors_num, errors = check()
     for error in errors:
         error_list.append(error)
-    return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True)
+    return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True,
+                           trip_for_today=trip_for_today)
 
 
 @bp.route('/user/<username>')
@@ -732,17 +736,18 @@ def start():
 
         variant_counter_sliv = 1  # вариант слива для таблицы TempAzsTrucks2
         # Перебираем варианты налива бензовозов
-        for variant in range(1, preparation_one_last.variant_id):
-            # print(variant)
+        for variant in range(1, 500):
+            # preparation_one_last.variant_id
+            print(variant)
+            azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
             table_temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
-            # Узнавем сколько отсеков у бензовоза с каждым видом топлива
+            # Узнаем сколько отсеков у бензовоза с каждым видом топлива
             tanks_counter_92 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=92).count()
             tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
             tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
             # Получаем id АЗС
-            azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
-            # Считаем количество резервуаров АЗС по каждому виду топлива
             azs_id = azs.azs_id
+            # Считаем количество резервуаров АЗС по каждому виду топлива
             table_tanks = Tanks.query.filter_by(azs_id=azs_id).all()
             count_92 = 0
             count_95 = 0
@@ -779,7 +784,7 @@ def start():
                 if row.fuel_type == 50:
                     cells_list_50.append(row.truck_tank_id)
                     cells_capacity_50.append(row.capacity)
-                # truck_cell_capacity.append(row.capacity)
+
             '''sum_92 = 0
             sum_95 = 0
             sum_50 = 0
@@ -793,7 +798,7 @@ def start():
             table_sliv_variant_92 = None
             table_sliv_variant_50 = None
             table_sliv_variant_95 = None
-            # print(azs_id, count_92, tanks_counter_92)
+            print(azs_id, count_92, tanks_counter_92)
             # Блаодаря тому, что мы знаем количество резервуаров АЗС и количество отсеков бензовоза с этим видом топлива
             # получаем нужную константную таблицу с вариантами слива бензовоза
 
@@ -873,279 +878,594 @@ def start():
                 table_sliv_variant_50 = Close2Tank4.query.all()
 
             if table_sliv_variant_92 is not None:
-                for variant_sliv in table_sliv_variant_92:
-                    count_azs_tank = 0
-                    for element in tanks_list_92:
-                        count_azs_tank = count_azs_tank + 1
-                        if count_azs_tank == 1:
+                if count_92 == 1:
+                    for variant_sliv in table_sliv_variant_92:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_92[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_92[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_92[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 2:
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_92 == 2:
+                    for variant_sliv in table_sliv_variant_92:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank2 is not None:
-                                for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_92[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_92[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 tank_id=tanks_list_92[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 3:
+                        if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank3 is not None:
-                                for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_92[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_92[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_92[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_92 == 3:
+                    for variant_sliv in table_sliv_variant_92:
+                        if variant_sliv.tank1 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 tank_id=tanks_list_92[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 4:
+                        if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank4 is not None:
-                                for index, number in enumerate(variant_sliv.tank4.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_92[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_92[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_92[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank3,
+                                                 tank_id=tanks_list_92[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_92 == 4:
+                    for variant_sliv in table_sliv_variant_92:
+                        if variant_sliv.tank1 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_92[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                    variant_counter_sliv = variant_counter_sliv + 1
+                        if variant_sliv.tank2 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_92[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank3,
+                                                 tank_id=tanks_list_92[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank4 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank4.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank4,
+                                                 tank_id=tanks_list_92[3],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
+
+            ''' -------------------------------- '''
+            ''' --- Для 95 вида топлива '''
 
             if table_sliv_variant_95 is not None:
-                for variant_sliv in table_sliv_variant_95:
-                    count_azs_tank = 0
-                    for element in tanks_list_95:
-                        count_azs_tank = count_azs_tank + 1
-                        if count_azs_tank == 1:
+                if count_95 == 1:
+                    for variant_sliv in table_sliv_variant_95:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_95[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_95[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 tank_id=tanks_list_95[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 2:
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_95 == 2:
+                    for variant_sliv in table_sliv_variant_95:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_95[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_95[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 tank_id=tanks_list_95[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 3:
+                        if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_95[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_95[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_95[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_95 == 3:
+                    for variant_sliv in table_sliv_variant_95:
+                        if variant_sliv.tank1 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=92,
+                                                 str_sliv=variant_sliv.tank1,
+                                                 tank_id=tanks_list_95[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank2 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_95[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank3,
+                                                 tank_id=tanks_list_95[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_95 == 4:
+                    for variant_sliv in table_sliv_variant_95:
+                        if variant_sliv.tank1 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string = str_sliv_cells)
+                                                 tank_id=tanks_list_95[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 4:
+                        if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_95[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_95[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_95[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank3,
+                                                 tank_id=tanks_list_95[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank4 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank4.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=95,
+                                                 str_sliv=variant_sliv.tank4,
+                                                 tank_id=tanks_list_95[3],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        variant_counter_sliv = variant_counter_sliv + 1
 
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
-                            db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                    variant_counter_sliv = variant_counter_sliv + 1
+            ''' -------------------------------- '''
+            ''' --- Для 50 вида топлива '''
 
             if table_sliv_variant_50 is not None:
-                for variant_sliv in table_sliv_variant_50:
-                    count_azs_tank = 0
-                    for element in tanks_list_50:
-                        count_azs_tank = count_azs_tank + 1
-                        if count_azs_tank == 1:
+                if count_50 == 1:
+                    for variant_sliv in table_sliv_variant_50:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_50[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_50[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_50[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 2:
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_50 == 2:
+                    for variant_sliv in table_sliv_variant_50:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_50[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_50[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank1,
+                                                 tank_id=tanks_list_50[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank2 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank2,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_50[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 3:
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_50 == 3:
+                    for variant_sliv in table_sliv_variant_50:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_50[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_50[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank1,
+                                                 tank_id=tanks_list_50[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank2 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_50[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank3,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_50[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                        if count_azs_tank == 4:
+                        variant_counter_sliv = variant_counter_sliv + 1
+                if count_50 == 4:
+                    for variant_sliv in table_sliv_variant_50:
+                        if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
-                            if variant_sliv.tank1 is not None:
-                                for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                    sum_sliv = sum_sliv + cells_capacity_50[int(number)-1]
-                                    str_sliv_cells_list.append(str(cells_list_50[int(number)-1]))
-                                str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            for index, number in enumerate(variant_sliv.tank1.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank1,
+                                                 tank_id=tanks_list_50[0],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank2 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank2.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank2,
+                                                 tank_id=tanks_list_50[1],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank3 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank3.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            sql = TempAzsTrucks2(variant=variant,
+                                                 azs_id=azs_id,
+                                                 truck_id=azs.truck_id,
+                                                 variant_sliv=variant_counter_sliv,
+                                                 fuel_type=50,
+                                                 str_sliv=variant_sliv.tank3,
+                                                 tank_id=tanks_list_50[2],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
+                            db.session.add(sql)
+                        if variant_sliv.tank4 is not None:
+                            sum_sliv = 0
+                            str_sliv_cells_list = list()
+                            str_sliv_cells = ""
+                            for index, number in enumerate(variant_sliv.tank4.split('+')):
+                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
+                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                            str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
                                                  truck_id=azs.truck_id,
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank4,
-                                                 sum_sliv=sum_sliv,
-                                                 tank_id=element,
-                                                 truck_tank_id_string=str_sliv_cells)
+                                                 tank_id=tanks_list_50[3],
+                                                 truck_tank_id_string=str_sliv_cells,
+                                                 sum_sliv=sum_sliv)
                             db.session.add(sql)
-                            '''print(variant, azs.truck_id, azs_id, variant_counter_sliv, 92, element, variant_sliv.tank1,
-                                  sum_sliv)'''
-                    variant_counter_sliv = variant_counter_sliv + 1
-        db.session.commit()
+
+                        variant_counter_sliv = variant_counter_sliv + 1
+            db.session.commit()
         print("Подготовка 2 закончена")
 
     def is_it_fit():
@@ -1162,6 +1482,64 @@ def start():
                 print(row.new_fuel_volume)
             db.session.commit()
 
+    def create_today_trip():
+        print("Формирование задания на сегодня")
+
+        db.session.query(TripForToday).delete()
+        db.session.commit()
+        priority = Priority.query.order_by("priority").all()
+        trucks = Trucks.query.all()
+        truck_tanks = TruckTanks.query.all()
+        temp_azs_trucks_2 = TempAzsTrucks2.query.all()
+        fuel_list = list()
+        trucks_list = list()
+        trucks_number_list = list()
+        fuel_list = [92, 95, 50]
+        trucks_count = Trucks.query.filter_by(active=True).count()
+        trucks = Trucks.query.filter_by(active=True).all()
+        for truck in trucks:
+            trucks_list.append(truck.id)
+            trucks_number_list.append(truck.reg_number)
+        number_of_priorities = Priority.query.order_by("id").limit(trucks_count*2).all()
+        number_of_azs = list()
+        for azs in number_of_priorities:
+            azs_number = AzsList.query.filter_by(id=azs.azs_id).first()
+            number_of_azs.append(azs_number.number)
+
+        counter = 0
+        for element in range(0, trucks_count):
+            this_truck_tanks = TruckTanks.query.filter_by(truck_id=trucks_list[element]).all()
+            fuel_types = list()
+            fuel_types.clear()
+            for cell in this_truck_tanks:
+                fuel_type = random.choice(fuel_list)
+                fuel_types.append(fuel_type)
+            sql = TripForToday(azs_number=number_of_azs[counter],
+                               truck_number=trucks_number_list[element],
+                               truck_id=trucks_list[element],
+                               zapolnenie=str(fuel_types).strip('[]'),
+                               timestamp=datetime.now(),
+                               trip_number=1)
+            db.session.add(sql)
+            counter = counter + 1
+
+        for element in range(trucks_count, trucks_count*2):
+            this_truck_tanks = TruckTanks.query.filter_by(truck_id=trucks_list[element-trucks_count]).all()
+            fuel_types = list()
+            fuel_types.clear()
+            for cell in this_truck_tanks:
+                fuel_type = random.choice(fuel_list)
+                fuel_types.append(fuel_type)
+            sql = TripForToday(azs_number=number_of_azs[counter],
+                               truck_number=trucks_number_list[element-trucks_count],
+                               truck_id=trucks_list[element-trucks_count],
+                               zapolnenie=str(fuel_types).strip('[]'),
+                               timestamp=datetime.now(),
+                               trip_number=2)
+            db.session.add(sql)
+            counter = counter + 1
+        db.session.commit()
+
     error, tanks = check()
     if error > 10:
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
@@ -1170,7 +1548,16 @@ def start():
         # preparation()
         start_time = time.time()
         # preparation_two()
-        is_it_fit()
+        # is_it_fit()
+        today_trip = TripForToday.query.first()
+        db_date = today_trip.timestamp
+        if today_trip and db_date.date() == date.today() :
+            flash('Расстановка бензовозов на сегодня уже сформирована!')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Расстановка выполнена')
+            create_today_trip()
         elapsed_time = time.time() - start_time
         print(elapsed_time)
+
         return redirect(url_for('main.index'))

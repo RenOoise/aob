@@ -14,6 +14,39 @@
             </div>
             <div class="col-lg-7 float-right">
                 <div class="card">
+                    <h5 class="card-header">Текущая расстановка</h5>
+                    <div class="card-body">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                            <tr class="table">
+                                <th>Номер АЗС </th>
+                                <th>Бензовоз</th>
+                                <th>Заполнение</th>
+                                <th>Рейс</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for trip in trip_for_today %}
+                                <tr>
+
+                                    <td>{{ trip.azs_number }}</td>
+                                    <td>{{ trip.truck_number }}</td>
+                                    <td>{{ trip.zapolnenie}}</td>
+                                    <td>{{ trip.trip_number }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <div class="row py-2">
+            <div class="col-lg-5">
+                <div class="card">
                     <h5 class="card-header">Предупреждения</h5>
                     <div class="card-body">
                         <table class="table table-sm table-hover">
@@ -28,21 +61,6 @@
                                     </tr>
                                 {% endif %}
                             {% endfor %}
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row py-2">
-            <div class="col-lg-5">
-                <div class="card">
-                    <h5 class="card-header">Текущая расстановка</h5>
-                    <div class="card-body">
-                        <table class="table table-sm table-hover">
-                            <tr class="table">
-                                <td></td>
-                            </tr>
                         </table>
                     </div>
                 </div>

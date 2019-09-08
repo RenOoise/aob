@@ -515,6 +515,19 @@ class Errors(db.Model):
     active = db.Column(db.Boolean)
 
 
+class TripForToday(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    azs_number = db.Column(db.Integer)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # айдишник бензовоза из таблицы trucks
+    truck_number = db.Column(db.String(60))
+    trip_number = db.Column(db.Integer)
+    variant_id = db.Column(db.Integer)
+    zapolnenie = db.Column(db.String(200))
+    timestamp = db.Column(db.DateTime)
+    complete = db.Column(db.Boolean)
+
+
 class Close1Tank1(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
