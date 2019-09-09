@@ -477,7 +477,8 @@ class TempAzsTrucks2(db.Model):
     str_sliv = db.Column(db.String(120))
     sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
     truck_tank_id_string = db.Column(db.String(60))
-    is_it_fit = db.Column(db.Boolean)
+    is_it_fit = db.Column(db.Boolean)  # входит ли топливо в резервуары?
+    is_it_fit_later = db.Column(db.Boolean)  # войдет ли позже?
     new_fuel_volume = db.Column(db.Float)  # новый объем
     new_days_stock = db.Column(db.Float)  # новый запас суток
 

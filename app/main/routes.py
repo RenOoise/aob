@@ -1,10 +1,12 @@
 import datetime
+
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from datetime import date
 import threading  # многопоточность
+
 import random
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
@@ -1472,14 +1474,36 @@ def start():
         residue = FuelResidue.query.all()
         for re in residue:
             temp_azs_trucks_2 = TempAzsTrucks2.query.filter_by(tank_id=re.tank_id).all()
+            print(re.azs_id)
+            trip = Trip.query.filter_by(azs_id=re.azs_id).first()
+            print(trip.time_to)
+            x = time.strptime(trip.time_to, '%H:%M:%S')
+            print(x)
             for row in temp_azs_trucks_2:
+                realisation = FuelRealisation.query.filter_by(tank_id=re.tank_id).first()
                 sliv = re.free_volume - row.sum_sliv
                 if sliv < 0:
                     row.is_it_fit = False
+                    realis = realisation.fuel_realisation_hour / 6
+                    time_to_float = trip.time_to.hour
+                    realis_time = realis * time_to_float
+                    sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
+                    if sliv_after_trip < 0:
+                        row.is_it_fit_later = False
+                    else:
+                        row.is_it_fit_later = True
                 else:
                     row.is_it_fit = True
+                    realis = realisation.fuel_realisation_hour / 6
+                    time_to_float = trip.time_to.hour
+                    realis_time = realis * time_to_float
+                    sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
+                    if sliv_after_trip < 0:
+                        row.is_it_fit_later = False
+                    else:
+                        row.is_it_fit_later = True
                 row.new_fuel_volume = re.fuel_volume + row.sum_sliv
-                print(row.new_fuel_volume)
+
             db.session.commit()
 
     def create_today_trip():
@@ -1548,7 +1572,7 @@ def start():
         # preparation()
         start_time = time.time()
         # preparation_two()
-        # is_it_fit()
+        is_it_fit()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
         if today_trip and db_date.date() == date.today() :
