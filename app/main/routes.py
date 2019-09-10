@@ -738,9 +738,8 @@ def start():
 
         variant_counter_sliv = 1  # вариант слива для таблицы TempAzsTrucks2
         # Перебираем варианты налива бензовозов
-        for variant in range(1, 500):
+        for variant in range(1, preparation_one_last.variant_id):
             # preparation_one_last.variant_id
-            print(variant)
             azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
             table_temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
             # Узнаем сколько отсеков у бензовоза с каждым видом топлива
@@ -800,7 +799,7 @@ def start():
             table_sliv_variant_92 = None
             table_sliv_variant_50 = None
             table_sliv_variant_95 = None
-            print(azs_id, count_92, tanks_counter_92)
+
             # Блаодаря тому, что мы знаем количество резервуаров АЗС и количество отсеков бензовоза с этим видом топлива
             # получаем нужную константную таблицу с вариантами слива бензовоза
 
@@ -1477,8 +1476,7 @@ def start():
             print(re.azs_id)
             trip = Trip.query.filter_by(azs_id=re.azs_id).first()
             print(trip.time_to)
-            x = time.strptime(trip.time_to, '%H:%M:%S')
-            print(x)
+
             for row in temp_azs_trucks_2:
                 realisation = FuelRealisation.query.filter_by(tank_id=re.tank_id).first()
                 sliv = re.free_volume - row.sum_sliv
@@ -1505,6 +1503,77 @@ def start():
                 row.new_fuel_volume = re.fuel_volume + row.sum_sliv
 
             db.session.commit()
+
+    def preparation_three():
+        # Перебираем варианты налива бензовозов
+        preparation_two_last = TempAzsTrucks2.query.order_by(desc(TempAzsTrucks2.variant)).first_or_404()
+
+        for variant in range(960, 3000):
+            is_it_92 = 0
+            is_it_95 = 0
+            is_it_50 = 0
+            is_it_92_sliv = 0
+            is_it_95_sliv = 0
+            is_it_50_sliv = 0
+            temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
+
+            for row in temp_azs_trucks:
+                if row.fuel_type == 92:
+                    is_it_92 = True
+
+                if row.fuel_type == 95:
+                    is_it_95 = True
+
+                if row.fuel_type == 50:
+                    is_it_50 = True
+
+            if is_it_92:
+                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).order_by("variant_sliv").first()
+                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).order_by(desc("variant_sliv")).first()
+                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).all()
+                trigger = 1
+                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
+                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92, variant_sliv=row).all()
+                    for row in i:
+                        if row.is_it_fit_later == 0:
+                            trigger = 0
+                if trigger == 1:
+                    is_it_92_sliv = 1
+
+            if is_it_95:
+                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).order_by(
+                    "variant_sliv").first()
+                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).order_by(
+                    desc("variant_sliv")).first()
+                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).all()
+                trigger = 1
+                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
+                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95, variant_sliv=row).all()
+                    for row in i:
+                        if row.is_it_fit_later == 0:
+                            trigger = 0
+                if trigger == 1:
+                    is_it_95_sliv = 1
+
+            if is_it_50:
+                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by("variant_sliv").first()
+                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by(desc("variant_sliv")).first()
+                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).all()
+                trigger = 1
+                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
+                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50, variant_sliv=row).all()
+                    for row in i:
+                        if row.is_it_fit_later == 0:
+                            trigger = 0
+                if trigger == 1:
+                    is_it_50_sliv = 1
+            if (is_it_92+is_it_95+is_it_50) == (is_it_92_sliv+is_it_95_sliv+is_it_50_sliv):
+                print(variant)
+                print("Заебися")
+                print(is_it_92, is_it_95, is_it_50, is_it_92_sliv, is_it_95_sliv, is_it_50_sliv)
+
+            else:
+                x =1
 
     def create_today_trip():
         print("Формирование задания на сегодня")
@@ -1570,18 +1639,17 @@ def start():
         return redirect(url_for('main.index'))
     else:
         # preparation()
-        start_time = time.time()
-        # preparation_two()
+
+        preparation_two()
         is_it_fit()
+        # preparation_three()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
-        if today_trip and db_date.date() == date.today() :
+        if today_trip and db_date.date() == date.today():
             flash('Расстановка бензовозов на сегодня уже сформирована!')
             return redirect(url_for('main.index'))
         else:
             flash('Расстановка выполнена')
             create_today_trip()
-        elapsed_time = time.time() - start_time
-        print(elapsed_time)
 
         return redirect(url_for('main.index'))
