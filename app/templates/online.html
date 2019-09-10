@@ -14,76 +14,78 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="row">
-                                    <table id="myTest" class="table table-sm table-hover">
-                                        <thead>
-                                        <tr>
-                                            <th>Номер АЗС</th>
-                                            <th>Номер резервуара</th>
-                                            <th>Вид топлива</th>
-                                            <th>Процент заполнения (%)</th>
-                                            <th>Текущий остаток (л)</th>
-                                            <th>Свободная емкость (до 95%) (л)</th>
-                                            <th>Время замера</th>
-                                            <th>Время выгрузки</th>
-                                            <th>Тип формирования</th>
+                                <input class="form-control" id="myInput" type="text" placeholder="Фильтр по номеру АЗС (например: АЗС № 40)">
+                                <br>
+                                <table id="myTest" class="table table-sm table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Номер АЗС</th>
+                                        <th>Номер резервуара</th>
+                                        <th>Вид топлива</th>
+                                        <th>Процент заполнения (%)</th>
+                                        <th>Текущий остаток (л)</th>
+                                        <th>Свободная емкость (до 95%) (л)</th>
+                                        <th>Время замера</th>
+                                        <th>Время выгрузки</th>
+                                        <th>Тип формирования</th>
 
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in online %}
-                                            {% if i.auto %}
-                                                <tr>
-                                                    {% else %}
-                                                <tr class="table-warning">
+                                    </tr>
+                                    </thead>
+                                    <tbody id="meTable">
+                                    {% for i in online %}
+                                        {% if i.auto %}
+                                            <tr>
+                                                {% else %}
+                                            <tr class="table-warning">
+                                        {% endif %}
+                                    <td>
+                                        {% for x in azs_list %}
+                                            {% if x.id == i.azs_id %}
+                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
                                             {% endif %}
-                                        <td>
-                                            {% for x in azs_list %}
-                                                {% if x.id == i.azs_id %}
-                                                    <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>
-                                            {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                    {{ z.tank_number }}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>{{ i.product_code }}</td>
-                                        <td>
-                                            {% for z in tanks_list %}
-                                                {% if z.id == i.tank_id %}
-                                                    {% if i.fuel_volume == None %}
-                                                        None
-                                                    {% else %}
-                                                        {{ i.percent }}%
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>{{ i.fuel_volume }}</td>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for z in tanks_list %}
+                                            {% if z.id == i.tank_id %}
+                                                {{ z.tank_number }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ i.product_code }}</td>
+                                    <td>
                                         {% for z in tanks_list %}
                                             {% if z.id == i.tank_id %}
                                                 {% if i.fuel_volume == None %}
-                                                    <td>None</td>
+                                                    None
                                                 {% else %}
-                                                    <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
+                                                    {{ i.percent }}%
                                                 {% endif %}
                                             {% endif %}
                                         {% endfor %}
-                                        <td>{{ i.datetime }}</td>
-                                        <td>{{ i.download_time }}</td>
-                                        <td>{% if i.auto %}
-                                            Автоматически
-                                        {% else %}
-                                            По книжным остаткам
-                                        {% endif%}
-                                        </td>
-                                        </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                                    </td>
+                                    <td>{{ i.fuel_volume }}</td>
+                                    {% for z in tanks_list %}
+                                        {% if z.id == i.tank_id %}
+                                            {% if i.fuel_volume == None %}
+                                                <td>None</td>
+                                            {% else %}
+                                                <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td>{{ i.datetime }}</td>
+                                    <td>{{ i.download_time }}</td>
+                                    <td>{% if i.auto %}
+                                        Автоматически
+                                    {% else %}
+                                        По книжным остаткам
+                                    {% endif%}
+                                    </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
 
                             </div>
                         </div>

@@ -12,58 +12,60 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <input class="form-control" id="myInput" type="text" placeholder="Фильтр по номеру АЗС (например: АЗС № 40)">
+                        <br>
+                        <table class="table table-sm table-hover">
+                            <thead>
+                            <tr>
+                                <th>Номер АЗС</th>
+                                <th>Номер резервуара</th>
+                                <th>Вид топлива</th>
+                                <th>Сред. за 10 дней (л.)</th>
+                                <th>Сред. за 7 дней (л.)</th>
+                                <th>Сред. за 3 дня (л.)</th>
+                                <th>Реализ. за 1 день (л.)</th>
+                                <th>Реализ. за 1 день неделю назад (л.)</th>
+                                <th>Реализ. за последний час</th>
+                                <th>Мин. запас суток</th>
+                                <th>Время выгрузки</th>
+                            </tr>
+                            </thead>
+                            <tbody id="meTable">
+                            {% for i in realisation %}
+                                <tr>
 
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Номер АЗС</th>
-                                        <th>Номер резервуара</th>
-                                        <th>Вид топлива</th>
-                                        <th>Сред. за 10 дней (л.)</th>
-                                        <th>Сред. за 7 дней (л.)</th>
-                                        <th>Сред. за 3 дня (л.)</th>
-                                        <th>Реализ. за 1 день (л.)</th>
-                                        <th>Реализ. за 1 день неделю назад (л.)</th>
-                                        <th>Реализ. за последний час</th>
-                                        <th>Мин. запас суток</th>
-                                        <th>Время выгрузки</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for i in realisation %}
-                                        <tr>
-
-                                            <td>{% for x in azs_list %}
-                                                {% if x.number == i.shop_id %}
-                                                    <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
-                                                {% endif %}
-                                            {% endfor %}
-                                            </td>
-                                            <td>
-                                                {% for z in tanks_list %}
-                                                    {% if z.id == i.tank_id %}
-                                                        {{ z.tank_number }}
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </td>
-                                            <td>{{ i.product_code }}</td>
-                                            <td>{{i.average_10_days}} </td>
-                                            <td>{{i.average_7_days}} </td>
-                                            <td>{{i.average_3_days}} </td>
-                                            <td>{{i.fuel_realisation_1_days}} </td>
-                                            <td>{{i.fuel_realisation_week_ago}} </td>
-                                            <td>{{ i.fuel_realisation_hour }}</td>
-                                            <td>{{i.days_stock_min}}</td>
-                                            <td>{{ i.download_time }}</td>
-                                        </tr>
+                                    <td>{% for x in azs_list %}
+                                        {% if x.number == i.shop_id %}
+                                            <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                        {% endif %}
                                     {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                    </td>
+
+                                    <td>
+                                        {% for z in tanks_list %}
+                                            {% if z.id == i.tank_id %}
+                                                {{ z.tank_number }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ i.product_code }}</td>
+                                    <td>{{i.average_10_days}} </td>
+                                    <td>{{i.average_7_days}} </td>
+                                    <td>{{i.average_3_days}} </td>
+                                    <td>{{i.fuel_realisation_1_days}} </td>
+                                    <td>{{i.fuel_realisation_week_ago}} </td>
+                                    <td>{{ i.fuel_realisation_hour }}</td>
+                                    <td>{{i.days_stock_min}}</td>
+                                    <td>{{ i.download_time }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
 
 {% endblock %}
