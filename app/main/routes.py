@@ -1640,7 +1640,7 @@ def start():
     else:
         # preparation()
 
-        preparation_two()
+        # preparation_two()
         is_it_fit()
         # preparation_three()
         today_trip = TripForToday.query.first()

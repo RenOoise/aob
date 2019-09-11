@@ -584,22 +584,42 @@ class QueryFromDb(object):
                                         "and current_TIMESTAMP and (pj_td.err=0 or pj_td.err=2) "
                                         "and sj_tranz.id_shop=pj_td.id_shop "
                                         "and pj_td.trannum=sj_tranz.trannum "
-                                        "and sj_tranz.shift=(select max(num) from sj_shifts where id_shop=" + str(
-                                    self.number) +
+                                        "and sj_tranz.shift=(select max(num) from sj_shifts where id_shop=" +
+                                        str(self.number) +
                                         "and begtime between current_TIMESTAMP - interval '2 day' "
                                         "and current_TIMESTAMP ) GROUP BY pj_td.id_shop, pj_td.product, pj_td.tank")
+
+                                income = ("SELECT pv_inputs.id_shop, pv_inputs.shift, pv_inputs.prodcod, "
+                                          " pv_inputs.tanknum, pv_inputs.vcalc as vfact, pv_inputs.begtime, pv_inputs.endtime"
+                                          " FROM pv_inputs WHERE pv_inputs.id_shop ="
+                                          + str(self.number) +
+                                          "and pv_inputs.tanknum="
+                                          + str(id.tank_number) +
+                                          " AND pv_inputs.shift = (select max(num) from sj_shifts where id_shop="
+                                          + str(self.number) +
+                                          " AND NOT (pv_inputs.vcalc = 0 AND pv_inputs.vttn = 0))")
+
                                 cursor.execute(realisation)
                                 realisation = cursor.fetchall()
-                                for row in query:
+                                cursor.execute(income)
+                                income = cursor.fetchall()
 
+                                for row in query:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
                                     percent = (100 * (float(query[0][4] - realisation[0][3]) / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[3]
-                                        add.fuel_volume = query[0][4] - realisation[0][3]
-                                        add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
-                                                          float(realisation[0][3])
+                                        if not income:
+                                            add.fuel_volume = query[0][4] - realisation[0][3]
+                                            add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
+                                                              float(realisation[0][3])
+
+                                        else:
+
+                                            add.fuel_volume = query[0][4] - realisation[0][3] + income[0][4]
+                                            add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
+                                                              float(realisation[0][3]) + float(income[0][4])
                                         add.fuel_temperature = row[5]
                                         add.datetime = row[6]
                                         add.azs_id = self.id
@@ -615,12 +635,17 @@ class QueryFromDb(object):
                                             print("Данные по АЗС № " + str(self.number) + " не найдены", error)
                                             pass
                                     else:
+                                        if not income:
+                                            incoming = 0
+                                        else:
+                                            incoming = float(income[0][4])
                                         add = FuelResidue(azs_id=self.id, tank_id=tankid.id, product_code=row[2],
-                                                          fuel_level=row[3], fuel_volume=query[0][4] - realisation[0][3],
+                                                          fuel_level=row[3],
+                                                          fuel_volume=query[0][4] - realisation[0][3] + income[0][4],
                                                           fuel_temperature=row[5], datetime=row[6],
                                                           download_time=datetime.now(),
-                                                          afree_volume=tankid.corrected_capacity - float(query[0][4]) -
-                                                                       float(realisation[0][3]),
+                                                          free_volume=tankid.corrected_capacity - float(query[0][4]) - \
+                                                                      float(realisation[0][3]) - incoming,
                                                           percent=percent, auto=False)
                                         db.session.add(add)
                                         db.session.commit()
@@ -851,7 +876,6 @@ class QueryFromDb(object):
                 except Exception as error:
                     pass
                     print("Ошибка во время получения данных", error)
-
 
     def connection(self):
         connection = psycopg2.connect(user=self.username,
