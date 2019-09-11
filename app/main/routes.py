@@ -51,22 +51,23 @@ def index():
                     if tank.active:
                         residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
                         realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
-                        if residue.fuel_volume is None or residue.fuel_volume <= 0 \
-                                or residue.download_time < datetime.now()-timedelta(seconds=600):
-                            if residue.download_time < datetime.now()-timedelta(seconds=600):
-                                error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
-                                             " - возможно данные об остатках устерели"
-                            else:
-                                error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) + \
-                                             " - нет данных об остатках"
-                            sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
-                                         tank_id=tank.id, active=True, error_type="residue_error")
-                            db.session.add(sql)
-                            db.session.commit()
-                            errors = errors + 1
-                            error_tank_list.append(tank.id)
+                        if residue is not None:
+                            if residue.fuel_volume is None or residue.fuel_volume <= 0 \
+                                    or residue.download_time < datetime.now()-timedelta(seconds=600):
+                                if residue.download_time < datetime.now()-timedelta(seconds=600):
+                                    error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
+                                                 " - возможно данные об остатках устерели"
+                                else:
+                                    error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) + \
+                                                 " - нет данных об остатках"
+                                sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=azs.id,
+                                             tank_id=tank.id, active=True, error_type="residue_error")
+                                db.session.add(sql)
+                                db.session.commit()
+                                errors = errors + 1
+                                error_tank_list.append(tank.id)
 
-                            errors_list.append(error_text)
+                                errors_list.append(error_text)
 
                         if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0 \
                                 or realisation.download_time < datetime.now()-timedelta(seconds=600):
@@ -495,26 +496,27 @@ def start():
                     if tank.active:
                         residue = FuelResidue.query.filter_by(tank_id=tank.id).first()
                         realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
-                        if residue.fuel_volume is None or residue.fuel_volume <= 0:
-                            print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
-                            '''error_text = "Ошибка при подключении к базе данных АЗС №" + str(i.number)
-                            sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=i.id, active=True,
-                                         error_type="connection_error")
-                            db.session.add(sql)
-                            db.session.commit()'''
-                            errors = errors + 1
-                            error_tank_list.append(tank.id)
-                        if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0:
-                            print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
-                            errors = errors + 1
-                            error_tank_list.append(tank.id)
-                        priority_list = PriorityList.query.all()
-                        for priority in priority_list:
-                            if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
-                                this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
-                                if not this_priority.id:
-                                    print('Резервуар №' + str(tank.tank_number) +
-                                          ' не попадает в диапазон приоритетов!!!')
+                        if residue is not None:
+                            if residue.fuel_volume is None or residue.fuel_volume <= 0:
+                                print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных об остатках! ')
+                                '''error_text = "Ошибка при подключении к базе данных АЗС №" + str(i.number)
+                                sql = Errors(timestamp=datetime.now(), error_text=error_text, azs_id=i.id, active=True,
+                                             error_type="connection_error")
+                                db.session.add(sql)
+                                db.session.commit()'''
+                                errors = errors + 1
+                                error_tank_list.append(tank.id)
+                            if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0:
+                                print('   Резервуар №' + str(tank.tank_number) + ' не содержит данных о реализации! ')
+                                errors = errors + 1
+                                error_tank_list.append(tank.id)
+                            priority_list = PriorityList.query.all()
+                            for priority in priority_list:
+                                if priority.day_stock_from <= realisation.days_stock_min <= priority.day_stock_to:
+                                    this_priority = PriorityList.query.filter_by(priority=priority.priority).first_or_404()
+                                    if not this_priority.id:
+                                        print('Резервуар №' + str(tank.tank_number) +
+                                              ' не попадает в диапазон приоритетов!!!')
         return errors, error_tank_list
 
     def preparation():
@@ -523,12 +525,17 @@ def start():
         db.session.commit()
         azs_list = AzsList.query.filter_by(active=True).all()
         truck_list = Trucks.query.filter_by(active=True).all()
+        truck_cells_list = TruckTanks.query.all()
         variant_counter = 1
         for azs in azs_list:
             for truck in truck_list:
                 fuel_types = list()
-                truck_tanks = TruckTanks.query.filter_by(truck_id=truck.id).all()
-                truck_tanks_count = TruckTanks.query.filter_by(truck_id=truck.id).count()
+                cell_counter = 0
+                for cell in truck_cells_list:  # перебераем все отсеки всех бензовозов
+                    if cell.truck_id == truck.id:  # выбираем все отсеки у конкретного бензовоза
+                        cell_counter = cell_counter + 1
+
+                truck_tanks_count = cell_counter  # считаем их количество
                 if truck_tanks_count == 1:
                     for a in range(1, 4):
                         fuel_types = [a]
@@ -540,15 +547,17 @@ def start():
                             elif type is 3:
                                 fuel_types[index] = 50
 
-                            tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                   number=index + 1).first()
-
-                            sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=tanks_row.id,
+                            for cell in truck_cells_list:
+                                if cell.truck_id == truck.id and cell.number == index + 1:
+                                    cell_id = cell.id
+                                    cell_capacity = cell.capacity
+                            sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=cell_id,
                                                 truck_id=truck.id, fuel_type=fuel_types[index],
-                                                capacity=tanks_row.capacity)
+                                                capacity=cell_capacity)
                             db.session.add(sql)
 
                         variant_counter = variant_counter + 1
+
                 if truck_tanks_count == 2:
                     for a in range(1, 4):
                         for b in range(1, 4):
@@ -560,15 +569,15 @@ def start():
                                     fuel_types[index] = 95
                                 elif type is 3:
                                     fuel_types[index] = 50
+                                for cell in truck_cells_list:
+                                    if cell.truck_id == truck.id and cell.number == index + 1:
+                                        cell_id = cell.id
+                                        cell_capacity = cell.capacity
 
-                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id, number=index + 1).first()
-                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                    truck_tank_id=tanks_row.id,
+                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=cell_id,
                                                     truck_id=truck.id, fuel_type=fuel_types[index],
-                                                    capacity=tanks_row.capacity)
+                                                    capacity=cell_capacity)
                                 db.session.add(sql)
-
-
                             variant_counter = variant_counter + 1
 
                 if truck_tanks_count == 3:
@@ -584,12 +593,15 @@ def start():
                                     elif type is 3:
                                         fuel_types[index] = 50
 
-                                    tanks_row = TruckTanks.query.filter_by(truck_id=truck.id, number=index + 1).first()
+                                    for cell in truck_cells_list:
+                                        if cell.truck_id == truck.id and cell.number == index + 1:
+                                            cell_id = cell.id
+                                            cell_capacity = cell.capacity
 
                                     sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                        truck_tank_id=tanks_row.id,
+                                                        truck_tank_id=cell_id,
                                                         truck_id=truck.id, fuel_type=fuel_types[index],
-                                                        capacity=tanks_row.capacity)
+                                                        capacity=cell_capacity)
                                     db.session.add(sql)
 
                                 variant_counter = variant_counter + 1
@@ -607,16 +619,16 @@ def start():
                                             fuel_types[index] = 95
                                         elif type is 3:
                                             fuel_types[index] = 50
-
-                                        tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                               number=index + 1).first()
+                                        for cell in truck_cells_list:
+                                            if cell.truck_id == truck.id and cell.number == index + 1:
+                                                cell_id = cell.id
+                                                cell_capacity = cell.capacity
 
                                         sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                            truck_tank_id=tanks_row.id,
+                                                            truck_tank_id=cell_id,
                                                             truck_id=truck.id, fuel_type=fuel_types[index],
-                                                            capacity=tanks_row.capacity)
+                                                            capacity=cell_capacity)
                                         db.session.add(sql)
-
                                     variant_counter = variant_counter + 1
                     if truck_tanks_count == 5:
                         for a in range(1, 4):
@@ -633,13 +645,15 @@ def start():
                                                 elif type is 3:
                                                     fuel_types[index] = 50
 
-                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                                       number=index + 1).first()
+                                                for cell in truck_cells_list:
+                                                    if cell.truck_id == truck.id and cell.number == index + 1:
+                                                        cell_id = cell.id
+                                                        cell_capacity = cell.capacity
 
                                                 sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_tank_id=cell_id,
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=tanks_row.capacity)
+                                                                    capacity=cell_capacity)
                                                 db.session.add(sql)
 
                                             variant_counter = variant_counter + 1
@@ -659,13 +673,15 @@ def start():
                                                 elif type is 3:
                                                     fuel_types[index] = 50
 
-                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                                       number=index + 1).first()
+                                                for cell in truck_cells_list:
+                                                    if cell.truck_id == truck.id and cell.number == index + 1:
+                                                        cell_id = cell.id
+                                                        cell_capacity = cell.capacity
 
                                                 sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_tank_id=cell_id,
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=tanks_row.capacity)
+                                                                    capacity=cell_capacity)
                                                 db.session.add(sql)
 
                                             variant_counter = variant_counter + 1
@@ -685,14 +701,15 @@ def start():
                                                     fuel_types[index] = 95
                                                 elif type is 3:
                                                     fuel_types[index] = 50
-
-                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                                       number=index + 1).first()
+                                                for cell in truck_cells_list:
+                                                    if cell.truck_id == truck.id and cell.number == index + 1:
+                                                        cell_id = cell.id
+                                                        cell_capacity = cell.capacity
 
                                                 sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_tank_id=cell_id,
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=tanks_row.capacity)
+                                                                    capacity=cell_capacity)
                                                 db.session.add(sql)
 
                                             variant_counter = variant_counter + 1
@@ -713,14 +730,15 @@ def start():
                                                     fuel_types[index] = 95
                                                 elif type is 3:
                                                     fuel_types[index] = 50
-
-                                                tanks_row = TruckTanks.query.filter_by(truck_id=truck.id,
-                                                                                       number=index + 1).first()
+                                                for cell in truck_cells_list:
+                                                    if cell.truck_id == truck.id and cell.number == index + 1:
+                                                        cell_id = cell.id
+                                                        cell_capacity = cell.capacity
 
                                                 sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=tanks_row.id,
+                                                                    truck_tank_id=cell_id,
                                                                     truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=tanks_row.capacity)
+                                                                    capacity=cell_capacity)
                                                 db.session.add(sql)
 
                                             variant_counter = variant_counter + 1
@@ -1638,10 +1656,11 @@ def start():
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
-        # preparation()
-
+        print("Начало ", datetime.now())
+        preparation()
+        print("КОнэц ", datetime.now())
         # preparation_two()
-        is_it_fit()
+        # is_it_fit()
         # preparation_three()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp

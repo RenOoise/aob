@@ -607,19 +607,18 @@ class QueryFromDb(object):
                                 for row in query:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
-                                    percent = (100 * (float(query[0][4] - realisation[0][3]) / tankid.corrected_capacity))
+
+
+                                    if income:
+                                        volume = float(query[0][4]) - float(realisation[0][3]) + float(income[0][4])
+                                    else:
+                                        volume = float(query[0][4]) - float(realisation[0][3])
+                                    volume = tankid.corrected_capacity - volume
+                                    percent = (100 * (volume / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[3]
-                                        if not income:
-                                            add.fuel_volume = query[0][4] - realisation[0][3]
-                                            add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
-                                                              float(realisation[0][3])
-
-                                        else:
-
-                                            add.fuel_volume = query[0][4] - realisation[0][3] + income[0][4]
-                                            add.free_volume = tankid.corrected_capacity - float(query[0][4]) - \
-                                                              float(realisation[0][3]) + float(income[0][4])
+                                        add.fuel_volume = query[0][4] - realisation[0][3]
+                                        add.free_volume = tankid.corrected_capacity - volume
                                         add.fuel_temperature = row[5]
                                         add.datetime = row[6]
                                         add.azs_id = self.id
@@ -629,23 +628,15 @@ class QueryFromDb(object):
                                         add.percent = percent
                                         add.auto = False
                                         db.session.add(add)
-                                        try:
-                                            db.session.commit()
-                                        except Exception as error:
-                                            print("Данные по АЗС № " + str(self.number) + " не найдены", error)
-                                            pass
+                                        db.session.commit()
+
                                     else:
-                                        if not income:
-                                            incoming = 0
-                                        else:
-                                            incoming = float(income[0][4])
                                         add = FuelResidue(azs_id=self.id, tank_id=tankid.id, product_code=row[2],
                                                           fuel_level=row[3],
-                                                          fuel_volume=query[0][4] - realisation[0][3] + income[0][4],
+                                                          fuel_volume=volume,
                                                           fuel_temperature=row[5], datetime=row[6],
                                                           download_time=datetime.now(),
-                                                          free_volume=tankid.corrected_capacity - float(query[0][4]) - \
-                                                                      float(realisation[0][3]) - incoming,
+                                                          free_volume=tankid.corrected_capacity - volume,
                                                           percent=percent, auto=False)
                                         db.session.add(add)
                                         db.session.commit()
@@ -734,7 +725,6 @@ class QueryFromDb(object):
 
                                 print("SQL запрос по резервуару " + str(id.tank_number) + " на АЗС " + str(
                                     self.number) + " выполнен")
-                                print(residue)
                                 # и делаем выборку по реализации с начала смены
                                 realisation = ("select tank, gas, sum(litres) volume from filling fl "
                                                "join payment pm on fl.payment_id = pm.id "
@@ -794,7 +784,6 @@ class QueryFromDb(object):
                     pass
         # если система serviopump
         elif self.system_type == 3:
-            print("SERVIOPUMP!")
             if self.id:  # если есть конфиг
                 try:
                     connection = fdb.connect(
@@ -828,7 +817,6 @@ class QueryFromDb(object):
                                         add.fuel_volume = row[3]
                                         add.free_volume = tankid.corrected_capacity - float(row[3])
                                         percent = (100 * (float(row[3]) / tankid.corrected_capacity))
-                                        print(percent)
                                         add.datetime = row[2]
                                         add.shop_id = azsid.id
                                         add.tank_id = tankid.id
