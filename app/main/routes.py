@@ -410,9 +410,10 @@ def page_azs(id):
     tanks_list = Tanks.query.filter_by(azs_id=id).all()
     online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
     realisation = FuelRealisation.query.all()
+    check_if_exist = FuelResidue.query.filter_by(azs_id=id).first()
     return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
                            online=online, realisation=realisation, azs_list=azs_list, tanks_list=tanks_list,
-                           azs_list_active=True)
+                           azs_list_active=True, check_if_exist=check_if_exist)
 
 
 @bp.route('/download_realisation_info')

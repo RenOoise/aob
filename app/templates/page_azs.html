@@ -11,49 +11,50 @@
                 </ol>
             </nav>
         </div>
+        {% if check_if_exist %}
+            {% for i in tanks_list %}
 
-        {% for i in tanks_list %}
-            <div class="row py-2">
-                <div class="card">
-                    <h5 class="card-header">Резервуар №{{ i.tank_number }}</h5>
-                    <div class="card-body">
-                        <div class="row py-2">
-                            <div class="col col-lg-6">
-                                {%- for z in online -%}
-                                    {%- if z.tank_id == i.id -%}
+                <div class="row py-2">
+                    <div class="card">
+                        <h5 class="card-header">Резервуар №{{ i.tank_number }}</h5>
+                        <div class="card-body">
+                            <div class="row py-2">
+                                <div class="col col-lg-6">
+                                    {%- for z in online -%}
+                                        {%- if z.tank_id == i.id -%}
 
-                                        <p>Вип топлива: {{z.product_code}}</p>
-                                        <p>Остаток топлива: {{z.fuel_volume}} л.</p>
-                                        <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>
-                                        <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
-                                        {% for x in realisation %}
-                                            {% if x.tank_id == i.id %}
-                                                <p>Средняя реализация за 7 дней: {{ x.average_7_days }} л.</p>
-                                                <p>Минимальный запас суток: {{ x.days_stock_min }}</p>
-                                            {%- endif -%}
-                                        {%- endfor -%}
+                                            <p>Вип топлива: {{z.product_code}}</p>
+                                            <p>Остаток топлива: {{z.fuel_volume}} л.</p>
+                                            <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>
+                                            <p>Резервуар заполнен на {{ (100*(z.fuel_volume/i.corrected_capacity))|int }}%</p>
+                                            {% for x in realisation %}
+                                                {% if x.tank_id == i.id %}
+                                                    <p>Средняя реализация за 7 дней: {{ x.average_7_days }} л.</p>
+                                                    <p>Минимальный запас суток: {{ x.days_stock_min }}</p>
+                                                {%- endif -%}
+                                            {%- endfor -%}
 
-                                    {%- endif -%}
-                                {%- endfor -%}
-                            </div>
-                            <div class="col col-lg-6">
-                                <svg
-                                        xmlns:dc="http://purl.org/dc/elements/1.1/"
-                                        xmlns:cc="http://creativecommons.org/ns#"
-                                        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                                        xmlns:svg="http://www.w3.org/2000/svg"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-                                        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-                                        width="100mm"
-                                        height="60mm"
-                                        viewBox="0 0 127.48493 84.417326"
-                                        version="1.1"
-                                        id="svg3719{{i.tank_number}}"
-                                        inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-                                        sodipodi:docname="tank.svg">
-                                    <linearGradient id="lg{{ i.tank_number }}" x1="0.5" y1="1" x2="0.5" y2="0">
-                                        <stop offset="
+                                        {%- endif -%}
+                                    {%- endfor -%}
+                                </div>
+                                <div class="col col-lg-6">
+                                    <svg
+                                            xmlns:dc="http://purl.org/dc/elements/1.1/"
+                                            xmlns:cc="http://creativecommons.org/ns#"
+                                            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                                            xmlns:svg="http://www.w3.org/2000/svg"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+                                            xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+                                            width="100mm"
+                                            height="60mm"
+                                            viewBox="0 0 127.48493 84.417326"
+                                            version="1.1"
+                                            id="svg3719{{i.tank_number}}"
+                                            inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+                                            sodipodi:docname="tank.svg">
+                                        <linearGradient id="lg{{ i.tank_number }}" x1="0.5" y1="1" x2="0.5" y2="0">
+                                            <stop offset="
                             {%- for z in online -%}
                             {%- if z.tank_id == i.id -%}
                             {%- if z.fuel_volume == None -%}
@@ -63,7 +64,7 @@
                             {%- endif -%}
                             {%- endif -%}
                             {%- endfor -%}%" stop-opacity="1" stop-color="red"/>
-                                        <stop offset="
+                                            <stop offset="
                                     {%- for z in online -%}
                             {%- if z.tank_id == i.id -%}
                             {%- if z.fuel_volume == None -%}
@@ -73,7 +74,7 @@
                             {%- endif -%}
                             {%- endif -%}
                             {%- endfor -%}%" stop-opacity="1" stop-color="red"/>
-                                        <stop offset="
+                                            <stop offset="
                                     {%- for z in online -%}
                             {%- if z.tank_id == i.id -%}
                             {%- if z.fuel_volume == None -%}
@@ -83,7 +84,7 @@
                             {%- endif -%}
                             {%- endif -%}
                             {%- endfor -%}%" stop-opacity="0" stop-color="red"/>
-                                        <stop offset="                            {%- for z in online -%}
+                                            <stop offset="                            {%- for z in online -%}
                             {%- if z.tank_id == i.id -%}
                             {%- if z.fuel_volume == None -%}
                             None
@@ -92,79 +93,79 @@
                             {%- endif -%}
                             {%- endif -%}
                             {%- endfor -%}%" stop-opacity="0" stop-color="red">
-                                            <animate attributeName="offset" values="0;1;0" repeatCount="indefinite" dur="5s"  begin="0s"/>
-                                        </stop>
-                                    </linearGradient>
-                                    <defs id="defs3713" />
-                                    <sodipodi:namedview
-                                            id="base"
-                                            pagecolor="#ffffff"
-                                            bordercolor="#666666"
-                                            borderopacity="1.0"
-                                            inkscape:pageopacity="0.0"
-                                            inkscape:pageshadow="2"
-                                            inkscape:zoom="0.49497475"
-                                            inkscape:cx="305.3942"
-                                            inkscape:cy="184.79369"
-                                            inkscape:document-units="mm"
-                                            inkscape:current-layer="layer1"
-                                            showgrid="true"
-                                            inkscape:window-width="1920"
-                                            inkscape:window-height="1017"
-                                            inkscape:window-x="-8"
-                                            inkscape:window-y="-8"
-                                            inkscape:window-maximized="1" />
-                                    <metadata
-                                            id="metadata3716">
-                                        <rdf:RDF>
-                                            <cc:Work
-                                                    rdf:about="">
-                                                <dc:format>image/svg+xml</dc:format>
-                                                <dc:type
-                                                        rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-                                                <dc:title></dc:title>
-                                            </cc:Work>
-                                        </rdf:RDF>
-                                    </metadata>
-                                    <g
-                                            inkscape:label="Layer 1"
-                                            inkscape:groupmode="layer"
-                                            id="layer1"
-                                            transform="translate(-34.299497,-68.050586)">
-                                        <path
-                                                style="fill:url(#lg{{ i.tank_number }});stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-                                                d="m 34.565548,125.20776 -0.133636,-21.78247 8.334252,-26.628209 9.789583,2e-6 0,-8.466669 h 14.816667 v 8.466667 l 55.926606,0.0349 -0.0229,-8.647119 15.39092,0.22813 0.0782,8.490555 14.48792,0.06207 8.41898,26.192415 v 22.18337 l -7.34991,26.99422 H 41.781825 Z"
-                                                id="path3891"
-                                                inkscape:connector-curvature="0"
-                                                sodipodi:nodetypes="ccccccccccccccccc" />
-                                        <path
-                                                style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-                                                d="M 42.766164,76.797081 41.781825,152.33562"
-                                                id="path3893"
-                                                inkscape:connector-curvature="0"
-                                                sodipodi:nodetypes="cc" />
-                                        <path
-                                                style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-                                                d="m 153.23316,76.965613 1.06907,75.370007"
-                                                id="path3895"
-                                                inkscape:connector-curvature="0" />
-                                        <text
-                                                xml:space="preserve"
-                                                style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-                                                x="81.338936"
-                                                y="107.93903"
-                                                id="text3731"><tspan
+                                                <animate attributeName="offset" values="0;1;0" repeatCount="indefinite" dur="5s"  begin="0s"/>
+                                            </stop>
+                                        </linearGradient>
+                                        <defs id="defs3713" />
+                                        <sodipodi:namedview
+                                                id="base"
+                                                pagecolor="#ffffff"
+                                                bordercolor="#666666"
+                                                borderopacity="1.0"
+                                                inkscape:pageopacity="0.0"
+                                                inkscape:pageshadow="2"
+                                                inkscape:zoom="0.49497475"
+                                                inkscape:cx="305.3942"
+                                                inkscape:cy="184.79369"
+                                                inkscape:document-units="mm"
+                                                inkscape:current-layer="layer1"
+                                                showgrid="true"
+                                                inkscape:window-width="1920"
+                                                inkscape:window-height="1017"
+                                                inkscape:window-x="-8"
+                                                inkscape:window-y="-8"
+                                                inkscape:window-maximized="1" />
+                                        <metadata
+                                                id="metadata3716">
+                                            <rdf:RDF>
+                                                <cc:Work
+                                                        rdf:about="">
+                                                    <dc:format>image/svg+xml</dc:format>
+                                                    <dc:type
+                                                            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                                                    <dc:title></dc:title>
+                                                </cc:Work>
+                                            </rdf:RDF>
+                                        </metadata>
+                                        <g
+                                                inkscape:label="Layer 1"
+                                                inkscape:groupmode="layer"
+                                                id="layer1"
+                                                transform="translate(-34.299497,-68.050586)">
+                                            <path
+                                                    style="fill:url(#lg{{ i.tank_number }});stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                                                    d="m 34.565548,125.20776 -0.133636,-21.78247 8.334252,-26.628209 9.789583,2e-6 0,-8.466669 h 14.816667 v 8.466667 l 55.926606,0.0349 -0.0229,-8.647119 15.39092,0.22813 0.0782,8.490555 14.48792,0.06207 8.41898,26.192415 v 22.18337 l -7.34991,26.99422 H 41.781825 Z"
+                                                    id="path3891"
+                                                    inkscape:connector-curvature="0"
+                                                    sodipodi:nodetypes="ccccccccccccccccc" />
+                                            <path
+                                                    style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                                                    d="M 42.766164,76.797081 41.781825,152.33562"
+                                                    id="path3893"
+                                                    inkscape:connector-curvature="0"
+                                                    sodipodi:nodetypes="cc" />
+                                            <path
+                                                    style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                                                    d="m 153.23316,76.965613 1.06907,75.370007"
+                                                    id="path3895"
+                                                    inkscape:connector-curvature="0" />
+                                            <text
+                                                    xml:space="preserve"
+                                                    style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+                                                    x="81.338936"
+                                                    y="107.93903"
+                                                    id="text3731"><tspan
          sodipodi:role="line"
          id="tspan3729"
          x="81.338936"
          y="107.93903"
          style="stroke-width:0.26458332">  {{i.fuel_type}}</tspan></text>
-                                        <text
-                                                xml:space="preserve"
-                                                style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-                                                x="85.453117"
-                                                y="131.58847"
-                                                id="text3735"><tspan
+                                            <text
+                                                    xml:space="preserve"
+                                                    style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+                                                    x="85.453117"
+                                                    y="131.58847"
+                                                    id="text3735"><tspan
          sodipodi:role="line"
          id="tspan3733"
          x="85.453117"
@@ -179,20 +180,26 @@
                                                 {%- endif -%}
                                             {%- endif -%}
                                         {%- endfor -%}</tspan><tspan
-                                                sodipodi:role="line"
-                                                x="85.453117"
-                                                y="144.81764"
-                                                style="stroke-width:0.26458332"
-                                                id="tspan3737" /></text>
-                                    </g>
-                                    </g>
-                                </svg>
+                                                    sodipodi:role="line"
+                                                    x="85.453117"
+                                                    y="144.81764"
+                                                    style="stroke-width:0.26458332"
+                                                    id="tspan3737" /></text>
+                                        </g>
+                                        </g>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="row py-2">
+                Нет данных по АЗС
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
 
 {% endblock %}
