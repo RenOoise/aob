@@ -749,13 +749,32 @@ def start():
     def preparation_two():
         db.session.query(TempAzsTrucks2).delete()
         db.session.commit()
-        print("Подготовка 2 начата")
+        preparation_one_list = list()
+        preparation_one_dict = dict()
 
-        preparation_one = TempAzsTrucks.query.all()
+        for i in TempAzsTrucks.query.all():
+            # готовим список
+            preparation_one_dict = {
+                'id': i.id,
+                'variant': i.variant,
+                'truck_id': i.truck_id,
+                'azs_id': i.azs_id,
+                'variant_sliv': i.variant_sliv,
+                'fuel_type': i.fuel_type,
+                'tank_id': i.tank_id,
+                'str_sliv': i.str_sliv,
+                'sum_sliv': i.sum_sliv,
+                'truck_tank_id_string': i.truck_tank_id_string,
+                'is_it_fit': i.is_it_fit,
+                'is_it_fit_later': i.is_it_fit_later,
+                'new_fuel_volume': i.new_fuel_volume,
+                'new_days_stock': i.new_days_stock
+            }
+
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
         preparation_one_last = TempAzsTrucks.query.order_by(desc(TempAzsTrucks.variant_id)).first_or_404()
-
-        variant_counter_sliv = 1  # вариант слива для таблицы TempAzsTrucks2
+        # вариант слива для таблицы TempAzsTrucks2
+        variant_counter_sliv = 1
         # Перебираем варианты налива бензовозов
         for variant in range(1, preparation_one_last.variant_id):
             # preparation_one_last.variant_id
