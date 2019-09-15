@@ -769,7 +769,7 @@ class QueryFromDb(object):
                                                                   fuel_volume=row[1] - realis[2],
                                                                   datetime=shiftdate[0],
                                                                   download_time=datetime.now(), percent=percent,
-                                                                  afree_volume=tankid.corrected_capacity - float(resid),
+                                                                  free_volume=tankid.corrected_capacity - float(resid),
                                                                   auto=False)
                                             db.session.add(add)
                                             db.session.commit()
@@ -851,7 +851,7 @@ class QueryFromDb(object):
                                                           fuel_level=0, fuel_volume=row[3],
                                                           fuel_temperature=0, datetime=row[2],
                                                           download_time=datetime.now(),
-                                                          free_volume=tankid.corrected_capacity - (row[3]),
+                                                          free_volume=tankid.corrected_capacity - float(row[3]),
                                                           percent=percent, auto=True)
                                         db.session.add(add)
                                         db.session.commit()
