@@ -754,23 +754,16 @@ def start():
             # готовим список
             preparation_one_dict = {
                 'id': i.id,
-                'variant': i.variant,
-                'truck_id': i.truck_id,
+                'variant_id': i.variant_id,
                 'azs_id': i.azs_id,
-                'variant_sliv': i.variant_sliv,
+                'truck_id': i.truck_id,
+                'truck_tank_id': i.truck_tank_id,
                 'fuel_type': i.fuel_type,
-                'tank_id': i.tank_id,
-                'str_sliv': i.str_sliv,
-                'sum_sliv': i.sum_sliv,
-                'truck_tank_id_string': i.truck_tank_id_string,
-                'is_it_fit': i.is_it_fit,
-                'is_it_fit_later': i.is_it_fit_later,
-                'new_fuel_volume': i.new_fuel_volume,
-                'new_days_stock': i.new_days_stock
+                'capacity': i.capacity
             }
             preparation_one_list.append(preparation_one_dict)
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        len(preparation_one_list)
+        print(len(preparation_one_list))
 
     def preparation_two():
         db.session.query(TempAzsTrucks2).delete()
@@ -782,34 +775,37 @@ def start():
             # готовим список
             preparation_one_dict = {
                 'id': i.id,
-                'variant': i.variant,
-                'truck_id': i.truck_id,
+                'variant_id': i.variant_id,
                 'azs_id': i.azs_id,
-                'variant_sliv': i.variant_sliv,
+                'truck_id': i.truck_id,
+                'truck_tank_id': i.truck_tank_id,
                 'fuel_type': i.fuel_type,
-                'tank_id': i.tank_id,
-                'str_sliv': i.str_sliv,
-                'sum_sliv': i.sum_sliv,
-                'truck_tank_id_string': i.truck_tank_id_string,
-                'is_it_fit': i.is_it_fit,
-                'is_it_fit_later': i.is_it_fit_later,
-                'new_fuel_volume': i.new_fuel_volume,
-                'new_days_stock': i.new_days_stock
+                'capacity': i.capacity
             }
             preparation_one_list.append(preparation_one_dict)
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        len(preparation_one_list)
-
-        preparation_one_last = TempAzsTrucks.query.order_by(desc(TempAzsTrucks.variant_id)).first_or_404()
+        # Получаем последнее значение variant_id из словаря
+        preparation_one_last = preparation_one_list[-1]
         # вариант слива для таблицы TempAzsTrucks2
         variant_counter_sliv = 1
         # Перебираем варианты налива бензовозов
-        for variant in range(1, preparation_one_last.variant_id):
+        df = pd.DataFrame(preparation_one_list)
+
+        for variant in range(1, preparation_one_last['id']):
             # preparation_one_last.variant_id
             azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
             table_temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
+            filter_variant = df["variant_id"] = variant
+            filter_92 = df["fuel_type"] = 92
+            filter_95 = df["fuel_type"] = 95
+            filter_50 = df["fuel_type"] = 50
+
             # Узнаем сколько отсеков у бензовоза с каждым видом топлива
+            dataframe_92 = df.sort_values("variant_id", inplace=True).to_dict('r')
+            dataframe_92 = df.where(filter_variant & filter_92, inplace=True).to_dict('r')
+
             tanks_counter_92 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=92).count()
+
             tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
             tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
             # Получаем id АЗС
