@@ -505,15 +505,15 @@ def work_type():
 @bp.route('/admin/trucks_false', methods=['POST', 'GET'])
 @login_required
 def trucks_false():
-    trucks_false = TruckFalse.query.order_by("timestamp").all()
+    trucks_false = TruckFalse.query.order_by("azs_id").all()
     trucks = list()
     for truck in trucks_false:
         reg = Trucks.query.filter_by(id=truck.truck_id).first()
         azs = AzsList.query.filter_by(id=truck.azs_id).first()
         truck = {
             'id': truck.id,
-            'azs_number': reg.reg_number,
-            'truck_number': azs.number,
+            'azs_number': azs.number,
+            'truck_number': reg.reg_number,
             'reason': truck.reason
         }
         trucks.append(truck)

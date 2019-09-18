@@ -471,19 +471,36 @@ def day_stock(azs_id):
 
                 # считаем среднюю реализацию за сутки
                 try:
+
+                    days_stock_list = list()
+
                     average_day_stock_10 = data.fuel_realisation_10_days / 10
                     average_day_stock_7 = data.fuel_realisation_7_days / 7
                     average_day_stock_3 = data.fuel_realisation_3_days / 3
                     average_day_stock_1 = data.fuel_realisation_1_days / 1
                     average_day_stock_week_ago = data.fuel_realisation_week_ago / 1
 
+                    def devision_check(x, y):
+                        try:
+                            return x / y
+                        except ZeroDivisionError:
+                            return 0
                     # считаем запас суток по усредненной реалезации
-                    days_stock_10 = round(fuel.fuel_volume / average_day_stock_10, 1)
-                    days_stock_7 = round(fuel.fuel_volume / average_day_stock_7, 1)
-                    days_stock_3 = round(fuel.fuel_volume / average_day_stock_3, 1)
-                    days_stock_1 = round(fuel.fuel_volume / average_day_stock_1, 1)
-                    days_stock_week_ago = round(fuel.fuel_volume / average_day_stock_week_ago)
-                    days_stock_min = min([days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago])
+
+                    days_stock_10 = round(devision_check(fuel.fuel_volume, average_day_stock_10), 1)
+                    days_stock_7 = round(devision_check(fuel.fuel_volume, average_day_stock_7), 1)
+
+                    days_stock_3 = round(devision_check(fuel.fuel_volume, average_day_stock_3), 1)
+                    days_stock_1 = round(devision_check(fuel.fuel_volume, data.fuel_realisation_1_days), 1)
+                    days_stock_week_ago = round(devision_check(fuel.fuel_volume, data.fuel_realisation_week_ago), 1)
+                    days_stock_list = [days_stock_10, days_stock_7, days_stock_3, days_stock_1, days_stock_week_ago]
+                    for index, x in enumerate(days_stock_list):
+                        if x == 0:
+                            del days_stock_list[index]
+                    print(data.shop_id)
+                    print(days_stock_list)
+
+                    days_stock_min = min(days_stock_list)
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
                     add.day_stock_3 = days_stock_3
@@ -1037,7 +1054,7 @@ def average_day_stock_by_tanks(azs_id):
                         add = Priority.query.filter_by(azs_id=azs_id).first()
 
             average_stock = sum(stock_list) / len(stock_list)
-            print("Айди резервуара " + str(tank.id)+ " запас суток " + str(average_stock))
+            print("Айди резервуара " + str(tank.id) + " запас суток " + str(average_stock))
             add.average_for_azs = round(average_stock, 1)
             try:
                 db.session.add(add)
@@ -1047,16 +1064,16 @@ def average_day_stock_by_tanks(azs_id):
     pass
 
 
-download_tanks_info()
+# download_tanks_info()
 
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''
 azs_list = AzsList.query.order_by("number").all()
 for i in azs_list:
     day_stock(i.id)
-azs_priority()
+#azs_priority()
 '''Средний запас суток среди всех резервуаров АЗС'''
-average_azs = Priority.query.all()
+'''average_azs = Priority.query.all()
 for i in average_azs:
     average_day_stock_by_tanks(i.azs_id)
 sleep(2)
@@ -1064,5 +1081,4 @@ sleep(2)
 azs_dict = list()
 test = AzsList.query.filter_by(active=True).all()
 for azs in test:
-    azs_dict.append(azs.id)
-print(azs_dict)
+    azs_dict.append(azs.id)'''

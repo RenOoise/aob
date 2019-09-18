@@ -9,7 +9,7 @@ class LoginForm(FlaskForm):
     username = StringField("", validators=[DataRequired()], render_kw={"placeholder": "Имя пользователя"})
     password = PasswordField("", validators=[DataRequired()], render_kw={"placeholder": "Пароль"})
     remember_me = BooleanField(_l('Запомнить меня'))
-    submit = SubmitField(_l('Войти'))
+    submit = SubmitField('Вход')
 
 
 class RegistrationForm(FlaskForm):

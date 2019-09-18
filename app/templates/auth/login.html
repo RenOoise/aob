@@ -1,17 +1,27 @@
 {% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
-
+{% from "auth/_formhelpers.html" import render_field %}
 {% block app_content %}
 
     <div class="row py-4 justify-content-md-center">
 
         <div class="col-lg-4">
-            <img src="{{ url_for('static', filename='surgutshadow.png')}}" class="rounded mx-auto d-block" alt="...">
             <div class="row justify-content-md-center">
-                <div class="col-lg-8">
 
-                    {{ wtf.quick_form(form, button_map={'submit': 'success '}) }}
-                </div>
+                <form action="" method="post" class="form col-lg-8" role="form">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        <input class="form-control" id="username" name="username" placeholder="Имя пользователя" type="text">
+                    </div>
+                        <div class="form-group">
+                        <input class="form-control" id="password" name="password" placeholder="Пароль" type="password">
+                        </div>
+                        <label>
+                            <input id="remember_me" name="remember_me" type="checkbox">
+                            <span> Запомнить</span>
+                        </label>
+
+                </form>
             </div>
         </div>
     </div>

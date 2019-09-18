@@ -754,83 +754,127 @@ def start():
             # готовим список
             preparation_one_dict = {
                 'id': i.id,
-                'variant': i.variant,
-                'truck_id': i.truck_id,
+                'variant_id': i.variant_id,
                 'azs_id': i.azs_id,
-                'variant_sliv': i.variant_sliv,
+                'truck_id': i.truck_id,
+                'truck_tank_id': i.truck_tank_id,
                 'fuel_type': i.fuel_type,
-                'tank_id': i.tank_id,
-                'str_sliv': i.str_sliv,
-                'sum_sliv': i.sum_sliv,
-                'truck_tank_id_string': i.truck_tank_id_string,
-                'is_it_fit': i.is_it_fit,
-                'is_it_fit_later': i.is_it_fit_later,
-                'new_fuel_volume': i.new_fuel_volume,
-                'new_days_stock': i.new_days_stock
+                'capacity': i.capacity
             }
             preparation_one_list.append(preparation_one_dict)
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        len(preparation_one_list)
+        print(len(preparation_one_list))
+
+    Close1_Tank1 = Close1Tank1.query.all()
+    Close1_Tank2 = Close1Tank2.query.all()
+    Close1_Tank3 = Close1Tank3.query.all()
+    Close1_Tank4 = Close1Tank4.query.all()
+    Close2_Tank1 = Close2Tank1.query.all()
+    Close2_Tank2 = Close2Tank2.query.all()
+    Close2_Tank3 = Close2Tank3.query.all()
+    Close2_Tank4 = Close2Tank4.query.all()
+
+    def select_close_tank_table(count, tanks_counter):
+        if count == 1 and tanks_counter == 1:
+            table_sliv_variant = Close1_Tank1
+            return table_sliv_variant
+        if count == 1 and tanks_counter == 2:
+            table_sliv_variant = Close1_Tank2
+            return table_sliv_variant
+        if count == 1 and tanks_counter == 3:
+            table_sliv_variant = Close1_Tank3
+            return table_sliv_variant
+        if count == 1 and tanks_counter == 4:
+            table_sliv_variant = Close1_Tank4
+            return table_sliv_variant
+        if count == 2 and tanks_counter == 1:
+            table_sliv_variant = Close2_Tank1
+            return table_sliv_variant
+        if count == 2 and tanks_counter == 2:
+            table_sliv_variant = Close2_Tank2
+            return table_sliv_variant
+        if count == 2 and tanks_counter == 3:
+            table_sliv_variant = Close2_Tank3
+            return table_sliv_variant
+        if count == 2 and tanks_counter == 4:
+            table_sliv_variant = Close2_Tank4
+            return table_sliv_variant
 
     def preparation_two():
         db.session.query(TempAzsTrucks2).delete()
         db.session.commit()
         preparation_one_list = list()
-        preparation_one_dict = dict()
-
         for i in TempAzsTrucks.query.all():
             # готовим список
             preparation_one_dict = {
                 'id': i.id,
-                'variant': i.variant,
-                'truck_id': i.truck_id,
+                'variant_id': i.variant_id,
                 'azs_id': i.azs_id,
-                'variant_sliv': i.variant_sliv,
+                'truck_id': i.truck_id,
+                'truck_tank_id': i.truck_tank_id,
                 'fuel_type': i.fuel_type,
-                'tank_id': i.tank_id,
-                'str_sliv': i.str_sliv,
-                'sum_sliv': i.sum_sliv,
-                'truck_tank_id_string': i.truck_tank_id_string,
-                'is_it_fit': i.is_it_fit,
-                'is_it_fit_later': i.is_it_fit_later,
-                'new_fuel_volume': i.new_fuel_volume,
-                'new_days_stock': i.new_days_stock
+                'capacity': i.capacity
             }
             preparation_one_list.append(preparation_one_dict)
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        len(preparation_one_list)
-
-        preparation_one_last = TempAzsTrucks.query.order_by(desc(TempAzsTrucks.variant_id)).first_or_404()
+        # Получаем последнее значение variant_id из словаря
+        preparation_one_last = preparation_one_list[-1]
         # вариант слива для таблицы TempAzsTrucks2
         variant_counter_sliv = 1
         # Перебираем варианты налива бензовозов
-        for variant in range(1, preparation_one_last.variant_id):
+        df = pd.DataFrame(preparation_one_list)
+        table_tanks = Tanks.query.all()
+        table_tanks_list = list()
+        for i in table_tanks:
+            table_tanks_dict = {
+                'id': i.id,
+                'azs_id': i.azs_id,
+                'tank_number': i.tank_number,
+                'fuel_type': i.fuel_type,
+                'corrected_capacity': i.corrected_capacity,
+                'nominal_capacity': i.nominal_capacity,
+            }
+            table_tanks_list.append(table_tanks_dict)
+        df_table_tanks = pd.DataFrame(table_tanks_list)
+        for variant in range(1, preparation_one_last['variant_id']):
             # preparation_one_last.variant_id
-            azs = TempAzsTrucks.query.filter_by(variant_id=variant).first_or_404()
-            table_temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
+            df_azs = df[df['variant_id'] == variant].to_dict('r')
+            print(variant)
+            df_azs = df_azs[0]
+            df_table_temp_azs_trucks_variant = df[df['variant_id'] == variant].to_dict('r')
+
             # Узнаем сколько отсеков у бензовоза с каждым видом топлива
-            tanks_counter_92 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=92).count()
-            tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
-            tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
+            dataframe_92 = df[(df['fuel_type'] == 92) & (df['variant_id'] == variant)].to_dict('r')
+            dataframe_95 = df[(df['fuel_type'] == 95) & (df['variant_id'] == variant)].to_dict('r')
+            dataframe_50 = df[(df['fuel_type'] == 50) & (df['variant_id'] == variant)].to_dict('r')
+
+            tanks_counter_92 = len(dataframe_92)
+            tanks_counter_95 = len(dataframe_95)
+            tanks_counter_50 = len(dataframe_50)
+
+            # tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
+            # tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
+
             # Получаем id АЗС
-            azs_id = azs.azs_id
+            azs_id = df_azs['azs_id']
             # Считаем количество резервуаров АЗС по каждому виду топлива
-            table_tanks = Tanks.query.filter_by(azs_id=azs_id).all()
+            dataframe_tanks = df_table_tanks[df_table_tanks['azs_id'] == azs_id].to_dict('r')
+
             count_92 = 0
             count_95 = 0
             count_50 = 0
             tanks_list_92 = list()
             tanks_list_95 = list()
             tanks_list_50 = list()
-            for tank in table_tanks:
-                if tank.fuel_type is 92:
-                    tanks_list_92.append(tank.id)
+            for tank in dataframe_tanks:
+                if tank['fuel_type'] is 92:
+                    tanks_list_92.append(tank['id'])
                     count_92 = count_92 + 1
-                elif tank.fuel_type is 95:
-                    tanks_list_95.append(tank.id)
+                elif tank['fuel_type'] is 95:
+                    tanks_list_95.append(tank['id'])
                     count_95 = count_95 + 1
-                elif tank.fuel_type is 50:
-                    tanks_list_50.append(tank.id)
+                elif tank['fuel_type'] is 50:
+                    tanks_list_50.append(tank['id'])
                     count_50 = count_50 + 1
 
             truck_cell_capacity = list()
@@ -841,27 +885,17 @@ def start():
             cells_capacity_92 = list()
             cells_capacity_95 = list()
             cells_capacity_50 = list()
-            for row in table_temp_azs_trucks:
-                if row.fuel_type == 92:
-                    cells_list_92.append(row.truck_tank_id)
-                    cells_capacity_92.append(row.capacity)
-                if row.fuel_type == 95:
-                    cells_list_95.append(row.truck_tank_id)
-                    cells_capacity_95.append(row.capacity)
-                if row.fuel_type == 50:
-                    cells_list_50.append(row.truck_tank_id)
-                    cells_capacity_50.append(row.capacity)
+            for row in df_table_temp_azs_trucks_variant:
+                if row['fuel_type'] == 92:
+                    cells_list_92.append(row['truck_tank_id'])
+                    cells_capacity_92.append(row['capacity'])
+                if row['fuel_type'] == 95:
+                    cells_list_95.append(row['truck_tank_id'])
+                    cells_capacity_95.append(row['capacity'])
+                if row['fuel_type'] == 50:
+                    cells_list_50.append(row['truck_tank_id'])
+                    cells_capacity_50.append(row['capacity'])
 
-            '''sum_92 = 0
-            sum_95 = 0
-            sum_50 = 0
-            for row in table_temp_azs_trucks:
-                if row.fuel_type is 92:
-                    sum_92 = sum_92 + row.capacity
-                if row.fuel_type is 95:
-                    sum_92 = sum_95 + row.capacity
-                if row.fuel_type is 50:
-                    sum_92 = sum_50 + row.capacity'''
             table_sliv_variant_92 = None
             table_sliv_variant_50 = None
             table_sliv_variant_95 = None
@@ -870,79 +904,78 @@ def start():
             # получаем нужную константную таблицу с вариантами слива бензовоза
 
             if count_92 == 1 and tanks_counter_92 == 1:
-                table_sliv_variant_92 = Close1Tank1.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 1 and tanks_counter_92 == 2:
-                table_sliv_variant_92 = Close1Tank2.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 1 and tanks_counter_92 == 3:
-                table_sliv_variant_92 = Close1Tank3.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 1 and tanks_counter_92 == 4:
-                table_sliv_variant_92 = Close1Tank4.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 2 and tanks_counter_92 == 1:
-                table_sliv_variant_92 = Close2Tank1.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 2 and tanks_counter_92 == 2:
-                table_sliv_variant_92 = Close2Tank2.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 2 and tanks_counter_92 == 3:
-                table_sliv_variant_92 = Close2Tank3.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
             if count_92 == 2 and tanks_counter_92 == 4:
-                table_sliv_variant_92 = Close2Tank4.query.all()
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
-            '''---------------------------------------------'''
+            # ---------------------------------------------
             if count_95 == 1 and tanks_counter_95 == 1:
-                table_sliv_variant_95 = Close1Tank1.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 1 and tanks_counter_95 == 2:
-                table_sliv_variant_95 = Close1Tank2.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 1 and tanks_counter_95 == 3:
-                table_sliv_variant_95 = Close1Tank3.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 1 and tanks_counter_95 == 4:
-                table_sliv_variant_95 = Close1Tank4.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 2 and tanks_counter_95 == 1:
-                table_sliv_variant_95 = Close2Tank1.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 2 and tanks_counter_95 == 2:
-                table_sliv_variant_95 = Close2Tank2.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 2 and tanks_counter_95 == 3:
-                table_sliv_variant_95 = Close2Tank3.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
             if count_95 == 2 and tanks_counter_95 == 4:
-                table_sliv_variant_95 = Close2Tank4.query.all()
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
-            '''---------------------------------------------'''
-
+            # --------------------------------------------
             if count_50 == 1 and tanks_counter_50 == 1:
-                table_sliv_variant_50 = Close1Tank1.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 1 and tanks_counter_50 == 2:
-                table_sliv_variant_50 = Close1Tank2.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 1 and tanks_counter_50 == 3:
-                table_sliv_variant_50 = Close1Tank3.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 1 and tanks_counter_50 == 4:
-                table_sliv_variant_50 = Close1Tank4.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 2 and tanks_counter_50 == 1:
-                table_sliv_variant_50 = Close2Tank1.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 2 and tanks_counter_50 == 2:
-                table_sliv_variant_50 = Close2Tank2.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 2 and tanks_counter_50 == 3:
-                table_sliv_variant_50 = Close2Tank3.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 2 and tanks_counter_50 == 4:
-                table_sliv_variant_50 = Close2Tank4.query.all()
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if table_sliv_variant_92 is not None:
                 if count_92 == 1:
@@ -957,7 +990,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
@@ -978,7 +1011,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
@@ -996,7 +1029,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank2,
@@ -1017,7 +1050,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
@@ -1035,7 +1068,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank2,
@@ -1053,7 +1086,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank3,
@@ -1074,7 +1107,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
@@ -1092,7 +1125,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank2,
@@ -1110,7 +1143,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank3,
@@ -1128,7 +1161,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank4,
@@ -1137,9 +1170,9 @@ def start():
                                                  sum_sliv=sum_sliv)
                             db.session.add(sql)
                         variant_counter_sliv = variant_counter_sliv + 1
+            
 
-            ''' -------------------------------- '''
-            ''' --- Для 95 вида топлива '''
+            # --- Для 95 вида топлива
 
             if table_sliv_variant_95 is not None:
                 if count_95 == 1:
@@ -1154,7 +1187,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
@@ -1175,7 +1208,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
@@ -1193,7 +1226,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank2,
@@ -1214,7 +1247,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=92,
                                                  str_sliv=variant_sliv.tank1,
@@ -1232,7 +1265,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank2,
@@ -1250,7 +1283,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank3,
@@ -1271,7 +1304,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank1,
@@ -1289,7 +1322,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank2,
@@ -1307,7 +1340,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank3,
@@ -1325,7 +1358,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=95,
                                                  str_sliv=variant_sliv.tank4,
@@ -1335,8 +1368,7 @@ def start():
                             db.session.add(sql)
                         variant_counter_sliv = variant_counter_sliv + 1
 
-            ''' -------------------------------- '''
-            ''' --- Для 50 вида топлива '''
+            # --- Для 50 вида топлива 
 
             if table_sliv_variant_50 is not None:
                 if count_50 == 1:
@@ -1351,7 +1383,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
@@ -1372,7 +1404,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
@@ -1390,7 +1422,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank2,
@@ -1411,7 +1443,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
@@ -1429,7 +1461,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank2,
@@ -1447,7 +1479,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank3,
@@ -1468,7 +1500,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank1,
@@ -1486,7 +1518,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank2,
@@ -1504,7 +1536,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank3,
@@ -1522,7 +1554,7 @@ def start():
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             sql = TempAzsTrucks2(variant=variant,
                                                  azs_id=azs_id,
-                                                 truck_id=azs.truck_id,
+                                                 truck_id=df_azs['truck_id'],
                                                  variant_sliv=variant_counter_sliv,
                                                  fuel_type=50,
                                                  str_sliv=variant_sliv.tank4,
@@ -1539,9 +1571,7 @@ def start():
         residue = FuelResidue.query.all()
         for re in residue:
             temp_azs_trucks_2 = TempAzsTrucks2.query.filter_by(tank_id=re.tank_id).all()
-            print(re.azs_id)
             trip = Trip.query.filter_by(azs_id=re.azs_id).first()
-            print(trip.time_to)
 
             for row in temp_azs_trucks_2:
                 realisation = FuelRealisation.query.filter_by(tank_id=re.tank_id).first()
@@ -1639,7 +1669,7 @@ def start():
                 print(is_it_92, is_it_95, is_it_50, is_it_92_sliv, is_it_95_sliv, is_it_50_sliv)
 
             else:
-                x =1
+                x = 1
 
     def create_today_trip():
         print("Формирование задания на сегодня")
@@ -1704,10 +1734,10 @@ def start():
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
-        print("Начало ", datetime.now())
+        print("Начало 1 ", datetime.now())
         # preparation()
-        print("КОнэц ", datetime.now())
-        preparation_two_test()
+        # preparation_two()
+        print("Конэц 2 ", datetime.now())
         # is_it_fit()
         # preparation_three()
         today_trip = TripForToday.query.first()

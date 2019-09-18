@@ -320,8 +320,8 @@ class CfgDbConnection(db.Model):
 
 
 class Tanks(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айди АЗС из таблицы azs_list
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'), index=True)  # айди АЗС из таблицы azs_list
     tank_number = db.Column(db.Integer)  # номер резервуара
     fuel_type = db.Column(db.Integer)  # вид топлива
     nominal_capacity = db.Column(db.Float)  # емкость резервуара по паспорту
@@ -340,7 +340,7 @@ class Tanks(db.Model):
 # остатки в резервуарах
 class FuelResidue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'), index=True)
     tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
     product_code = db.Column(db.Integer)  # код топлива
     percent = db.Column(db.Integer)  # процент заполненности резервуара
@@ -359,7 +359,7 @@ class FuelRealisation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'), index=True)
     shop_id = db.Column(db.Integer, index=True)  # ПЕРЕИМЕНОВАТЬ В azs_id после релиза и связать с AzsList
-    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'), index=True)
     product_code = db.Column(db.Integer)  # код топлива
     average_1_days = db.Column(db.Float)  # среднее значение реализации за сутки
     average_3_days = db.Column(db.Float)  # среднее значение реализации за 3 сутон
@@ -458,7 +458,7 @@ class WorkType(db.Model):
 
 class TempAzsTrucks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    variant_id = db.Column(db.Integer)
+    variant_id = db.Column(db.Integer, index=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
     truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
@@ -468,7 +468,7 @@ class TempAzsTrucks(db.Model):
 
 class TempAzsTrucks2(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    variant = db.Column(db.Integer)
+    variant = db.Column(db.Integer, index=True)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
     variant_sliv = db.Column(db.Integer)
