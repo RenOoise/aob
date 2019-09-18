@@ -1064,7 +1064,7 @@ def average_day_stock_by_tanks(azs_id):
     pass
 
 
-# download_tanks_info()
+download_tanks_info()
 
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''
