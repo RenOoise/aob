@@ -481,6 +481,9 @@ class TempAzsTrucks2(db.Model):
     is_it_fit_later = db.Column(db.Boolean)  # войдет ли позже?
     new_fuel_volume = db.Column(db.Float)  # новый объем
     new_days_stock = db.Column(db.Float)  # новый запас суток
+    is_it_able_to_enter = db.Column(db.Boolean)  # сможет ли заехать бензовоз
+    is_variant_good = db.Column(db.Boolean)  # подходит ли этот вариант?
+    is_variant_sliv_good = db.Column(db.Boolean)  # подходит ли этот вариант слива?
 
 
 class TempAzsTrucks3(db.Model):

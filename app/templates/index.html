@@ -9,7 +9,7 @@
                     <h5 class="card-header">Расстановка бензовозов</h5>
                     <div class="card-body">
                         <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
-                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary\ my-2 my-sm-0">Изменить расстановку</a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary my-2 my-sm-0">Изменить расстановку</a>
                     </div>
                 </div>
             </div>
@@ -29,7 +29,6 @@
                             <tbody>
                             {% for trip in trip_for_today %}
                                 <tr>
-
                                     <td>{{ trip.azs_number }}</td>
                                     <td>{{ trip.truck_number }}</td>
                                     <td>{{ trip.zapolnenie}}</td>
