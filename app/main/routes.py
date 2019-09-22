@@ -524,11 +524,50 @@ def start():
         print("Подготовка начата")
         db.session.query(TempAzsTrucks).delete()
         db.session.commit()
-        azs_list = AzsList.query.filter_by(active=True).all()
-        truck_list = Trucks.query.filter_by(active=True).all()
-        truck_cells_list = TruckTanks.query.all()
+        azs_list = AzsList.query.filter_by(active=True).all()  # получаем список АКТИВНЫХ АЗС
+        truck_list = Trucks.query.filter_by(active=True).all()  # получаем список АКТИВНЫХ бензовозов
+        azs_tanks = Tanks.query.filter_by(active=True).all()  # получаем список АКТИЫНЫХ резервуаров всех АЗС
+        truck_cells_list = TruckTanks.query.all()  # получаем список всех отсеков бензовозов
         variant_counter = 1
-        for azs in azs_list:
+        for azs in azs_list:  # перебераем АЗС
+            # создаем переменные для определения есть эти виды топлива на АЗС или нет
+            is_92 = 0
+            is_95 = 0
+            is_50 = 0
+            # перебираем таблицу из памяти со всеми АКТИЫНЫМИ резервуарами АЗС
+            for row in azs_tanks:
+                # проверяем есть ли у этой АЗС (которую перебираем в цикле) резервуары с 92 топливом
+                if row.azs_id == azs.id and row.fuel_type == 92:
+                    is_92 = 1  # если есть, то помечаем соответствующий вид топлива
+                # проверяем есть ли у этой АЗС резервуары с 95 топливом
+                if row.azs_id == azs.id and row.fuel_type == 95:
+                    is_95 = 1  # если есть, то помечаем соответствующий вид топлива
+                # проверяем есть ли у этой АЗС резервуары с 50 топливом
+                if row.azs_id == azs.id and row.fuel_type == 50:
+                    is_50 = 1  # если есть, то помечаем соответствующий вид топлива
+                # для ускорения проверяем, если все три вида топлив есть, то можно цикл остановить, так как больше точно ничего не найдем
+                if (is_92 == 1) and (is_92 == 1) and (is_50 == 1):
+                    break
+
+            # В зависимости от найденных видов топлива на АЗС, формируем список
+            azs_types = list()
+            if (is_92 == 1) and (is_95 == 1) and (is_50 == 1):
+                azs_types = [1, 2, 3]
+            if (is_92 == 1) and (is_95 == 1) and (is_50 == 0):
+                azs_types = [1, 2]
+            if (is_92 == 1) and (is_95 == 0) and (is_50 == 1):
+                azs_types = [1, 3]
+            if (is_92 == 0) and (is_95 == 1) and (is_50 == 1):
+                azs_types = [2, 3]
+            if (is_92 == 1) and (is_95 == 0) and (is_50 == 0):
+                azs_types = [1]
+            if (is_92 == 0) and (is_95 == 1) and (is_50 == 0):
+                azs_types = [2]
+            if (is_92 == 0) and (is_95 == 0) and (is_50 == 1):
+                azs_types = [3]
+
+
+            # перебераем список всех АКТИВНЫХ бензовозов
             for truck in truck_list:
                 fuel_types = list()
                 cell_counter = 0
@@ -538,7 +577,7 @@ def start():
 
                 truck_tanks_count = cell_counter  # считаем их количество
                 if truck_tanks_count == 1:
-                    for a in range(1, 4):
+                    for a in azs_types:
                         fuel_types = [a]
                         for index, type in enumerate(fuel_types):
                             if type is 1:
@@ -560,8 +599,8 @@ def start():
                         variant_counter = variant_counter + 1
 
                 if truck_tanks_count == 2:
-                    for a in range(1, 4):
-                        for b in range(1, 4):
+                    for a in azs_types:
+                        for b in azs_types:
                             fuel_types = [a, b]
                             for index, type in enumerate(fuel_types):
                                 if type is 1:
@@ -582,9 +621,9 @@ def start():
                             variant_counter = variant_counter + 1
 
                 if truck_tanks_count == 3:
-                    for a in range(1, 4):
-                        for b in range(1, 4):
-                            for c in range(1, 4):
+                    for a in azs_types:
+                        for b in azs_types:
+                            for c in azs_types:
                                 fuel_types = [a, b, c]
                                 for index, type in enumerate(fuel_types):
                                     if type is 1:
@@ -608,10 +647,10 @@ def start():
                                 variant_counter = variant_counter + 1
 
                 if truck_tanks_count == 4:
-                    for a in range(1, 4):
-                        for b in range(1, 4):
-                            for c in range(1, 4):
-                                for d in range(1, 4):
+                    for a in azs_types:
+                        for b in azs_types:
+                            for c in azs_types:
+                                for d in azs_types:
                                     fuel_types = [a, b, c, d]
                                     for index, type in enumerate(fuel_types):
                                         if type is 1:
@@ -632,11 +671,11 @@ def start():
                                         db.session.add(sql)
                                     variant_counter = variant_counter + 1
                     if truck_tanks_count == 5:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                for c in range(1, 4):
-                                    for d in range(1, 4):
-                                        for e in range(1, 4):
+                        for a in azs_types:
+                            for b in azs_types:
+                                for c in azs_types:
+                                    for d in azs_types:
+                                        for e in azs_types:
                                             fuel_types = [a, b, c, d, e]
                                             for index, type in enumerate(fuel_types):
                                                 if type is 1:
@@ -659,12 +698,12 @@ def start():
 
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 6:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                for c in range(1, 4):
-                                    for d in range(1, 4):
-                                        for e in range(1, 4):
-                                            for f in range(1, 4):
+                        for a in azs_types:
+                            for b in azs_types:
+                                for c in azs_types:
+                                    for d in azs_types:
+                                        for e in azs_types:
+                                            for f in azs_types:
                                                 fuel_types = [a, b, c, d, e, f]
                                             for index, type in enumerate(fuel_types):
                                                 if type is 1:
@@ -687,13 +726,13 @@ def start():
 
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 7:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                for c in range(1, 4):
-                                    for d in range(1, 4):
-                                        for e in range(1, 4):
-                                            for f in range(1, 4):
-                                                for g in range(1, 4):
+                        for a in azs_types:
+                            for b in azs_types:
+                                for c in azs_types:
+                                    for d in azs_types:
+                                        for e in azs_types:
+                                            for f in azs_types:
+                                                for g in azs_types:
                                                     fuel_types = [a, b, c, d, e, f, g]
                                             for index, type in enumerate(fuel_types):
                                                 if type is 1:
@@ -715,14 +754,14 @@ def start():
 
                                             variant_counter = variant_counter + 1
                     if truck_tanks_count == 8:
-                        for a in range(1, 4):
-                            for b in range(1, 4):
-                                for c in range(1, 4):
-                                    for d in range(1, 4):
-                                        for e in range(1, 4):
-                                            for f in range(1, 4):
-                                                for g in range(1, 4):
-                                                    for h in range(1, 4):
+                        for a in azs_types:
+                            for b in azs_types:
+                                for c in azs_types:
+                                    for d in azs_types:
+                                        for e in azs_types:
+                                            for f in azs_types:
+                                                for g in azs_types:
+                                                    for h in azs_types:
                                                         fuel_types = [a, b, c, d, e, f, g, h]
                                             for index, type in enumerate(fuel_types):
                                                 if type is 1:
@@ -746,24 +785,6 @@ def start():
         db.session.commit()
         print("Подготовка закончена")
 
-    def preparation_two_test():
-        preparation_one_list = list()
-        preparation_one_dict = dict()
-
-        for i in TempAzsTrucks.query.all():
-            # готовим список
-            preparation_one_dict = {
-                'id': i.id,
-                'variant_id': i.variant_id,
-                'azs_id': i.azs_id,
-                'truck_id': i.truck_id,
-                'truck_tank_id': i.truck_tank_id,
-                'fuel_type': i.fuel_type,
-                'capacity': i.capacity
-            }
-            preparation_one_list.append(preparation_one_dict)
-        # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        print(len(preparation_one_list))
 
     Close1_Tank1 = Close1Tank1.query.all()
     Close1_Tank2 = Close1Tank2.query.all()
@@ -773,6 +794,10 @@ def start():
     Close2_Tank2 = Close2Tank2.query.all()
     Close2_Tank3 = Close2Tank3.query.all()
     Close2_Tank4 = Close2Tank4.query.all()
+    Close3_Tank1 = Close3Tank1.query.all()
+    Close3_Tank2 = Close3Tank2.query.all()
+    Close3_Tank3 = Close3Tank3.query.all()
+    Close3_Tank4 = Close3Tank4.query.all()
 
     def select_close_tank_table(count, tanks_counter):
         if count == 1 and tanks_counter == 1:
@@ -787,6 +812,7 @@ def start():
         if count == 1 and tanks_counter == 4:
             table_sliv_variant = Close1_Tank4
             return table_sliv_variant
+
         if count == 2 and tanks_counter == 1:
             table_sliv_variant = Close2_Tank1
             return table_sliv_variant
@@ -800,6 +826,18 @@ def start():
             table_sliv_variant = Close2_Tank4
             return table_sliv_variant
 
+        if count == 3 and tanks_counter == 1:
+            table_sliv_variant = Close3_Tank1
+            return table_sliv_variant
+        if count == 3 and tanks_counter == 2:
+            table_sliv_variant = Close3_Tank2
+            return table_sliv_variant
+        if count == 3 and tanks_counter == 3:
+            table_sliv_variant = Close3_Tank3
+            return table_sliv_variant
+        if count == 3 and tanks_counter == 4:
+            table_sliv_variant = Close3_Tank4
+            return table_sliv_variant
 
     def preparation_two():
         db.session.query(TempAzsTrucks2).delete()
@@ -837,8 +875,9 @@ def start():
             }
             table_tanks_list.append(table_tanks_dict)
         df_table_tanks = pd.DataFrame(table_tanks_list)
-        # preparation_one_last['variant_id']
-        for variant in range(4590, 4593):
+
+        #
+        for variant in range(13776, preparation_one_last['variant_id']):
             # preparation_one_last.variant_id
             df_azs = df[df['variant_id'] == variant].to_dict('r')
             print(variant)
@@ -929,6 +968,18 @@ def start():
             if count_92 == 2 and tanks_counter_92 == 4:
                 table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
 
+            if count_92 == 3 and tanks_counter_92 == 1:
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+
+            if count_92 == 3 and tanks_counter_92 == 2:
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+
+            if count_92 == 3 and tanks_counter_92 == 3:
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+
+            if count_92 == 3 and tanks_counter_92 == 4:
+                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+
             # ---------------------------------------------
             if count_95 == 1 and tanks_counter_95 == 1:
                 table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
@@ -954,6 +1005,18 @@ def start():
             if count_95 == 2 and tanks_counter_95 == 4:
                 table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
 
+            if count_95 == 3 and tanks_counter_95 == 1:
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+
+            if count_95 == 3 and tanks_counter_95 == 2:
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+
+            if count_95 == 3 and tanks_counter_95 == 3:
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+
+            if count_95 == 3 and tanks_counter_95 == 4:
+                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+
             # --------------------------------------------
             if count_50 == 1 and tanks_counter_50 == 1:
                 table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
@@ -977,6 +1040,18 @@ def start():
                 table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if count_50 == 2 and tanks_counter_50 == 4:
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+
+            if count_50 == 3 and tanks_counter_50 == 1:
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+
+            if count_50 == 3 and tanks_counter_50 == 2:
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+
+            if count_50 == 3 and tanks_counter_50 == 3:
+                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+
+            if count_50 == 3 and tanks_counter_50 == 4:
                 table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
 
             if table_sliv_variant_92 is not None:
@@ -1434,6 +1509,8 @@ def start():
                             db.session.add(sql)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_50 == 3:
+                    print("variant", variant)
+                    print(table_sliv_variant_50)
                     for variant_sliv in table_sliv_variant_50:
                         if variant_sliv.tank1 is not None:
                             sum_sliv = 0
@@ -1475,6 +1552,7 @@ def start():
                             sum_sliv = 0
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
+
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
@@ -1659,12 +1737,13 @@ def start():
                 if trigger == 1:
                     is_it_95_sliv = 1
 
-
             if is_it_50:
                 temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by("variant_sliv").first()
                 temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by(desc("variant_sliv")).first()
                 temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).all()
                 trigger = 1
+                print("Вот тут хуй:", variant)
+                print(temp_variant_sliv_first.variant_sliv, (temp_variant_sliv_last.variant_sliv+1))
                 for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
                     i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50, variant_sliv=row).all()
                     for row in i:
@@ -1673,9 +1752,9 @@ def start():
                 if trigger == 1:
                     is_it_50_sliv = 1
             if (is_it_92+is_it_95+is_it_50) == (is_it_92_sliv+is_it_95_sliv+is_it_50_sliv):
-                print(variant)
-                print("Заебися")
-                print(is_it_92, is_it_95, is_it_50, is_it_92_sliv, is_it_95_sliv, is_it_50_sliv)
+                # print(variant)
+                # print("Заебися")
+                # print(is_it_92, is_it_95, is_it_50, is_it_92_sliv, is_it_95_sliv, is_it_50_sliv)
                 for row in TempAzsTrucks2.query.filter_by(variant=variant).all():
                     row.is_variant_good = True
                 db.session.commit()
@@ -1762,14 +1841,13 @@ def start():
     else:
         start_time = datetime.now()
 
-        preparation_old()
-        # preparation_two()
+        # preparation()
+        preparation_two()
 
-        # is_it_fit()
+        is_it_fit()
         print("Начало", start_time)
-
-        # preparation_three()
-        # is_variant_sliv_good()
+        preparation_three()
+        #is_variant_sliv_good()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
         print("Конец", datetime.now())

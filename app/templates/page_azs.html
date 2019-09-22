@@ -22,7 +22,6 @@
                                 <div class="col col-lg-6">
                                     {%- for z in online -%}
                                         {%- if z.tank_id == i.id -%}
-
                                             <p>Вип топлива: {{z.product_code}}</p>
                                             <p>Остаток топлива: {{z.fuel_volume}} л.</p>
                                             <p>Свободнная емкость: {{(i.corrected_capacity - z.fuel_volume)|int(0)}} л.</p>

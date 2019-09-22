@@ -1071,9 +1071,9 @@ download_realisation_info()
 azs_list = AzsList.query.order_by("number").all()
 for i in azs_list:
     day_stock(i.id)
-#azs_priority()
+azs_priority()
 '''Средний запас суток среди всех резервуаров АЗС'''
-'''average_azs = Priority.query.all()
+average_azs = Priority.query.all()
 for i in average_azs:
     average_day_stock_by_tanks(i.azs_id)
 sleep(2)
@@ -1081,4 +1081,4 @@ sleep(2)
 azs_dict = list()
 test = AzsList.query.filter_by(active=True).all()
 for azs in test:
-    azs_dict.append(azs.id)'''
+    azs_dict.append(azs.id)
