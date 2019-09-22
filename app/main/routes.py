@@ -876,11 +876,10 @@ def start():
             table_tanks_list.append(table_tanks_dict)
         df_table_tanks = pd.DataFrame(table_tanks_list)
 
-        #
-        for variant in range(13776, preparation_one_last['variant_id']):
+        for variant in range(1, preparation_one_last['variant_id']):
             # preparation_one_last.variant_id
             df_azs = df[df['variant_id'] == variant].to_dict('r')
-            print(variant)
+            print(df_azs)
             df_azs = df_azs[0]
             df_table_temp_azs_trucks_variant = df[df['variant_id'] == variant].to_dict('r')
 
@@ -1509,8 +1508,6 @@ def start():
                             db.session.add(sql)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_50 == 3:
-                    print("variant", variant)
-                    print(table_sliv_variant_50)
                     for variant_sliv in table_sliv_variant_50:
                         if variant_sliv.tank1 is not None:
                             sum_sliv = 0
@@ -1688,7 +1685,7 @@ def start():
         # Перебираем варианты налива бензовозов
         preparation_two_last = TempAzsTrucks2.query.order_by(desc(TempAzsTrucks2.variant)).first_or_404()
 
-        for variant in range(4590, preparation_two_last.variant):
+        for variant in range(1, preparation_two_last.variant):
             is_it_92 = 0
             is_it_95 = 0
             is_it_50 = 0
@@ -1742,8 +1739,6 @@ def start():
                 temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by(desc("variant_sliv")).first()
                 temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).all()
                 trigger = 1
-                print("Вот тут хуй:", variant)
-                print(temp_variant_sliv_first.variant_sliv, (temp_variant_sliv_last.variant_sliv+1))
                 for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
                     i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50, variant_sliv=row).all()
                     for row in i:
@@ -1752,9 +1747,6 @@ def start():
                 if trigger == 1:
                     is_it_50_sliv = 1
             if (is_it_92+is_it_95+is_it_50) == (is_it_92_sliv+is_it_95_sliv+is_it_50_sliv):
-                # print(variant)
-                # print("Заебися")
-                # print(is_it_92, is_it_95, is_it_50, is_it_92_sliv, is_it_95_sliv, is_it_50_sliv)
                 for row in TempAzsTrucks2.query.filter_by(variant=variant).all():
                     row.is_variant_good = True
                 db.session.commit()
@@ -1774,7 +1766,7 @@ def start():
                 for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
                     row.is_variant_sliv_good = True
                     print(variant_sliv)
-                db.session.commit()
+        db.session.commit()
 
     def create_today_trip():
         print("Формирование задания на сегодня")
@@ -1841,13 +1833,13 @@ def start():
     else:
         start_time = datetime.now()
 
-        # preparation()
-        preparation_two()
+        #preparation()
+        #preparation_two()
 
-        is_it_fit()
+        #is_it_fit()
         print("Начало", start_time)
-        preparation_three()
-        #is_variant_sliv_good()
+        #preparation_three()
+        is_variant_sliv_good()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
         print("Конец", datetime.now())
