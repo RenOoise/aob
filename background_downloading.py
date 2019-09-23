@@ -624,8 +624,6 @@ class QueryFromDb(object):
                                 for row in query:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
-
-
                                     if income:
                                         volume = float(query[0][4]) - float(realisation[0][3]) + float(income[0][4])
                                     else:
@@ -634,7 +632,7 @@ class QueryFromDb(object):
                                     percent = (100 * (volume / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[3]
-                                        add.fuel_volume = query[0][4] - realisation[0][3]
+                                        add.fuel_volume = volume
                                         add.free_volume = tankid.corrected_capacity - volume
                                         add.fuel_temperature = row[5]
                                         add.datetime = row[6]

@@ -785,7 +785,6 @@ def start():
         db.session.commit()
         print("Подготовка закончена")
 
-
     Close1_Tank1 = Close1Tank1.query.all()
     Close1_Tank2 = Close1Tank2.query.all()
     Close1_Tank3 = Close1Tank3.query.all()
