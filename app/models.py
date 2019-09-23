@@ -688,3 +688,13 @@ class Test(db.Model):
     tank2 = db.Column(db.String(120))
     tank3 = db.Column(db.String(120))
     tank4 = db.Column(db.String(120))
+
+
+class RealisationStats(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    realisation = db.Column(db.Float)
+    fuel_type = db.Column(db.Integer)
+    fuel_type_name = db.Column(db.String(40))
+    date = db.Column(db.DateTime)
