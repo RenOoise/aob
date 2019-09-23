@@ -413,8 +413,8 @@ def download_realisation_info():
                                 for fr_1_d in query_1:
                                     if fr_1_d[1] is row[1]:
                                         collected_data['fuel_realisation_1_days'] = fr_1_d[2]
-                                        collected_data['average_10_days'] = collected_data[
-                                                                                'fuel_realisation_10_days'] / 10
+                                        collected_data['average_1_days'] = collected_data[
+                                                                                'fuel_realisation_1_days']
                                 for fr_3_d in query_3:
                                     if fr_3_d[1] is row[1]:
                                         collected_data['fuel_realisation_3_days'] = fr_3_d[2]
