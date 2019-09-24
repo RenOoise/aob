@@ -19,14 +19,14 @@ from app.main import bp
 import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
 from datetime import datetime, timedelta
-from sqlalchemy import desc
+from sqlalchemy import desc, extract, and_
+from sqlalchemy.sql import func
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 import pygal
 from pygal.style import Style
 
 
-@bp.route('/', methods=['GET', 'POST'])
-@bp.route('/index', methods=['GET', 'POST'])
+@bp.route('/stats', methods=['GET', 'POST'])
 @login_required
 def stats():
 
@@ -35,8 +35,17 @@ def stats():
     fuel_92 = list()
     fuel_95 = list()
     fuel_50 = list()
-
-    get_realis_stats = RealisationStats.query.all()
+    previous_month = datetime.today() - timedelta(days=30)
+    select_last_month = RealisationStats.query.filter(RealisationStats.date <= datetime.today(), previous_month < RealisationStats.date).all()
+    for row in select_last_month:
+        if row.fuel_type == 92:
+            fuel_92.append(row.realisation)
+        elif row.fuel_type == 95:
+            fuel_95.append(row.realisation)
+        elif row.fuel_type == 50:
+            fuel_50.append(row.realisation)
+    print(fuel_50)
+    
     custom_style = Style(background='transparent', plot_background='transparent', opacity='.6',
                          colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53'),
                          foreground='#e8e3e3',
@@ -44,18 +53,14 @@ def stats():
                          foreground_subtle='#c4c4c4')
 
     graph = pygal.Line(style=custom_style)
-    graph.title = 't*C'
-    graph.x_labels = labels
-
-    graph = pygal.Line(style=custom_style)
-    graph.title = 't*C'
+    graph.title = 'Реализация топлива в течение месяца'
     graph.x_labels = labels
     graph.add('АИ-92', fuel_92)
     graph.add('АИ-95', fuel_95)
     graph.add('Дт', fuel_50)
     graph_data = graph.render_data_uri()
 
-    return render_template('index.html', title='Главная', index=True, graph_data=graph_data)
+    return render_template('stats.html', title='Статистика по реализации за месяц', stats=True, graph_data=graph_data)
 
 
 @bp.before_app_request
