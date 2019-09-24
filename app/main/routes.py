@@ -45,7 +45,7 @@ def stats():
         elif row.fuel_type == 50:
             fuel_50.append(row.realisation)
     print(fuel_50)
-    
+
     custom_style = Style(background='transparent', plot_background='transparent', opacity='.6',
                          colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53'),
                          foreground='#e8e3e3',
