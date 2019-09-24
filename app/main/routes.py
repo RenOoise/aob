@@ -1831,16 +1831,14 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = datetime.now()
-
-        #preparation()
-        #preparation_two()
-
-        #is_it_fit()
-        print("Начало", start_time)
-        #preparation_three()
-        is_variant_sliv_good()
+        # preparation()
+        # preparation_two()
+        # is_it_fit()
+        # preparation_three()
+        # is_variant_sliv_good()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
+        print("Начало", start_time)
         print("Конец", datetime.now())
         if today_trip and db_date.date() == date.today():
             flash('Расстановка бензовозов на сегодня уже сформирована!')

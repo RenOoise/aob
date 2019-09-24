@@ -625,10 +625,17 @@ class QueryFromDb(object):
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
                                     if income:
-                                        volume = float(query[0][4]) - float(realisation[0][3]) + float(income[0][4])
+                                        volume = float(query[0][4]) + float(income[0][4]) - float(realisation[0][3])
+                                        print("1")
+                                        print(float(query[0][4]))
+                                        print(float(income[0][4]))
+                                        print(float(realisation[0][3]))
                                     else:
+                                        print("2")
                                         volume = float(query[0][4]) - float(realisation[0][3])
-                                    volume = tankid.corrected_capacity - volume
+
+                                    free_volume = tankid.corrected_capacity - volume
+                                    print(volume)
                                     percent = (100 * (volume / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[3]
@@ -651,7 +658,7 @@ class QueryFromDb(object):
                                                           fuel_volume=volume,
                                                           fuel_temperature=row[5], datetime=row[6],
                                                           download_time=datetime.now(),
-                                                          free_volume=tankid.corrected_capacity - volume,
+                                                          free_volume=free_volume,
                                                           percent=percent, auto=False)
                                         db.session.add(add)
                                         db.session.commit()
