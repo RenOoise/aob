@@ -1,12 +1,10 @@
-import datetime
 
+import time
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from datetime import date
-import threading  # многопоточность
-
 import random
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
@@ -14,8 +12,7 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse
-import time
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats
 import redis
 from app.translate import translate
 from app.main import bp
@@ -24,6 +21,41 @@ from StyleFrame import StyleFrame, Styler, utils
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
+import pygal
+from pygal.style import Style
+
+
+@bp.route('/', methods=['GET', 'POST'])
+@bp.route('/index', methods=['GET', 'POST'])
+@login_required
+def stats():
+
+    # Graphs
+    labels = []
+    fuel_92 = list()
+    fuel_95 = list()
+    fuel_50 = list()
+
+    get_realis_stats = RealisationStats.query.all()
+    custom_style = Style(background='transparent', plot_background='transparent', opacity='.6',
+                         colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53'),
+                         foreground='#e8e3e3',
+                         foreground_strong='#878585',
+                         foreground_subtle='#c4c4c4')
+
+    graph = pygal.Line(style=custom_style)
+    graph.title = 't*C'
+    graph.x_labels = labels
+
+    graph = pygal.Line(style=custom_style)
+    graph.title = 't*C'
+    graph.x_labels = labels
+    graph.add('АИ-92', fuel_92)
+    graph.add('АИ-95', fuel_95)
+    graph.add('Дт', fuel_50)
+    graph_data = graph.render_data_uri()
+
+    return render_template('index.html', title='Главная', index=True, graph_data=graph_data)
 
 
 @bp.before_app_request
@@ -1659,9 +1691,12 @@ def start():
                 if sliv < 0:
                     row.is_it_fit = False
                     realis = realisation.fuel_realisation_hour / 6
-                    time_to_float = trip.time_to.hour
-                    realis_time = realis * time_to_float
+                    time_to_string = trip.time_to
+                    x = time.strptime(str(time_to_string), '%H:%M:%S')
+                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min, seconds=x.tm_sec).total_seconds()
+                    realis_time = realis * ((time_to_seconds /60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
+                    print(re.azs_id, (time_to_seconds / 60) / 60)
                     if sliv_after_trip < 0:
                         row.is_it_fit_later = False
                     else:
@@ -1669,9 +1704,13 @@ def start():
                 else:
                     row.is_it_fit = True
                     realis = realisation.fuel_realisation_hour / 6
-                    time_to_float = trip.time_to.hour
-                    realis_time = realis * time_to_float
+                    time_to_string = trip.time_to
+                    x = time.strptime(str(time_to_string), '%H:%M:%S')
+                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
+                                                         seconds=x.tm_sec).total_seconds()
+                    realis_time = realis * ((time_to_seconds / 60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
+                    print(re.azs_id, (time_to_seconds / 60) / 60)
                     if sliv_after_trip < 0:
                         row.is_it_fit_later = False
                     else:
@@ -1833,7 +1872,7 @@ def start():
         start_time = datetime.now()
         # preparation()
         # preparation_two()
-        # is_it_fit()
+        is_it_fit()
         # preparation_three()
         # is_variant_sliv_good()
         today_trip = TripForToday.query.first()
