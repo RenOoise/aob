@@ -1770,7 +1770,6 @@ def start():
                     desc("variant_sliv")).first()
                 temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).all()
                 trigger = 1
-                print(variant)
                 for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
 
                     i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95, variant_sliv=row).all()
@@ -1805,13 +1804,39 @@ def start():
     def is_variant_sliv_good():
         first_variant_sliv = TempAzsTrucks2.query.order_by("variant_sliv").first()
         last_variant_sliv = TempAzsTrucks2.query.order_by(desc("variant_sliv")).first()
+        temp_azs_trucks2 = TempAzsTrucks2.query.all()
+        temp_azs_trucks2_list = list()
+        #  создаем список, перебирая полученный массив из базы и заносим словари с каждой строкой в лист
+        #  таким образом получаем всю таблицу в виде списка словарей
+        for row in temp_azs_trucks2:
+            temp_azs_trucks2_dict = {'id': row.id,
+                                     'variant': row.variant,
+                                     'truck_id': row.truck_id,
+                                     'azs_id': row.azs_id,
+                                     'variant_sliv': row.variant_sliv,
+                                     'fuel_type': row.fuel_type,
+                                     'tank_id': row.tank_id,
+                                     'str_sliv': row.str_sliv,
+                                     'sum_sliv': row.sum_sliv,
+                                     'is_it_fit': row.is_it_fit,
+                                     'truck_tanks_id_string': row.truck_tank_id_string,
+                                     'new_days_stock': row.new_days_stock,
+                                     'new_fuel_volume': row.new_fuel_volume,
+                                     'is_it_fit_later': row.is_it_fit_later,
+                                     'is_it_able_to_enter': row.is_it_able_to_enter,
+                                     'is_variant_good': row.is_variant_good,
+                                     'is_variant_sliv_good': row.is_variant_sliv_good}
+            temp_azs_trucks2_list.append(temp_azs_trucks2_dict)
+        # создаем датафрейм с таблицой №2
+
+        df = pd.DataFrame(temp_azs_trucks2_list)
+
         for variant_sliv in range(first_variant_sliv.variant_sliv, last_variant_sliv.variant_sliv):
             variant_sliv_count = TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).count()
             variant_sliv_count_true = TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv, is_it_fit_later=True).count()
             if variant_sliv_count == variant_sliv_count_true:
                 for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
                     row.is_variant_sliv_good = True
-                    print(variant_sliv)
         db.session.commit()
 
     def preparation_four():
@@ -1906,7 +1931,7 @@ def start():
     else:
         start_time = datetime.now()
         # preparation()
-        preparation_two()
+        # preparation_two()
         is_it_fit()
         preparation_three()
         is_variant_sliv_good()
