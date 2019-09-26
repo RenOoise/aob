@@ -488,25 +488,27 @@ class TempAzsTrucks2(db.Model):
 
 class TempAzsTrucks3(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    variant_id = db.Column(db.Integer)
+    variant = db.Column(db.Integer, index=True)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
-    variant_sliv_id = db.Column(db.Integer)
-    fuel_type_sliv = db.Column(db.Integer)  # тип топлива для слива
-    sliv_id = db.Column(db.Integer)
-    full_capacity_92 = db.Column(db.Integer)
-    full_capacity_95 = db.Column(db.Integer)
-    full_capacity_50 = db.Column(db.Integer)
-    full_capacity_51 = db.Column(db.Integer)
-    weight = db.Column(db.Integer)
-    distance = db.Column(db.Integer)
-    full_time_to = db.Column(db.Integer)
-    result1 = db.Column(db.Integer)
-    result2 = db.Column(db.Integer)
-    result3 = db.Column(db.Integer)
-    result_average_for_azs = db.Column(db.Integer)
-    sliv_after_trip = db.Column(db.Integer)
-    full_time = db.Column(db.Integer)
+    variant_sliv = db.Column(db.Integer)
+    fuel_type = db.Column(db.Integer)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
+    sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
+    truck_tank_id_string = db.Column(db.String(60))
+    new_fuel_volume = db.Column(db.Float)  # новый объем
+    new_days_stock = db.Column(db.Float)  # новый запас суток
+
+
+class TempAzsTrucks4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant = db.Column(db.Integer)
+    sum_92 = db.Column(db.Integer)
+    sum_95 = db.Column(db.Integer)
+    sum_50 = db.Column(db.Integer)
+    min_rez1 = db.Column(db.Float)
+    min_rez2 = db.Column(db.Float)
+    min_rez3 = db.Column(db.Float)
 
 
 class Errors(db.Model):

@@ -499,7 +499,8 @@ def day_stock(azs_id):
                             del days_stock_list[index]
                     print(data.shop_id)
                     print(days_stock_list)
-
+                    fuel_realisation_max_list = [average_day_stock_1, average_day_stock_3, average_day_stock_week_ago, average_day_stock_7, average_day_stock_10]
+                    fuel_realisation_max = max(fuel_realisation_max_list)
                     days_stock_min = min(days_stock_list)
                     add.day_stock_10 = days_stock_10
                     add.day_stock_7 = days_stock_7
@@ -507,6 +508,7 @@ def day_stock(azs_id):
                     add.day_stock_1 = days_stock_1
                     add.days_stock_week_ago = days_stock_week_ago
                     add.days_stock_min = days_stock_min
+                    add.fuel_realisation_max = fuel_realisation_max
                     db.session.add(add)
                     db.session.commit()
                 except Exception as e:
@@ -1070,7 +1072,6 @@ def average_day_stock_by_tanks(azs_id):
 
 
 download_tanks_info()
-
 download_realisation_info()
 '''Подсчет запаса суток по каждому резервуару'''
 azs_list = AzsList.query.order_by("number").all()

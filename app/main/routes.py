@@ -12,7 +12,8 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3,\
+    TempAzsTrucks4
 import redis
 from app.translate import translate
 from app.main import bp
@@ -1698,7 +1699,8 @@ def start():
                     realis = realisation.fuel_realisation_hour / 6
                     time_to_string = trip.time_to
                     x = time.strptime(str(time_to_string), '%H:%M:%S')
-                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min, seconds=x.tm_sec).total_seconds()
+                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
+                                                seconds=x.tm_sec).total_seconds()
                     realis_time = realis * ((time_to_seconds /60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
                     print(re.azs_id, (time_to_seconds / 60) / 60)
@@ -1712,7 +1714,7 @@ def start():
                     time_to_string = trip.time_to
                     x = time.strptime(str(time_to_string), '%H:%M:%S')
                     time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
-                                                         seconds=x.tm_sec).total_seconds()
+                                                seconds=x.tm_sec).total_seconds()
                     realis_time = realis * ((time_to_seconds / 60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
                     print(re.azs_id, (time_to_seconds / 60) / 60)
@@ -1721,6 +1723,7 @@ def start():
                     else:
                         row.is_it_fit_later = True
                 row.new_fuel_volume = re.fuel_volume + row.sum_sliv
+                row.new_days_stock = (re.fuel_volume + row.sum_sliv) / realisation.fuel_realisation_max
 
         db.session.commit()
 
@@ -1811,6 +1814,33 @@ def start():
                     print(variant_sliv)
         db.session.commit()
 
+    def preparation_four():
+        db.session.query(TempAzsTrucks3).delete()
+        db.session.commit()
+        table = TempAzsTrucks2.query.filter_by(is_it_fit_later=True, is_it_able_to_enter=True,
+                                               is_variant_good=True, is_variant_sliv_good=True).all()
+        for row in table:
+            add = TempAzsTrucks3(variant=row.variant,
+                                 truck_id=row.truck_id,
+                                 azs_id=row.azs_id,
+                                 variant_sliv=row.variant_sliv,
+                                 fuel_type=row.fuel_type,
+                                 tank_id=row.tank_id,
+                                 sum_sliv=row.sum_sliv,
+                                 truck_tank_id_string=row.truck_tank_id_string,
+                                 new_fuel_volume=round(row.new_fuel_volume, 1),
+                                 new_days_stock=round(row.new_days_stock, 1))
+
+            db.session.add(add)
+        db.session.commit()
+
+    def preparation_five():
+        table = TempAzsTrucks3.query.all()
+        for row in table:
+            add = TempAzsTrucks4(variant=row.variant)
+            db.session.add(add)
+        db.session.commit()
+
     def create_today_trip():
         print("Формирование задания на сегодня")
 
@@ -1876,10 +1906,12 @@ def start():
     else:
         start_time = datetime.now()
         # preparation()
-        # preparation_two()
+        preparation_two()
         is_it_fit()
-        # preparation_three()
-        # is_variant_sliv_good()
+        preparation_three()
+        is_variant_sliv_good()
+        preparation_four()
+        preparation_five()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
         print("Начало", start_time)
@@ -1890,5 +1922,4 @@ def start():
         else:
             flash('Расстановка выполнена')
             create_today_trip()
-
         return redirect(url_for('main.index'))
