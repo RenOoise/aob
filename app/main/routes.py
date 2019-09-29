@@ -1828,15 +1828,18 @@ def start():
                                      'is_variant_sliv_good': row.is_variant_sliv_good}
             temp_azs_trucks2_list.append(temp_azs_trucks2_dict)
         # создаем датафрейм с таблицой №2
-
         df = pd.DataFrame(temp_azs_trucks2_list)
-
+        count_row = len(df)
         for variant_sliv in range(first_variant_sliv.variant_sliv, last_variant_sliv.variant_sliv):
-            variant_sliv_count = TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).count()
-            variant_sliv_count_true = TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv, is_it_fit_later=True).count()
+            variant_sliv_count = len(df[df['variant_sliv'] == variant_sliv].to_dict('r'))
+            variant_sliv_count_true = \
+                len(df[(df['variant_sliv'] == variant_sliv) & (df['is_it_fit_later'] == 1)].to_dict('r'))
             if variant_sliv_count == variant_sliv_count_true:
                 for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
                     row.is_variant_sliv_good = True
+            else:
+                for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
+                    row.is_variant_sliv_good = False
         db.session.commit()
 
     def preparation_four():
@@ -1860,10 +1863,51 @@ def start():
         db.session.commit()
 
     def preparation_five():
-        table = TempAzsTrucks3.query.all()
+        db.session.query(TempAzsTrucks4).delete()
+        db.session.commit()
+        table = TempAzsTrucks3.query.with_entities(TempAzsTrucks3.variant).distinct()
+
         for row in table:
-            add = TempAzsTrucks4(variant=row.variant)
-            db.session.add(add)
+            sliv_92 = list()
+            sliv_50 = list()
+            sliv_95 = list()
+            fuel_cap_92 = list()
+            fuel_cap_95 = list()
+            fuel_cap_50 = list()
+            temp = TempAzsTrucks3.query.filter_by(variant=row.variant).first()
+            list_92 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=92).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
+            list_95 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=95).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
+            list_50 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=50).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
+
+            if list_92:
+                sliv_92.append(list_92[0][0])
+                fuel_cap_92.append((list_92[0][1]))
+            else:
+                sliv_92.append(0)
+                fuel_cap_92.append(0)
+            if list_95:
+                sliv_95.append(list_95[0][0])
+                fuel_cap_95.append((list_95[0][1]))
+            else:
+                sliv_95.append(0)
+                fuel_cap_95.append(0)
+            if list_50:
+                sliv_50.append(list_50[0][0])
+                fuel_cap_50.append((list_50[0][1]))
+            else:
+                sliv_50.append(0)
+                fuel_cap_50.append(0)
+
+            if sliv_95 and sliv_92 and sliv_50:
+                for index_92, a in enumerate(sliv_92):
+                    for index_95, b in enumerate(sliv_95):
+                        for index_50, c in enumerate(sliv_50):
+                            add = TempAzsTrucks4(variant=row.variant, variant_sliv_92=a,
+                                                 variant_sliv_95=b, variant_sliv_50=c,
+                                                 azs_id=temp.azs_id, truck_id=temp.truck_id,
+                                                 sum_92=fuel_cap_92[index_92], sum_95=fuel_cap_95[index_95],
+                                                 sum_50=fuel_cap_50[index_50])
+                            db.session.add(add)
         db.session.commit()
 
     def create_today_trip():
@@ -1932,10 +1976,10 @@ def start():
         start_time = datetime.now()
         # preparation()
         # preparation_two()
-        is_it_fit()
-        preparation_three()
-        is_variant_sliv_good()
-        preparation_four()
+        #is_it_fit()
+        #preparation_three()
+        #is_variant_sliv_good()
+        #preparation_four()
         preparation_five()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp

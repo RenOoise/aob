@@ -502,6 +502,8 @@ class TempAzsTrucks3(db.Model):
 
 class TempAzsTrucks4(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
     variant = db.Column(db.Integer)
     sum_92 = db.Column(db.Integer)
     sum_95 = db.Column(db.Integer)
@@ -509,6 +511,9 @@ class TempAzsTrucks4(db.Model):
     min_rez1 = db.Column(db.Float)
     min_rez2 = db.Column(db.Float)
     min_rez3 = db.Column(db.Float)
+    variant_sliv_92 = db.Column(db.Integer)
+    variant_sliv_95 = db.Column(db.Integer)
+    variant_sliv_50 = db.Column(db.Integer)
 
 
 class Errors(db.Model):
