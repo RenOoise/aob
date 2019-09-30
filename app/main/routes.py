@@ -1,4 +1,4 @@
-
+import collections
 import time
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file
@@ -586,7 +586,6 @@ def start():
                 # для ускорения проверяем, если все три вида топлив есть, то можно цикл остановить, так как больше точно ничего не найдем
                 if (is_92 == 1) and (is_92 == 1) and (is_50 == 1):
                     break
-
             # В зависимости от найденных видов топлива на АЗС, формируем список
             azs_types = list()
             if (is_92 == 1) and (is_95 == 1) and (is_50 == 1):
@@ -603,7 +602,6 @@ def start():
                 azs_types = [2]
             if (is_92 == 0) and (is_95 == 0) and (is_50 == 1):
                 azs_types = [3]
-
 
             # перебераем список всех АКТИВНЫХ бензовозов
             for truck in truck_list:
@@ -1910,6 +1908,36 @@ def start():
                             db.session.add(add)
         db.session.commit()
 
+    # определение худшего запаса суток среди всех резервуаров АЗС
+    def preparation_six():
+        # берем таблицу 4
+        table_azs_trucks_4 = TempAzsTrucks4.query.all()
+        # построчно выбираем вариант и вариант слива
+        for row in table_azs_trucks_4:
+            variant = row.variant
+            variants_list = list()
+            if row.variant_sliv_92:
+                variants_list.append(row.variant_sliv_92)
+            if row.variant_sliv_95:
+                variants_list.append(row.variant_sliv_95)
+            if row.variant_sliv_50:
+                variants_list.append(row.variant_sliv_50)
+            new_days_stock_dict = dict()
+
+            for variant_sliv in variants_list:
+                tanks_from_realisation = FuelRealisation.query.filter_by(azs_id=row.azs_id).all()
+                for tank in tanks_from_realisation:
+                    new_days_stock_dict[tank.tank_id] = tank.days_stock_min
+            for variant_sliv in variants_list:
+                tanks_list = TempAzsTrucks3.query.filter_by(variant=variant, variant_sliv=variant_sliv).all()
+                for tank in tanks_list:
+                    new_days_stock_dict[tank.tank_id] = tank.new_days_stock
+            sorted_new_days_stock_dict = sorted(new_days_stock_dict.items(), key=lambda x: x[1])
+            row.min_rez1 = sorted_new_days_stock_dict[0][1]
+            row.min_rez2 = sorted_new_days_stock_dict[1][1]
+            row.min_rez3 = sorted_new_days_stock_dict[2][1]
+            db.session.commit()
+
     def create_today_trip():
         print("Формирование задания на сегодня")
 
@@ -1980,7 +2008,8 @@ def start():
         #preparation_three()
         #is_variant_sliv_good()
         #preparation_four()
-        preparation_five()
+        #preparation_five()
+        preparation_six()
         today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
         print("Начало", start_time)
