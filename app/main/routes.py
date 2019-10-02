@@ -918,7 +918,7 @@ def start():
             table_tanks_list.append(table_tanks_dict)
         df_table_tanks = pd.DataFrame(table_tanks_list)
 
-        for variant in range(1, preparation_one_last['variant_id']):
+        for variant in range(0, preparation_one_last['variant_id']):
             # preparation_one_last.variant_id
             df_azs = df[df['variant_id'] == variant].to_dict('r')
             df_azs = df_azs[0]
