@@ -24,7 +24,7 @@ from sqlalchemy import desc, extract, and_
 from sqlalchemy.sql import func
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 import pygal
-from pygal.style import Style
+from pygal.style import Style, BlueStyle
 
 
 @bp.route('/stats', methods=['GET', 'POST'])
@@ -37,23 +37,18 @@ def stats():
     fuel_95 = list()
     fuel_50 = list()
     previous_month = datetime.today() - timedelta(days=30)
-    select_last_month = RealisationStats.query.filter(RealisationStats.date <= datetime.today(), previous_month < RealisationStats.date).all()
+    select_last_month = RealisationStats.query.filter(RealisationStats.date <= datetime.today(), previous_month < RealisationStats.date).filter_by(azs_id=1).all()
     for row in select_last_month:
         if row.fuel_type == 92:
             fuel_92.append(row.realisation)
+            labels.append(datetime.strftime(row.date, "%d/%m"))
         elif row.fuel_type == 95:
             fuel_95.append(row.realisation)
         elif row.fuel_type == 50:
             fuel_50.append(row.realisation)
     print(fuel_50)
 
-    custom_style = Style(background='transparent', plot_background='transparent', opacity='.6',
-                         colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53'),
-                         foreground='#e8e3e3',
-                         foreground_strong='#878585',
-                         foreground_subtle='#c4c4c4')
-
-    graph = pygal.Line(style=custom_style)
+    graph = pygal.StackedLine(fill=True, style=BlueStyle, height=500)
     graph.title = 'Реализация топлива в течение месяца'
     graph.x_labels = labels
     graph.add('АИ-92', fuel_92)
@@ -1701,7 +1696,7 @@ def start():
                                                 seconds=x.tm_sec).total_seconds()
                     realis_time = realis * ((time_to_seconds /60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
-                    print(re.azs_id, (time_to_seconds / 60) / 60)
+
                     if sliv_after_trip < 0:
                         row.is_it_fit_later = False
                     else:
@@ -1715,14 +1710,12 @@ def start():
                                                 seconds=x.tm_sec).total_seconds()
                     realis_time = realis * ((time_to_seconds / 60) / 60)
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
-                    print(re.azs_id, (time_to_seconds / 60) / 60)
                     if sliv_after_trip < 0:
                         row.is_it_fit_later = False
                     else:
                         row.is_it_fit_later = True
                 row.new_fuel_volume = re.fuel_volume + row.sum_sliv
                 row.new_days_stock = (re.fuel_volume + row.sum_sliv) / realisation.fuel_realisation_max
-
         db.session.commit()
 
     def preparation_three():
@@ -1769,14 +1762,12 @@ def start():
                 temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).all()
                 trigger = 1
                 for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
-
                     i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95, variant_sliv=row).all()
                     for row in i:
                         if row.is_it_fit_later == 0:
                             trigger = 0
                 if trigger == 1:
                     is_it_95_sliv = 1
-
             if is_it_50:
                 temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by("variant_sliv").first()
                 temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by(desc("variant_sliv")).first()
@@ -2006,7 +1997,7 @@ def start():
         # preparation_two()
         #is_it_fit()
         #preparation_three()
-        #is_variant_sliv_good()
+        is_variant_sliv_good()
         #preparation_four()
         #preparation_five()
         preparation_six()

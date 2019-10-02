@@ -626,14 +626,9 @@ class QueryFromDb(object):
                                 for row in query:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
-                                    if income:
+                                    if income is not 0:
                                         volume = float(query[0][4]) + float(income[0][4]) - float(realisation[0][3])
-                                        print("1")
-                                        print(float(query[0][4]))
-                                        print(float(income[0][4]))
-                                        print(float(realisation[0][3]))
                                     else:
-                                        print("2")
                                         volume = float(query[0][4]) - float(realisation[0][3])
 
                                     free_volume = tankid.corrected_capacity - volume
