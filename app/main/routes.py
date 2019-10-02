@@ -25,7 +25,7 @@ from sqlalchemy.sql import func
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 import pygal
 from pygal.style import Style, BlueStyle
-
+import time
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -554,15 +554,23 @@ def start():
         return errors, error_tank_list
 
     def preparation():
-        print("Подготовка начата")
-        db.session.query(TempAzsTrucks).delete()
-        db.session.commit()
+        # функция создает таблицу всех возможных комбинаций налива топлива в бензовозы
+        # для каждой азс и каждого бензовоза
+
+        # очистка таблицы TempAzsTrucks в БД
+        db.engine.execute("TRUNCATE TABLE `temp_azs_trucks`")
+        # формируем массивы данных из БД
         azs_list = AzsList.query.filter_by(active=True).all()  # получаем список АКТИВНЫХ АЗС
         truck_list = Trucks.query.filter_by(active=True).all()  # получаем список АКТИВНЫХ бензовозов
         azs_tanks = Tanks.query.filter_by(active=True).all()  # получаем список АКТИЫНЫХ резервуаров всех АЗС
         truck_cells_list = TruckTanks.query.all()  # получаем список всех отсеков бензовозов
+        # счетчик номера варианта налива
         variant_counter = 1
-        for azs in azs_list:  # перебераем АЗС
+        # создаем список для записи в таблицу TempAzsTrucks
+        temp_azs_truck_list = list()
+        # создаем словарь для добавления в список temp_azs_trucks_list
+        temp_azs_truck_dict = dict()
+        for azs in azs_list:  # перебераем активные АЗС
             # создаем переменные для определения есть эти виды топлива на АЗС или нет
             is_92 = 0
             is_95 = 0
@@ -578,130 +586,137 @@ def start():
                 # проверяем есть ли у этой АЗС резервуары с 50 топливом
                 if row.azs_id == azs.id and row.fuel_type == 50:
                     is_50 = 1  # если есть, то помечаем соответствующий вид топлива
-                # для ускорения проверяем, если все три вида топлив есть, то можно цикл остановить, так как больше точно ничего не найдем
+                # для ускорения проверяем, если все три вида топлив есть,
+                # то можно цикл остановить, так как больше точно ничего не найдем
                 if (is_92 == 1) and (is_92 == 1) and (is_50 == 1):
                     break
             # В зависимости от найденных видов топлива на АЗС, формируем список
             azs_types = list()
             if (is_92 == 1) and (is_95 == 1) and (is_50 == 1):
-                azs_types = [1, 2, 3]
+                azs_types = [92, 95, 50]
             if (is_92 == 1) and (is_95 == 1) and (is_50 == 0):
-                azs_types = [1, 2]
+                azs_types = [92, 95]
             if (is_92 == 1) and (is_95 == 0) and (is_50 == 1):
-                azs_types = [1, 3]
+                azs_types = [92, 50]
             if (is_92 == 0) and (is_95 == 1) and (is_50 == 1):
-                azs_types = [2, 3]
+                azs_types = [95, 50]
             if (is_92 == 1) and (is_95 == 0) and (is_50 == 0):
-                azs_types = [1]
+                azs_types = [92]
             if (is_92 == 0) and (is_95 == 1) and (is_50 == 0):
-                azs_types = [2]
+                azs_types = [95]
             if (is_92 == 0) and (is_95 == 0) and (is_50 == 1):
-                azs_types = [3]
+                azs_types = [50]
 
-            # перебераем список всех АКТИВНЫХ бензовозов
+            # считаем количество отсеков в каждом из активных бензовозов
+            # для этого:
+            # перебираем список всех АКТИВНЫХ бензовозов
             for truck in truck_list:
+                # создаем список для хранения видов топлива для заполнения данного бензовоза
                 fuel_types = list()
-                cell_counter = 0
-                for cell in truck_cells_list:  # перебераем все отсеки всех бензовозов
+                cell_counter = 0  # при смене бензовоза обнуляем счетчик отсеков
+                for cell in truck_cells_list:  # перебираем все отсеки всех бензовозов
                     if cell.truck_id == truck.id:  # выбираем все отсеки у конкретного бензовоза
-                        cell_counter = cell_counter + 1
-
-                truck_tanks_count = cell_counter  # считаем их количество
-                if truck_tanks_count == 1:
+                        cell_counter = cell_counter + 1  # увеличиваем счетчик отсеков бензовоза
+                # если у бензовоза ОДИН отсек
+                if cell_counter == 1:
+                    # тогда делаем 1 вложенный цикл, который перебирает все возможные виды топлива данной АЗС
                     for a in azs_types:
+                        # добавляем в список один из всех возможных видов топлива данного бензовоза
                         fuel_types = [a]
+                        # перебираем все возможные виды топлива для данного бензовоза, с получением порядкового номера
+                        # отсека и его емкости
                         for index, type in enumerate(fuel_types):
-                            if type is 1:
-                                fuel_types[index] = 92
-                            elif type is 2:
-                                fuel_types[index] = 95
-                            elif type is 3:
-                                fuel_types[index] = 50
-
+                            # перебираем список всего отсеков данного бензовоза
                             for cell in truck_cells_list:
+                                # если нашли id нашего бензовоза и порядковый номер отсека совпадает с порядковым
+                                # номером из списка fuel_types
                                 if cell.truck_id == truck.id and cell.number == index + 1:
-                                    cell_id = cell.id
-                                    cell_capacity = cell.capacity
-                            sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=cell_id,
-                                                truck_id=truck.id, fuel_type=fuel_types[index],
-                                                capacity=cell_capacity)
-                            db.session.add(sql)
-
+                                    # то формируем словарь с данными для записи в таблицу TempAzsTrucks в БД
+                                    temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                           'azs_id': azs.id,
+                                                           'truck_tank_id': cell.id,
+                                                           'truck_id': truck.id,
+                                                           'fuel_type': fuel_types[index],
+                                                           'capacity': cell.capacity}
+                                    # добавляем словарь в список temp_azs_truck_list, созданный ранее
+                                    temp_azs_truck_list.append(temp_azs_truck_dict)
+                                    # останавливаем итерацию цикла, так как искать больше нет смысла
+                                    break
                         variant_counter = variant_counter + 1
 
-                if truck_tanks_count == 2:
+                # если у бензовоза ДВА отсека
+                if cell_counter == 2:
+                    # тогда делаем 2 вложенных цикла которые переберают все возможные виды топлива данной азс
                     for a in azs_types:
                         for b in azs_types:
+                            # добавляем в список два из всех возможных видов топлива данного бензовоза
                             fuel_types = [a, b]
+                            # перебираем все возможные виды топлива для данного бензовоза,
+                            # с получением порядкового номера отсека и его емкости
                             for index, type in enumerate(fuel_types):
-                                if type is 1:
-                                    fuel_types[index] = 92
-                                elif type is 2:
-                                    fuel_types[index] = 95
-                                elif type is 3:
-                                    fuel_types[index] = 50
+                                # перебираем список всего отсеков данного бензовоза
                                 for cell in truck_cells_list:
+                                    # если нашли id нашего бензовоза и порядковый номер отсека совпадает с порядковым
+                                    # номером из списка fuel_types
                                     if cell.truck_id == truck.id and cell.number == index + 1:
-                                        cell_id = cell.id
-                                        cell_capacity = cell.capacity
-
-                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id, truck_tank_id=cell_id,
-                                                    truck_id=truck.id, fuel_type=fuel_types[index],
-                                                    capacity=cell_capacity)
-                                db.session.add(sql)
-                            variant_counter = variant_counter + 1
-
-                if truck_tanks_count == 3:
+                                        # то формируем словарь с данными для записи в таблицу TempAzsTrucks в БД
+                                        temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                               'azs_id': azs.id,
+                                                               'truck_tank_id': cell.id,
+                                                               'truck_id': truck.id,
+                                                               'fuel_type': fuel_types[index],
+                                                               'capacity': cell.capacity}
+                                        # добавляем словарь в список temp_azs_truck_list, созданный ранее
+                                        temp_azs_truck_list.append(temp_azs_truck_dict)
+                                        # останавливаем итерацию цикла, так как искать больше нет смысла
+                                        break
+                # по аналогии для ТРЕХ отсеков бензовоза
+                if cell_counter == 3:
                     for a in azs_types:
                         for b in azs_types:
                             for c in azs_types:
                                 fuel_types = [a, b, c]
+                                # перебираем все возможные виды топлива для данного бензовоза,
+                                # с получением порядкового номера отсека и его емкости
                                 for index, type in enumerate(fuel_types):
-                                    if type is 1:
-                                        fuel_types[index] = 92
-                                    elif type is 2:
-                                        fuel_types[index] = 95
-                                    elif type is 3:
-                                        fuel_types[index] = 50
-
                                     for cell in truck_cells_list:
                                         if cell.truck_id == truck.id and cell.number == index + 1:
-                                            cell_id = cell.id
-                                            cell_capacity = cell.capacity
-
-                                    sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                        truck_tank_id=cell_id,
-                                                        truck_id=truck.id, fuel_type=fuel_types[index],
-                                                        capacity=cell_capacity)
-                                    db.session.add(sql)
-
+                                            # то формируем словарь с данными для записи в таблицу TempAzsTrucks в БД
+                                            temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                   'azs_id': azs.id,
+                                                                   'truck_tank_id': cell.id,
+                                                                   'truck_id': truck.id,
+                                                                   'fuel_type': fuel_types[index],
+                                                                   'capacity': cell.capacity}
+                                            # добавляем словарь в список temp_azs_truck_list, созданный ранее
+                                            temp_azs_truck_list.append(temp_azs_truck_dict)
+                                            # останавливаем итерацию цикла, так как искать больше нет смысла
+                                            break
                                 variant_counter = variant_counter + 1
-
-                if truck_tanks_count == 4:
+                # по аналогии для ЧЕТЫРЕХ отсеков бензовоза
+                if cell_counter == 4:
                     for a in azs_types:
                         for b in azs_types:
                             for c in azs_types:
                                 for d in azs_types:
                                     fuel_types = [a, b, c, d]
                                     for index, type in enumerate(fuel_types):
-                                        if type is 1:
-                                            fuel_types[index] = 92
-                                        elif type is 2:
-                                            fuel_types[index] = 95
-                                        elif type is 3:
-                                            fuel_types[index] = 50
                                         for cell in truck_cells_list:
                                             if cell.truck_id == truck.id and cell.number == index + 1:
-                                                cell_id = cell.id
-                                                cell_capacity = cell.capacity
-
-                                        sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                            truck_tank_id=cell_id,
-                                                            truck_id=truck.id, fuel_type=fuel_types[index],
-                                                            capacity=cell_capacity)
-                                        db.session.add(sql)
+                                                # то формируем словарь с данными для записи в таблицу TempAzsTrucks в БД
+                                                temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                       'azs_id': azs.id,
+                                                                       'truck_tank_id': cell.id,
+                                                                       'truck_id': truck.id,
+                                                                       'fuel_type': fuel_types[index],
+                                                                       'capacity': cell.capacity}
+                                                # добавляем словарь в список temp_azs_truck_list, созданный ранее
+                                                temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                break
                                     variant_counter = variant_counter + 1
-                    if truck_tanks_count == 5:
+                    # по аналогии для ПЯТИ отсеков бензовоза
+                    if cell_counter == 5:
                         for a in azs_types:
                             for b in azs_types:
                                 for c in azs_types:
@@ -709,26 +724,25 @@ def start():
                                         for e in azs_types:
                                             fuel_types = [a, b, c, d, e]
                                             for index, type in enumerate(fuel_types):
-                                                if type is 1:
-                                                    fuel_types[index] = 92
-                                                elif type is 2:
-                                                    fuel_types[index] = 95
-                                                elif type is 3:
-                                                    fuel_types[index] = 50
-
                                                 for cell in truck_cells_list:
                                                     if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        cell_id = cell.id
-                                                        cell_capacity = cell.capacity
-
-                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=cell_id,
-                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=cell_capacity)
-                                                db.session.add(sql)
+                                                        # то формируем словарь с данными для записи в таблицу
+                                                        # TempAzsTrucks в БД
+                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                               'azs_id': azs.id,
+                                                                               'truck_tank_id': cell.id,
+                                                                               'truck_id': truck.id,
+                                                                               'fuel_type': fuel_types[index],
+                                                                               'capacity': cell.capacity}
+                                                        # добавляем словарь в список temp_azs_truck_list,
+                                                        # созданный ранее
+                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                        break
 
                                             variant_counter = variant_counter + 1
-                    if truck_tanks_count == 6:
+                    # по аналогии для ШЕСТИ отсеков бензовоза
+                    if cell_counter == 6:
                         for a in azs_types:
                             for b in azs_types:
                                 for c in azs_types:
@@ -737,26 +751,25 @@ def start():
                                             for f in azs_types:
                                                 fuel_types = [a, b, c, d, e, f]
                                             for index, type in enumerate(fuel_types):
-                                                if type is 1:
-                                                    fuel_types[index] = 92
-                                                elif type is 2:
-                                                    fuel_types[index] = 95
-                                                elif type is 3:
-                                                    fuel_types[index] = 50
-
                                                 for cell in truck_cells_list:
                                                     if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        cell_id = cell.id
-                                                        cell_capacity = cell.capacity
-
-                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=cell_id,
-                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=cell_capacity)
-                                                db.session.add(sql)
+                                                        # то формируем словарь с данными для записи в таблицу
+                                                        # TempAzsTrucks в БД
+                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                               'azs_id': azs.id,
+                                                                               'truck_tank_id': cell.id,
+                                                                               'truck_id': truck.id,
+                                                                               'fuel_type': fuel_types[index],
+                                                                               'capacity': cell.capacity}
+                                                        # добавляем словарь в список temp_azs_truck_list,
+                                                        # созданный ранее
+                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                        break
 
                                             variant_counter = variant_counter + 1
-                    if truck_tanks_count == 7:
+                    # по аналогии для СЕМИ отсеков бензовоза
+                    if cell_counter == 7:
                         for a in azs_types:
                             for b in azs_types:
                                 for c in azs_types:
@@ -766,25 +779,25 @@ def start():
                                                 for g in azs_types:
                                                     fuel_types = [a, b, c, d, e, f, g]
                                             for index, type in enumerate(fuel_types):
-                                                if type is 1:
-                                                    fuel_types[index] = 92
-                                                elif type is 2:
-                                                    fuel_types[index] = 95
-                                                elif type is 3:
-                                                    fuel_types[index] = 50
                                                 for cell in truck_cells_list:
                                                     if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        cell_id = cell.id
-                                                        cell_capacity = cell.capacity
-
-                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=cell_id,
-                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=cell_capacity)
-                                                db.session.add(sql)
+                                                        # то формируем словарь с данными для записи в таблицу
+                                                        # TempAzsTrucks в БД
+                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                               'azs_id': azs.id,
+                                                                               'truck_tank_id': cell.id,
+                                                                               'truck_id': truck.id,
+                                                                               'fuel_type': fuel_types[index],
+                                                                               'capacity': cell.capacity}
+                                                        # добавляем словарь в список temp_azs_truck_list,
+                                                        # созданный ранее
+                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                        break
 
                                             variant_counter = variant_counter + 1
-                    if truck_tanks_count == 8:
+                    # по аналогии для ВОСЬМИ отсеков бензовоза
+                    if cell_counter == 8:
                         for a in azs_types:
                             for b in azs_types:
                                 for c in azs_types:
@@ -795,26 +808,25 @@ def start():
                                                     for h in azs_types:
                                                         fuel_types = [a, b, c, d, e, f, g, h]
                                             for index, type in enumerate(fuel_types):
-                                                if type is 1:
-                                                    fuel_types[index] = 92
-                                                elif type is 2:
-                                                    fuel_types[index] = 95
-                                                elif type is 3:
-                                                    fuel_types[index] = 50
                                                 for cell in truck_cells_list:
                                                     if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        cell_id = cell.id
-                                                        cell_capacity = cell.capacity
-
-                                                sql = TempAzsTrucks(variant_id=variant_counter, azs_id=azs.id,
-                                                                    truck_tank_id=cell_id,
-                                                                    truck_id=truck.id, fuel_type=fuel_types[index],
-                                                                    capacity=cell_capacity)
-                                                db.session.add(sql)
+                                                        # то формируем словарь с данными для записи в таблицу
+                                                        # TempAzsTrucks в БД
+                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                               'azs_id': azs.id,
+                                                                               'truck_tank_id': cell.id,
+                                                                               'truck_id': truck.id,
+                                                                               'fuel_type': fuel_types[index],
+                                                                               'capacity': cell.capacity}
+                                                        # добавляем словарь в список temp_azs_truck_list,
+                                                        # созданный ранее
+                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                        break
 
                                             variant_counter = variant_counter + 1
-        db.session.commit()
-        print("Подготовка закончена")
+        # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базе данных
+        db.engine.execute(TempAzsTrucks.__table__.insert(), temp_azs_truck_list)
 
     Close1_Tank1 = Close1Tank1.query.all()
     Close1_Tank2 = Close1Tank2.query.all()
@@ -1992,23 +2004,22 @@ def start():
         print("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
-        start_time = datetime.now()
-        # preparation()
+        start_time = time.time()
+        preparation()
         # preparation_two()
         #is_it_fit()
         #preparation_three()
-        is_variant_sliv_good()
+        #is_variant_sliv_good()
         #preparation_four()
         #preparation_five()
-        preparation_six()
-        today_trip = TripForToday.query.first()
+        #preparation_six()
+        flash('Время выполнения %s' % (time.time() - start_time))
+        '''today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
-        print("Начало", start_time)
-        print("Конец", datetime.now())
         if today_trip and db_date.date() == date.today():
             flash('Расстановка бензовозов на сегодня уже сформирована!')
             return redirect(url_for('main.index'))
         else:
             flash('Расстановка выполнена')
-            create_today_trip()
+            create_today_trip()'''
         return redirect(url_for('main.index'))
