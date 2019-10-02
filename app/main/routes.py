@@ -46,7 +46,6 @@ def stats():
             fuel_95.append(row.realisation)
         elif row.fuel_type == 50:
             fuel_50.append(row.realisation)
-    print(fuel_50)
 
     graph = pygal.StackedLine(fill=True, style=BlueStyle, height=500)
     graph.title = 'Реализация топлива в течение месяца'
@@ -882,8 +881,9 @@ def start():
             return table_sliv_variant
 
     def preparation_two():
-        db.session.query(TempAzsTrucks2).delete()
-        db.session.commit()
+        db.engine.execute("TRUNCATE TABLE `temp_azs_trucks2`")
+        temp_azs_trucks_2_list = list()
+        temp_azs_trucks_2_dict = dict()
         preparation_one_list = list()
         for i in TempAzsTrucks.query.all():
             # готовим список
@@ -921,7 +921,6 @@ def start():
         for variant in range(1, preparation_one_last['variant_id']):
             # preparation_one_last.variant_id
             df_azs = df[df['variant_id'] == variant].to_dict('r')
-            print(df_azs)
             df_azs = df_azs[0]
             df_table_temp_azs_trucks_variant = df[df['variant_id'] == variant].to_dict('r')
 
@@ -1106,55 +1105,61 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_92[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_92 == 2:
                     for variant_sliv in table_sliv_variant_92:
                         if variant_sliv.tank1 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
-                            str_sliv_cells = ""
+
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_92[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
-                            str_sliv_cells = ""
+
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_92[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_92 == 3:
                     for variant_sliv in table_sliv_variant_92:
@@ -1166,16 +1171,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_92[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1184,16 +1191,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_92[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1202,16 +1211,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_92[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_92 == 4:
                     for variant_sliv in table_sliv_variant_92:
@@ -1223,16 +1234,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_92[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1241,16 +1254,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_92[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1259,16 +1274,18 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_92[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         if variant_sliv.tank4 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1277,21 +1294,21 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank4,
-                                                 tank_id=tanks_list_92[3],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 92,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_92[3],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
+
                         variant_counter_sliv = variant_counter_sliv + 1
-            
 
             # --- Для 95 вида топлива
-
             if table_sliv_variant_95 is not None:
                 if count_95 == 1:
                     for variant_sliv in table_sliv_variant_95:
@@ -1303,16 +1320,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_95[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_95 == 2:
                     for variant_sliv in table_sliv_variant_95:
@@ -1324,16 +1342,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_95[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1342,16 +1361,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_95[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_95 == 3:
                     for variant_sliv in table_sliv_variant_95:
@@ -1363,16 +1383,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=92,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_95[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1381,16 +1402,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_95[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1399,16 +1421,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_95[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_95 == 4:
                     for variant_sliv in table_sliv_variant_95:
@@ -1420,16 +1443,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_95[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1438,16 +1462,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_95[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1456,16 +1481,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_95[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank4 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1474,16 +1500,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=95,
-                                                 str_sliv=variant_sliv.tank4,
-                                                 tank_id=tanks_list_95[3],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 95,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_95[3],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
 
             # --- Для 50 вида топлива 
@@ -1499,16 +1526,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_50[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_50 == 2:
                     for variant_sliv in table_sliv_variant_50:
@@ -1520,16 +1548,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_50[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1538,16 +1567,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_50[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_50 == 3:
                     for variant_sliv in table_sliv_variant_50:
@@ -1559,16 +1589,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_50[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1577,16 +1608,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_50[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1596,16 +1628,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_50[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
                 if count_50 == 4:
                     for variant_sliv in table_sliv_variant_50:
@@ -1617,16 +1650,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank1,
-                                                 tank_id=tanks_list_50[0],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[0],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank2 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1635,16 +1669,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank2,
-                                                 tank_id=tanks_list_50[1],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id': azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[1],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank3 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1653,16 +1688,17 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank3,
-                                                 tank_id=tanks_list_50[2],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[2],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         if variant_sliv.tank4 is not None:
                             sum_sliv = 0
                             str_sliv_cells_list = list()
@@ -1671,19 +1707,21 @@ def start():
                                 sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
                                 str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
-                            sql = TempAzsTrucks2(variant=variant,
-                                                 azs_id=azs_id,
-                                                 truck_id=df_azs['truck_id'],
-                                                 variant_sliv=variant_counter_sliv,
-                                                 fuel_type=50,
-                                                 str_sliv=variant_sliv.tank4,
-                                                 tank_id=tanks_list_50[3],
-                                                 truck_tank_id_string=str_sliv_cells,
-                                                 sum_sliv=sum_sliv)
-                            db.session.add(sql)
+                            temp_azs_trucks_2_dict = {'variant': variant,
+                                                      'azs_id' : azs_id,
+                                                      'truck_id': df_azs['truck_id'],
+                                                      'variant_sliv': variant_counter_sliv,
+                                                      'fuel_type': 50,
+                                                      'str_sliv': variant_sliv.tank1,
+                                                      'tank_id': tanks_list_50[3],
+                                                      'truck_tank_id_string': str_sliv_cells,
+                                                      'sum_sliv': sum_sliv
+                                                      }
+                            temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
 
                         variant_counter_sliv = variant_counter_sliv + 1
-            db.session.commit()
+            # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базе данных
+        db.engine.execute(TempAzsTrucks2.__table__.insert(), temp_azs_trucks_2_list)
         print("Подготовка 2 закончена")
 
     def is_it_fit():
@@ -2005,8 +2043,8 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        preparation()
-        # preparation_two()
+        #preparation()
+        preparation_two()
         #is_it_fit()
         #preparation_three()
         #is_variant_sliv_good()
