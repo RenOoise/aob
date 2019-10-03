@@ -622,17 +622,14 @@ class QueryFromDb(object):
                                 realisation = cursor.fetchall()
                                 cursor.execute(income)
                                 income = cursor.fetchall()
-
                                 for row in query:
                                     tankid = Tanks.query.filter_by(azs_id=self.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=self.id, tank_id=tankid.id).first()
-                                    if income is not 0:
+                                    if income:
                                         volume = float(query[0][4]) + float(income[0][4]) - float(realisation[0][3])
                                     else:
                                         volume = float(query[0][4]) - float(realisation[0][3])
-
                                     free_volume = tankid.corrected_capacity - volume
-                                    print(volume)
                                     percent = (100 * (volume / tankid.corrected_capacity))
                                     if add:
                                         add.fuel_level = row[3]
