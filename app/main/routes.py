@@ -453,7 +453,14 @@ def page_azs(id):
     previous_month = datetime.today() - timedelta(days=30)
     select_last_month = RealisationStats.query.filter(RealisationStats.date <= datetime.today(), previous_month < RealisationStats.date).filter_by(azs_id=id).all()
     for row in select_last_month:
+        time
+        tank_id = row.tank_id
+        sum_92 = 0
+        sum_95 = 0
+        sum_50 = 0
         if row.fuel_type == 92:
+            if row.tank_id is tank_id:
+                sum_92 = sum_92 + row.realisation
             fuel_92.append(row.realisation)
             labels.append(datetime.strftime(row.date, "%d/%m"))
         elif row.fuel_type == 95:
@@ -647,6 +654,18 @@ def start():
                     for a in azs_types:
                         # добавляем в список один из всех возможных видов топлива данного бензовоза
                         fuel_types = [a]
+                        # считаем количество отсеков с каждым видом топлива в данном варианте налива
+                        cells_count_92 = 0
+                        cells_count_95 = 0
+                        cells_count_50 = 0
+                        for i in fuel_types:
+                            if i == 92:
+                                cells_count_92 = cells_count_92 + 1
+                            if i == 95:
+                                cells_count_95 = cells_count_95 + 1
+                            if i == 50:
+                                cells_count_50 = cells_count_50 + 1
+
                         # перебираем все возможные виды топлива для данного бензовоза, с получением порядкового номера
                         # отсека и его емкости
                         for index, type in enumerate(fuel_types):
@@ -661,7 +680,10 @@ def start():
                                                            'truck_tank_id': cell.id,
                                                            'truck_id': truck.id,
                                                            'fuel_type': fuel_types[index],
-                                                           'capacity': cell.capacity}
+                                                           'capacity': cell.capacity,
+                                                           'cells_92': cells_count_92,
+                                                           'cells_95': cells_count_95,
+                                                           'cells_50': cells_count_50}
                                     # добавляем словарь в список temp_azs_truck_list, созданный ранее
                                     temp_azs_truck_list.append(temp_azs_truck_dict)
                                     # останавливаем итерацию цикла, так как искать больше нет смысла
@@ -675,6 +697,18 @@ def start():
                         for b in azs_types:
                             # добавляем в список два из всех возможных видов топлива данного бензовоза
                             fuel_types = [a, b]
+                            # считаем количество отсеков с каждым видом топлива в данном варианте налива
+                            cells_count_92 = 0
+                            cells_count_95 = 0
+                            cells_count_50 = 0
+                            for i in fuel_types:
+                                if i == 92:
+                                    cells_count_92 = cells_count_92 + 1
+                                if i == 95:
+                                    cells_count_95 = cells_count_95 + 1
+                                if i == 50:
+                                    cells_count_50 = cells_count_50 + 1
+
                             # перебираем все возможные виды топлива для данного бензовоза,
                             # с получением порядкового номера отсека и его емкости
                             for index, type in enumerate(fuel_types):
@@ -689,7 +723,10 @@ def start():
                                                                'truck_tank_id': cell.id,
                                                                'truck_id': truck.id,
                                                                'fuel_type': fuel_types[index],
-                                                               'capacity': cell.capacity}
+                                                               'capacity': cell.capacity,
+                                                               'cells_92': cells_count_92,
+                                                               'cells_95': cells_count_95,
+                                                               'cells_50': cells_count_50}
                                         # добавляем словарь в список temp_azs_truck_list, созданный ранее
                                         temp_azs_truck_list.append(temp_azs_truck_dict)
                                         # останавливаем итерацию цикла, так как искать больше нет смысла
@@ -700,6 +737,18 @@ def start():
                         for b in azs_types:
                             for c in azs_types:
                                 fuel_types = [a, b, c]
+                                # считаем количество отсеков с каждым видом топлива в данном варианте налива
+                                cells_count_92 = 0
+                                cells_count_95 = 0
+                                cells_count_50 = 0
+                                for i in fuel_types:
+                                    if i == 92:
+                                        cells_count_92 = cells_count_92 + 1
+                                    if i == 95:
+                                        cells_count_95 = cells_count_95 + 1
+                                    if i == 50:
+                                        cells_count_50 = cells_count_50 + 1
+
                                 # перебираем все возможные виды топлива для данного бензовоза,
                                 # с получением порядкового номера отсека и его емкости
                                 for index, type in enumerate(fuel_types):
@@ -711,7 +760,10 @@ def start():
                                                                    'truck_tank_id': cell.id,
                                                                    'truck_id': truck.id,
                                                                    'fuel_type': fuel_types[index],
-                                                                   'capacity': cell.capacity}
+                                                                   'capacity': cell.capacity,
+                                                                   'cells_92': cells_count_92,
+                                                                   'cells_95': cells_count_95,
+                                                                   'cells_50': cells_count_50}
                                             # добавляем словарь в список temp_azs_truck_list, созданный ранее
                                             temp_azs_truck_list.append(temp_azs_truck_dict)
                                             # останавливаем итерацию цикла, так как искать больше нет смысла
@@ -724,6 +776,16 @@ def start():
                             for c in azs_types:
                                 for d in azs_types:
                                     fuel_types = [a, b, c, d]
+                                    cells_count_92 = 0
+                                    cells_count_95 = 0
+                                    cells_count_50 = 0
+                                    for i in fuel_types:
+                                        if i == 92:
+                                            cells_count_92 = cells_count_92 + 1
+                                        if i == 95:
+                                            cells_count_95 = cells_count_95 + 1
+                                        if i == 50:
+                                            cells_count_50 = cells_count_50 + 1
                                     for index, type in enumerate(fuel_types):
                                         for cell in truck_cells_list:
                                             if cell.truck_id == truck.id and cell.number == index + 1:
@@ -733,7 +795,10 @@ def start():
                                                                        'truck_tank_id': cell.id,
                                                                        'truck_id': truck.id,
                                                                        'fuel_type': fuel_types[index],
-                                                                       'capacity': cell.capacity}
+                                                                       'capacity': cell.capacity,
+                                                                       'cells_92': cells_count_92,
+                                                                       'cells_95': cells_count_95,
+                                                                       'cells_50': cells_count_50}
                                                 # добавляем словарь в список temp_azs_truck_list, созданный ранее
                                                 temp_azs_truck_list.append(temp_azs_truck_dict)
                                                 # останавливаем итерацию цикла, так как искать больше нет смысла
@@ -747,6 +812,18 @@ def start():
                                     for d in azs_types:
                                         for e in azs_types:
                                             fuel_types = [a, b, c, d, e]
+                                            # считаем количество отсеков с каждым видом топлива в данном варианте налива
+                                            cells_count_92 = 0
+                                            cells_count_95 = 0
+                                            cells_count_50 = 0
+                                            for i in fuel_types:
+                                                if i == 92:
+                                                    cells_count_92 = cells_count_92 + 1
+                                                if i == 95:
+                                                    cells_count_95 = cells_count_95 + 1
+                                                if i == 50:
+                                                    cells_count_50 = cells_count_50 + 1
+
                                             for index, type in enumerate(fuel_types):
                                                 for cell in truck_cells_list:
                                                     if cell.truck_id == truck.id and cell.number == index + 1:
@@ -757,7 +834,10 @@ def start():
                                                                                'truck_tank_id': cell.id,
                                                                                'truck_id': truck.id,
                                                                                'fuel_type': fuel_types[index],
-                                                                               'capacity': cell.capacity}
+                                                                               'capacity': cell.capacity,
+                                                                               'cells_92': cells_count_92,
+                                                                               'cells_95': cells_count_95,
+                                                                               'cells_50': cells_count_50}
                                                         # добавляем словарь в список temp_azs_truck_list,
                                                         # созданный ранее
                                                         temp_azs_truck_list.append(temp_azs_truck_dict)
@@ -774,22 +854,39 @@ def start():
                                         for e in azs_types:
                                             for f in azs_types:
                                                 fuel_types = [a, b, c, d, e, f]
-                                            for index, type in enumerate(fuel_types):
-                                                for cell in truck_cells_list:
-                                                    if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        # то формируем словарь с данными для записи в таблицу
-                                                        # TempAzsTrucks в БД
-                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
-                                                                               'azs_id': azs.id,
-                                                                               'truck_tank_id': cell.id,
-                                                                               'truck_id': truck.id,
-                                                                               'fuel_type': fuel_types[index],
-                                                                               'capacity': cell.capacity}
-                                                        # добавляем словарь в список temp_azs_truck_list,
-                                                        # созданный ранее
-                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
-                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
-                                                        break
+                                                # считаем количество отсеков с каждым видом топлива
+                                                # в данном варианте налива
+                                                cells_count_92 = 0
+                                                cells_count_95 = 0
+                                                cells_count_50 = 0
+                                                for i in fuel_types:
+                                                    if i == 92:
+                                                        cells_count_92 = cells_count_92 + 1
+                                                    if i == 95:
+                                                        cells_count_95 = cells_count_95 + 1
+                                                    if i == 50:
+                                                        cells_count_50 = cells_count_50 + 1
+
+                                                for index, type in enumerate(fuel_types):
+                                                    for cell in truck_cells_list:
+                                                        if cell.truck_id == truck.id and cell.number == index + 1:
+                                                            # то формируем словарь с данными для записи в таблицу
+                                                            # TempAzsTrucks в БД
+                                                            temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                                   'azs_id': azs.id,
+                                                                                   'truck_tank_id': cell.id,
+                                                                                   'truck_id': truck.id,
+                                                                                   'fuel_type': fuel_types[index],
+                                                                                   'capacity': cell.capacity,
+                                                                                   'cells_92': cells_count_92,
+                                                                                   'cells_95': cells_count_95,
+                                                                                   'cells_50': cells_count_50}
+                                                            # добавляем словарь в список temp_azs_truck_list,
+                                                            # созданный ранее
+                                                            temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                            # останавливаем итерацию цикла,
+                                                            # так как искать больше нет смысла
+                                                            break
 
                                             variant_counter = variant_counter + 1
                     # по аналогии для СЕМИ отсеков бензовоза
@@ -802,22 +899,39 @@ def start():
                                             for f in azs_types:
                                                 for g in azs_types:
                                                     fuel_types = [a, b, c, d, e, f, g]
-                                            for index, type in enumerate(fuel_types):
-                                                for cell in truck_cells_list:
-                                                    if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        # то формируем словарь с данными для записи в таблицу
-                                                        # TempAzsTrucks в БД
-                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
-                                                                               'azs_id': azs.id,
-                                                                               'truck_tank_id': cell.id,
-                                                                               'truck_id': truck.id,
-                                                                               'fuel_type': fuel_types[index],
-                                                                               'capacity': cell.capacity}
-                                                        # добавляем словарь в список temp_azs_truck_list,
-                                                        # созданный ранее
-                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
-                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
-                                                        break
+
+                                                    # считаем количество отсеков с каждым видом топлива
+                                                    # в данном варианте налива
+                                                    cells_count_92 = 0
+                                                    cells_count_95 = 0
+                                                    cells_count_50 = 0
+                                                    for i in fuel_types:
+                                                        if i == 92:
+                                                            cells_count_92 = cells_count_92 + 1
+                                                        if i == 95:
+                                                            cells_count_95 = cells_count_95 + 1
+                                                        if i == 50:
+                                                            cells_count_50 = cells_count_50 + 1
+
+                                                    for index, type in enumerate(fuel_types):
+                                                        for cell in truck_cells_list:
+                                                            if cell.truck_id == truck.id and cell.number == index + 1:
+                                                                # то формируем словарь с данными для записи в таблицу
+                                                                # TempAzsTrucks в БД
+                                                                temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                                       'azs_id': azs.id,
+                                                                                       'truck_tank_id': cell.id,
+                                                                                       'truck_id': truck.id,
+                                                                                       'fuel_type': fuel_types[index],
+                                                                                       'capacity': cell.capacity,
+                                                                                       'cells_92': cells_count_92,
+                                                                                       'cells_95': cells_count_95,
+                                                                                       'cells_50': cells_count_50}
+                                                                # добавляем словарь в список temp_azs_truck_list,
+                                                                # созданный ранее
+                                                                temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                                # останавливаем итерацию цикла, так как искать больше нет смысла
+                                                                break
 
                                             variant_counter = variant_counter + 1
                     # по аналогии для ВОСЬМИ отсеков бензовоза
@@ -831,22 +945,40 @@ def start():
                                                 for g in azs_types:
                                                     for h in azs_types:
                                                         fuel_types = [a, b, c, d, e, f, g, h]
-                                            for index, type in enumerate(fuel_types):
-                                                for cell in truck_cells_list:
-                                                    if cell.truck_id == truck.id and cell.number == index + 1:
-                                                        # то формируем словарь с данными для записи в таблицу
-                                                        # TempAzsTrucks в БД
-                                                        temp_azs_truck_dict = {'variant_id': variant_counter,
-                                                                               'azs_id': azs.id,
-                                                                               'truck_tank_id': cell.id,
-                                                                               'truck_id': truck.id,
-                                                                               'fuel_type': fuel_types[index],
-                                                                               'capacity': cell.capacity}
-                                                        # добавляем словарь в список temp_azs_truck_list,
-                                                        # созданный ранее
-                                                        temp_azs_truck_list.append(temp_azs_truck_dict)
-                                                        # останавливаем итерацию цикла, так как искать больше нет смысла
-                                                        break
+
+                                                        # считаем количество отсеков с каждым видом топлива
+                                                        # в данном варианте налива
+                                                        cells_count_92 = 0
+                                                        cells_count_95 = 0
+                                                        cells_count_50 = 0
+                                                        for i in fuel_types:
+                                                            if i == 92:
+                                                                cells_count_92 = cells_count_92 + 1
+                                                            if i == 95:
+                                                                cells_count_95 = cells_count_95 + 1
+                                                            if i == 50:
+                                                                cells_count_50 = cells_count_50 + 1
+
+                                                        for index, type in enumerate(fuel_types):
+                                                            for cell in truck_cells_list:
+                                                                if cell.truck_id == truck.id and cell.number == index + 1:
+                                                                    # то формируем словарь с данными для записи в таблицу
+                                                                    # TempAzsTrucks в БД
+                                                                    temp_azs_truck_dict = {'variant_id': variant_counter,
+                                                                                           'azs_id': azs.id,
+                                                                                           'truck_tank_id': cell.id,
+                                                                                           'truck_id': truck.id,
+                                                                                           'fuel_type': fuel_types[index],
+                                                                                           'capacity': cell.capacity,
+                                                                                           'cells_92': cells_count_92,
+                                                                                           'cells_95': cells_count_95,
+                                                                                           'cells_50': cells_count_50}
+                                                                    # добавляем словарь в список temp_azs_truck_list,
+                                                                    # созданный ранее
+                                                                    temp_azs_truck_list.append(temp_azs_truck_dict)
+                                                                    # останавливаем итерацию цикла,
+                                                                    # так как искать больше нет смысла
+                                                                    break
 
                                             variant_counter = variant_counter + 1
         # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базе данных
@@ -905,244 +1037,318 @@ def start():
             table_sliv_variant = Close3_Tank4
             return table_sliv_variant
 
+    # функция формирует все возмоные варианты слива топлива на АЗС
     def preparation_two():
+        # очищаем таблицу
         db.engine.execute("TRUNCATE TABLE `temp_azs_trucks2`")
+        # создаем массив для хранения сформированных итоговых данных
+        # для последующей записи в таблицу TempAzsTrucks2 в БД
         temp_azs_trucks_2_list = list()
         temp_azs_trucks_2_dict = dict()
-        preparation_one_list = list()
-        for i in TempAzsTrucks.query.all():
-            # готовим список
-            preparation_one_dict = {
-                'id': i.id,
-                'variant_id': i.variant_id,
-                'azs_id': i.azs_id,
-                'truck_id': i.truck_id,
-                'truck_tank_id': i.truck_tank_id,
-                'fuel_type': i.fuel_type,
-                'capacity': i.capacity
-            }
-            preparation_one_list.append(preparation_one_dict)
+        # помещаем таблицу всех вариантов налива бензовозов TempAzsTrucks в переменную
+        temp_azs_trucks = TempAzsTrucks.query.all()
+        # помещаем таблицу всех АКТИВНЫХ АЗС в переменную
+        table_azs_list = AzsList.query.filter_by(active=True).all()
+        # помещаем таблицу все АКТИВНЫЕ резервуары АЗС в переменную
+        table_tanks = Tanks.query.filter_by(active=True).all()
+
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        # Получаем последнее значение variant_id из словаря
-        preparation_one_last = preparation_one_list[-1]
-        # вариант слива для таблицы TempAzsTrucks2
+        preparation_one_last = TempAzsTrucks.query.order_by(desc('variant_id')).first_or_404()
+        # счетчик варианта слива для таблицы TempAzsTrucks2
         variant_counter_sliv = 1
-        # Перебираем варианты налива бензовозов
-        df = pd.DataFrame(preparation_one_list)
-        table_tanks = Tanks.query.all()
-        table_tanks_list = list()
-        for i in table_tanks:
-            table_tanks_dict = {
-                'id': i.id,
-                'azs_id': i.azs_id,
-                'tank_number': i.tank_number,
-                'fuel_type': i.fuel_type,
-                'corrected_capacity': i.corrected_capacity,
-                'nominal_capacity': i.nominal_capacity,
-            }
-            table_tanks_list.append(table_tanks_dict)
-        df_table_tanks = pd.DataFrame(table_tanks_list)
-
-        for variant in range(0, preparation_one_last['variant_id']):
-            # preparation_one_last.variant_id
-            df_azs = df[df['variant_id'] == variant].to_dict('r')
-            df_azs = df_azs[0]
-            df_table_temp_azs_trucks_variant = df[df['variant_id'] == variant].to_dict('r')
-
-            # Узнаем сколько отсеков у бензовоза с каждым видом топлива
-            dataframe_92 = df[(df['fuel_type'] == 92) & (df['variant_id'] == variant)].to_dict('r')
-            dataframe_95 = df[(df['fuel_type'] == 95) & (df['variant_id'] == variant)].to_dict('r')
-            dataframe_50 = df[(df['fuel_type'] == 50) & (df['variant_id'] == variant)].to_dict('r')
-
-            tanks_counter_92 = len(dataframe_92)
-            tanks_counter_95 = len(dataframe_95)
-            tanks_counter_50 = len(dataframe_50)
-
-            # tanks_counter_95 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=95).count()
-            # tanks_counter_50 = TempAzsTrucks.query.filter_by(variant_id=variant, fuel_type=50).count()
-
-            # Получаем id АЗС
-            azs_id = df_azs['azs_id']
-            # Считаем количество резервуаров АЗС по каждому виду топлива
-            dataframe_tanks = df_table_tanks[df_table_tanks['azs_id'] == azs_id].to_dict('r')
-
-            count_92 = 0
-            count_95 = 0
-            count_50 = 0
+        # Для каждой АКТИВНОЙ АЗС считаем количество АКТИЫНЫХ резервуаров по каждому из видов топлива
+        tanks_count = dict()
+        # перебираем таблицу со списком АКТИВНЫХ АЗС
+        for i in table_azs_list:
+            # счетчик для хранения количества АКТИВНЫХ резервуаров данной азс
+            tank_count_92 = 0
+            tank_count_95 = 0
+            tank_count_50 = 0
+            # список с айдишниками АКТИВНЫХ резервуаров данной АЗС
             tanks_list_92 = list()
             tanks_list_95 = list()
             tanks_list_50 = list()
-            for tank in dataframe_tanks:
-                if tank['fuel_type'] is 92:
-                    tanks_list_92.append(tank['id'])
-                    count_92 = count_92 + 1
-                elif tank['fuel_type'] is 95:
-                    tanks_list_95.append(tank['id'])
-                    count_95 = count_95 + 1
-                elif tank['fuel_type'] is 50:
-                    tanks_list_50.append(tank['id'])
-                    count_50 = count_50 + 1
+            # перебираем список АКТИВНЫХ резервуаров данной АЗС
+            for tank in table_tanks:
+                if i.id == tank.azs_id:
+                    if tank.fuel_type == 92:
+                        tank_count_92 = tank_count_92 + 1
+                        tanks_list_92.append(tank.id)
+                    if tank.fuel_type == 95:
+                        tank_count_95 = tank_count_95 + 1
+                        tanks_list_95.append(tank.id)
+                    if tank.fuel_type == 50:
+                        tank_count_50 = tank_count_50 + 1
+                        tanks_list_50.append(tank.id)
+                    tanks_count[i.id] = {
+                        'tank_count_92': tank_count_92,
+                        'tank_count_95': tank_count_95,
+                        'tank_count_50': tank_count_50,
+                        'tanks_list_92': tanks_list_92,
+                        'tanks_list_95': tanks_list_95,
+                        'tanks_list_50': tanks_list_50}
+        # создаем словарь с обобщенными даннными для каждого варианта налива (основным ключем в словаре
+        # является variant_id)
+        slovar = dict()
+        # создаем словарь с заполнеными ключами "variant_id, truck_id, cells_92, cells_95 и cells_50".
+        # Остальные ячейки обнуляем
+        for i in temp_azs_trucks:
+            slovar[i.variant_id] = {'azs_id': i.azs_id,
+                                    'cells_list_92': [],
+                                    'cells_list_95': [],
+                                    'cells_list_50': [],
+                                    'capacity_92': 0,
+                                    'capacity_95': 0,
+                                    'capacity_50': 0,
+                                    'cells_92': i.cells_92,
+                                    'cells_95': i.cells_95,
+                                    'cells_50': i.cells_50,
+                                    'truck_id': i.truck_id,
+                                    'cells_capacity_list_92': [],
+                                    'cells_capacity_list_95': [],
+                                    'cells_capacity_list_50': []
+                                    }
+        # перебираем таблицу TempAzsTrucks с вариантами налива и дополняем словарь
+        for i in temp_azs_trucks:
+            # обращаемся к ячейкам словаря по ключу variant_id
+            temp_variant = i.variant_id
+            # если в текущей строке в таблице TempAzsTrucks вид топлива - 92,
+            # то заполняем словарь согласно таблице для этого вида топлива
+            if i.fuel_type == 92:
+                # создаем пустой список для хранения айдишников отвеков бензовоза
+                cells_list_92 = list()
+                # создаем пустой список для хранения емкостей отсеков бензовоза
+                cells_capacity_list_92 = list()
+                # добавляем емкость отсека из текущей строки в список
+                cells_capacity_list_92.append(i.capacity)
+                # добавляем айдишник отсека из текущей строки в список
+                cells_list_92.append(i.truck_tank_id)
+                # обновляем данные в словаре
+                slovar[temp_variant] = {'azs_id': i.azs_id,
+                                        'capacity_92': slovar[temp_variant]['capacity_92'] + i.capacity,
+                                        'capacity_95': slovar[temp_variant]['capacity_95'],
+                                        'capacity_50': slovar[temp_variant]['capacity_50'],
+                                        'cells_list_92': slovar[temp_variant]['cells_list_92'] + cells_list_92,
+                                        'cells_list_95': slovar[temp_variant]['cells_list_95'],
+                                        'cells_list_50': slovar[temp_variant]['cells_list_50'],
+                                        'cells_92': slovar[temp_variant]['cells_92'],
+                                        'cells_95': slovar[temp_variant]['cells_95'],
+                                        'cells_50': slovar[temp_variant]['cells_50'],
+                                        'truck_id': slovar[temp_variant]['truck_id'],
+                                        'cells_capacity_list_92': slovar[temp_variant]['cells_capacity_list_92'] + cells_capacity_list_92,
+                                        'cells_capacity_list_95': slovar[temp_variant]['cells_capacity_list_95'],
+                                        'cells_capacity_list_50': slovar[temp_variant]['cells_capacity_list_50']
+                                        }
+            # выполняем действия для 95 вида топлива по аналогии с 92 видом топлива
+            if i.fuel_type == 95:
+                cells_list_95 = list()
+                cells_capacity_list_95 = list()
+                cells_capacity_list_95.append(i.capacity)
+                cells_list_95.append(i.truck_tank_id)
+                slovar[temp_variant] = {'azs_id': i.azs_id,
+                                        'capacity_92': slovar[temp_variant]['capacity_92'],
+                                        'capacity_95': slovar[temp_variant]['capacity_95'] + i.capacity,
+                                        'capacity_50': slovar[temp_variant]['capacity_50'],
+                                        'cells_list_92': slovar[temp_variant]['cells_list_92'],
+                                        'cells_list_95': slovar[temp_variant]['cells_list_95'] + cells_list_95,
+                                        'cells_list_50': slovar[temp_variant]['cells_list_50'],
+                                        'cells_92': slovar[temp_variant]['cells_92'],
+                                        'cells_95': slovar[temp_variant]['cells_95'],
+                                        'cells_50': slovar[temp_variant]['cells_50'],
+                                        'truck_id': slovar[temp_variant]['truck_id'],
+                                        'cells_capacity_list_92': slovar[temp_variant]['cells_capacity_list_92'],
+                                        'cells_capacity_list_95': slovar[temp_variant]['cells_capacity_list_95'] + cells_capacity_list_95,
+                                        'cells_capacity_list_50': slovar[temp_variant]['cells_capacity_list_50']
+                                      }
 
-            truck_cell_capacity = list()
-            cells_list_92 = list()
-            cells_list_95 = list()
-            cells_list_50 = list()
+            # выполняем действия для дизеля вида топлива по аналогии с 92 и 95 видами топлива
+            if i.fuel_type == 50:
+                cells_list_50 = list()
+                cells_capacity_list_50 = list()
+                cells_capacity_list_50.append(i.capacity)
+                cells_list_50.append(i.truck_tank_id)
+                slovar[temp_variant] = {'azs_id': i.azs_id,
+                                        'capacity_92': slovar[temp_variant]['capacity_92'],
+                                        'capacity_95': slovar[temp_variant]['capacity_95'],
+                                        'capacity_50': slovar[temp_variant]['capacity_50'] + i.capacity,
+                                        'cells_list_92': slovar[temp_variant]['cells_list_92'],
+                                        'cells_list_95': slovar[temp_variant]['cells_list_95'],
+                                        'cells_list_50': slovar[temp_variant]['cells_list_50'] + cells_list_50,
+                                        'cells_92': slovar[temp_variant]['cells_92'],
+                                        'cells_95': slovar[temp_variant]['cells_95'],
+                                        'cells_50': slovar[temp_variant]['cells_50'],
+                                        'truck_id': slovar[temp_variant]['truck_id'],
+                                        'cells_capacity_list_92': slovar[temp_variant]['cells_capacity_list_92'],
+                                        'cells_capacity_list_95': slovar[temp_variant]['cells_capacity_list_95'],
+                                        'cells_capacity_list_50': slovar[temp_variant]['cells_capacity_list_50'] + cells_capacity_list_50
+                                        }
 
-            cells_capacity_92 = list()
-            cells_capacity_95 = list()
-            cells_capacity_50 = list()
-            for row in df_table_temp_azs_trucks_variant:
-                if row['fuel_type'] == 92:
-                    cells_list_92.append(row['truck_tank_id'])
-                    cells_capacity_92.append(row['capacity'])
-                if row['fuel_type'] == 95:
-                    cells_list_95.append(row['truck_tank_id'])
-                    cells_capacity_95.append(row['capacity'])
-                if row['fuel_type'] == 50:
-                    cells_list_50.append(row['truck_tank_id'])
-                    cells_capacity_50.append(row['capacity'])
-
+        # перебираем варианты налива от первого до последнего
+        for variant in range(1, preparation_one_last.variant_id):
+            # получаем айдишник текущей АЗС
+            azs_id = slovar[variant]['azs_id']
+            # Получаем количество резервуаров АЗС по каждому виду топлива
+            count_92 = tanks_count[azs_id]['tank_count_92']
+            count_95 = tanks_count[azs_id]['tank_count_95']
+            count_50 = tanks_count[azs_id]['tank_count_50']
+            # создаем переменные для хранения таблиц необходимых для перебора всех возможных вариантов слива
             table_sliv_variant_92 = None
             table_sliv_variant_50 = None
             table_sliv_variant_95 = None
 
-            # Блаодаря тому, что мы знаем количество резервуаров АЗС и количество отсеков бензовоза с этим видом топлива
-            # получаем нужную константную таблицу с вариантами слива бензовоза
+            # Благодаря тому, что мы знаем количество резервуаров АЗС и количество отсеков бензовоза с этим видом
+            # топлива получаем нужную константную таблицу с вариантами слива бензовоза
+            # для 92 вида топлива
+            if count_92 == 1 and slovar[variant]['cells_92'] == 1:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 1 and tanks_counter_92 == 1:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 1 and slovar[variant]['cells_92'] == 2:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 1 and tanks_counter_92 == 2:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 1 and slovar[variant]['cells_92'] == 3:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 1 and tanks_counter_92 == 3:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 1 and slovar[variant]['cells_92'] == 4:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 1 and tanks_counter_92 == 4:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 2 and slovar[variant]['cells_92'] == 1:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 2 and tanks_counter_92 == 1:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 2 and slovar[variant]['cells_92'] == 2:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 2 and tanks_counter_92 == 2:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 2 and slovar[variant]['cells_92'] == 3:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 2 and tanks_counter_92 == 3:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 2 and slovar[variant]['cells_92'] == 4:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 2 and tanks_counter_92 == 4:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 3 and slovar[variant]['cells_92'] == 1:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 3 and tanks_counter_92 == 1:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 3 and slovar[variant]['cells_92'] == 2:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 3 and tanks_counter_92 == 2:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 3 and slovar[variant]['cells_92'] == 3:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 3 and tanks_counter_92 == 3:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            if count_92 == 3 and slovar[variant]['cells_92'] == 4:
+                table_sliv_variant_92 = select_close_tank_table(count_92, slovar[variant]['cells_92'])
 
-            if count_92 == 3 and tanks_counter_92 == 4:
-                table_sliv_variant_92 = select_close_tank_table(count_92, tanks_counter_92)
+            # для 95 вида топлива
+            if count_95 == 1 and slovar[variant]['cells_95'] == 1:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            # ---------------------------------------------
-            if count_95 == 1 and tanks_counter_95 == 1:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 1 and slovar[variant]['cells_95'] == 2:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 1 and tanks_counter_95 == 2:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 1 and slovar[variant]['cells_95'] == 3:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 1 and tanks_counter_95 == 3:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 1 and slovar[variant]['cells_95'] == 4:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 1 and tanks_counter_95 == 4:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 2 and slovar[variant]['cells_95'] == 1:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 2 and tanks_counter_95 == 1:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 2 and slovar[variant]['cells_95'] == 2:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 2 and tanks_counter_95 == 2:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 2 and slovar[variant]['cells_95'] == 3:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 2 and tanks_counter_95 == 3:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 2 and slovar[variant]['cells_95'] == 4:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 2 and tanks_counter_95 == 4:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 3 and slovar[variant]['cells_95'] == 1:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 3 and tanks_counter_95 == 1:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 3 and slovar[variant]['cells_95'] == 2:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 3 and tanks_counter_95 == 2:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 3 and slovar[variant]['cells_95'] == 3:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 3 and tanks_counter_95 == 3:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            if count_95 == 3 and slovar[variant]['cells_95'] == 4:
+                table_sliv_variant_95 = select_close_tank_table(count_95, slovar[variant]['cells_95'])
 
-            if count_95 == 3 and tanks_counter_95 == 4:
-                table_sliv_variant_95 = select_close_tank_table(count_95, tanks_counter_95)
+            # # для 50 вида топлива
+            if count_50 == 1 and slovar[variant]['cells_50'] == 1:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            # --------------------------------------------
-            if count_50 == 1 and tanks_counter_50 == 1:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 1 and slovar[variant]['cells_50'] == 2:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 1 and tanks_counter_50 == 2:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 1 and slovar[variant]['cells_50'] == 3:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 1 and tanks_counter_50 == 3:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 1 and slovar[variant]['cells_50'] == 4:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 1 and tanks_counter_50 == 4:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 2 and slovar[variant]['cells_50'] == 1:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 2 and tanks_counter_50 == 1:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 2 and slovar[variant]['cells_50'] == 2:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 2 and tanks_counter_50 == 2:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 2 and slovar[variant]['cells_50'] == 3:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 2 and tanks_counter_50 == 3:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 2 and slovar[variant]['cells_50'] == 4:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 2 and tanks_counter_50 == 4:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 3 and slovar[variant]['cells_50'] == 1:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 3 and tanks_counter_50 == 1:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 3 and slovar[variant]['cells_50'] == 2:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 3 and tanks_counter_50 == 2:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
+            if count_50 == 3 and slovar[variant]['cells_50'] == 3:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
 
-            if count_50 == 3 and tanks_counter_50 == 3:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
-
-            if count_50 == 3 and tanks_counter_50 == 4:
-                table_sliv_variant_50 = select_close_tank_table(count_50, tanks_counter_50)
-
+            if count_50 == 3 and slovar[variant]['cells_50'] == 4:
+                table_sliv_variant_50 = select_close_tank_table(count_50, slovar[variant]['cells_50'])
+            # если у данной АЗС есть 92 топливо, то перебираем таблицу, возвращенную функцией select_close_tank_table
             if table_sliv_variant_92 is not None:
+                # если резервуар с таким видом топлива один, то
                 if count_92 == 1:
+                    # перебираем таблицу
                     for variant_sliv in table_sliv_variant_92:
+                        # если первая ячейка таблицы не пуста или не равна NULL, то
                         if variant_sliv.tank1 is not None:
+                            # обнуляем счетчик суммарного слива
                             sum_sliv = 0
+                            # создаем список, в котором будем хранить айди отсеков бензовоза в виде строковых параметров
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
+                            # перебираем варианты слива, записанные в виде строки, разделенные знаком "+"
+                            # из таблицы table_sliv_variant_92
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                # по индексу получаем емкость каждого отсека, суммируем емкости
+                                # и получаем суммарный слив
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                # по индексу получаем айди отсеков бензовоза, и формирвем из них строку,
+                                # где айди разделены знаком "+"
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
+                            # формируем целую строку
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
+                            # заполняем словарь полученными даннми
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
+                            # добавляем полученынй словарь в списокдля последующей записи в базу
+                            # в таблицу TempAzsTrucks2
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
-
+                        # увеличиваем счетчик варианта слива на единицу
                         variant_counter_sliv = variant_counter_sliv + 1
+                # для двух резервуаров выполняем те же действия как с одним
                 if count_92 == 2:
                     for variant_sliv in table_sliv_variant_92:
                         if variant_sliv.tank1 is not None:
@@ -1150,16 +1356,16 @@ def start():
                             str_sliv_cells_list = list()
 
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1170,22 +1376,23 @@ def start():
                             str_sliv_cells_list = list()
 
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
 
                         variant_counter_sliv = variant_counter_sliv + 1
+                # для трех резервуаров, по аналогии с одним
                 if count_92 == 3:
                     for variant_sliv in table_sliv_variant_92:
                         if variant_sliv.tank1 is not None:
@@ -1193,16 +1400,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1213,16 +1420,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1233,22 +1440,23 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
 
                         variant_counter_sliv = variant_counter_sliv + 1
+                # по аналогии с 4 резервуарами
                 if count_92 == 4:
                     for variant_sliv in table_sliv_variant_92:
                         if variant_sliv.tank1 is not None:
@@ -1256,16 +1464,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1276,16 +1484,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1296,16 +1504,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1316,16 +1524,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank4.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_92[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_92'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_92'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 92,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_92[3],
+                                                      'str_sliv': variant_sliv.tank4,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_92'][3],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1333,7 +1541,7 @@ def start():
 
                         variant_counter_sliv = variant_counter_sliv + 1
 
-            # --- Для 95 вида топлива
+            # --- Для 95 вида топлива выполняем по аналогии с 92 видом топлива
             if table_sliv_variant_95 is not None:
                 if count_95 == 1:
                     for variant_sliv in table_sliv_variant_95:
@@ -1342,16 +1550,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1364,16 +1572,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1383,16 +1591,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1405,16 +1613,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1424,16 +1632,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1443,16 +1651,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_92[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1465,16 +1673,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1484,16 +1692,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1503,16 +1711,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1522,24 +1730,22 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank4.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_95[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_95[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_95'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_95'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 95,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_95[3],
+                                                      'str_sliv': variant_sliv.tank4,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_95'][3],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
-
-            # --- Для 50 вида топлива 
-
+            # --- Для 50 вида топлива выполняем по аналогии с 92 и 95 видом топлива
             if table_sliv_variant_50 is not None:
                 if count_50 == 1:
                     for variant_sliv in table_sliv_variant_50:
@@ -1548,16 +1754,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1570,16 +1776,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1589,16 +1795,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1611,16 +1817,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1630,16 +1836,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1650,16 +1856,16 @@ def start():
                             str_sliv_cells = ""
 
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1672,16 +1878,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank1.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
                                                       'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[0],
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][0],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1691,16 +1897,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank2.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id': azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[1],
+                                                      'str_sliv': variant_sliv.tank2,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][1],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1710,16 +1916,16 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank3.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
                                                       'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[2],
+                                                      'str_sliv': variant_sliv.tank3,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][2],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
@@ -1729,54 +1935,102 @@ def start():
                             str_sliv_cells_list = list()
                             str_sliv_cells = ""
                             for index, number in enumerate(variant_sliv.tank4.split('+')):
-                                sum_sliv = sum_sliv + cells_capacity_50[int(number) - 1]
-                                str_sliv_cells_list.append(str(cells_list_50[int(number) - 1]))
+                                sum_sliv = sum_sliv + slovar[variant]['cells_capacity_list_50'][int(number) - 1]
+                                str_sliv_cells_list.append(str(slovar[variant]['cells_list_50'][int(number) - 1]))
                             str_sliv_cells = '+'.join(str_sliv_cells_list)
                             temp_azs_trucks_2_dict = {'variant': variant,
-                                                      'azs_id' : azs_id,
-                                                      'truck_id': df_azs['truck_id'],
+                                                      'azs_id': azs_id,
+                                                      'truck_id': slovar[variant]['truck_id'],
                                                       'variant_sliv': variant_counter_sliv,
                                                       'fuel_type': 50,
-                                                      'str_sliv': variant_sliv.tank1,
-                                                      'tank_id': tanks_list_50[3],
+                                                      'str_sliv': variant_sliv.tank4,
+                                                      'tank_id': tanks_count[azs_id]['tanks_list_50'][3],
                                                       'truck_tank_id_string': str_sliv_cells,
                                                       'sum_sliv': sum_sliv
                                                       }
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
-
                         variant_counter_sliv = variant_counter_sliv + 1
-            # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базе данных
+        # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базу данных
         db.engine.execute(TempAzsTrucks2.__table__.insert(), temp_azs_trucks_2_list)
-        print("Подготовка 2 закончена")
+    # функция определяет может ли вариант слива в данный момент слиться на АЗС,
+    # сможет ли вариант слива слиться после времени бензовоза в пути
+    # определяет новый запас суток
+    # определяет остатки топлива после слива
 
     def is_it_fit():
+        # получаем остатки
         residue = FuelResidue.query.all()
-        for re in residue:
-            temp_azs_trucks_2 = TempAzsTrucks2.query.filter_by(tank_id=re.tank_id).all()
-            trip = Trip.query.filter_by(azs_id=re.azs_id).first()
+        realisation = FuelRealisation.query.all()
+        trip = Trip.query.all()
+        trucks_false = TruckFalse.query.all()
 
+        realisation_n_residue = dict()
+        for i in residue:
+            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,
+                                                'fuel_volume': i.fuel_volume,
+                                                'fuel_realisation': 0}
+        for i in realisation:
+            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,
+                                                'fuel_volume': realisation_n_residue[i.tank_id]['fuel_volume'],
+                                                'fuel_realisation': i.fuel_realisation_hour / 6}
+        azs_trip_access = dict()
+        for i in trip:
+            azs_trip_access[i.azs_id] = {'time_to_before_lunch': i.time_to_before_lunch,
+                                         'time_to': i.time_to,
+                                         'truck_id': [],
+                                         'access': 1}
+        for i in trucks_false:
+            truck_id = list()
+            truck_id.append(i.truck_id)
+            azs_trip_access[i.azs_id] = {'time_to_before_lunch':  azs_trip_access[i.azs_id]['time_to_before_lunch'],
+                                         'time_to':  azs_trip_access[i.azs_id]['time_to'],
+                                         'truck_id': azs_trip_access[i.azs_id]['truck_id'] + truck_id,
+                                         'access': 0}
+
+    def is_it_fit2():
+        # Получаем остатки по всем азс
+        residue = FuelResidue.query.all()
+        # перебираем остатки
+        for re in residue:
+            # выдергиваем из таблицы TempAzsTrucks2 все строки по данному резервуару
+            temp_azs_trucks_2 = TempAzsTrucks2.query.filter_by(tank_id=re.tank_id).all()
+            # выдергиваем строку с информацией о пути до азс и обратно из таблицы Trip
+            trip = Trip.query.filter_by(azs_id=re.azs_id).first()
+            # перебираем полученные данные по текущему резервуару из таблицы TempAzsTrucks2
             for row in temp_azs_trucks_2:
+                # получаем данные о реализации данного резервуара
                 realisation = FuelRealisation.query.filter_by(tank_id=re.tank_id).first()
+                # проверяем, сольется бензовоз в данный резервуар или нет
                 sliv = re.free_volume - row.sum_sliv
+                # проверяем, сможет ли бензовоз заехать на данную АЗС
                 if TruckFalse.query.filter_by(azs_id=row.azs_id, truck_id=row.truck_id).first():
                     row.is_it_able_to_enter = False
                 else:
                     row.is_it_able_to_enter = True
+                # если слив получается отрицательным, то
                 if sliv < 0:
+                    # отмечаем, что бензовоз не сольется
                     row.is_it_fit = False
+                    # пробуем расчитать, сольется ли он после времени затраченного на дорогу
                     realis = realisation.fuel_realisation_hour / 6
+                    # переводим время из таблицы в строковое значение
                     time_to_string = trip.time_to
                     x = time.strptime(str(time_to_string), '%H:%M:%S')
                     time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
                                                 seconds=x.tm_sec).total_seconds()
-                    realis_time = realis * ((time_to_seconds /60) / 60)
+                    # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза
+                    realis_time = realis * ((time_to_seconds / 60) / 60)
+                    # проверяем сольется ли бензовоз после времени в пути
                     sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
-
+                    # если нет, то нет
                     if sliv_after_trip < 0:
                         row.is_it_fit_later = False
+                    # иначе да
                     else:
                         row.is_it_fit_later = True
+                # если бензовоз сливается во время расстановки
                 else:
+                    # то отмечаем в таблице
                     row.is_it_fit = True
                     realis = realisation.fuel_realisation_hour / 6
                     time_to_string = trip.time_to
@@ -2069,8 +2323,8 @@ def start():
     else:
         start_time = time.time()
         #preparation()
-        preparation_two()
-        #is_it_fit()
+        #preparation_two()
+        is_it_fit()
         #preparation_three()
         #is_variant_sliv_good()
         #preparation_four()

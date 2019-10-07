@@ -464,6 +464,9 @@ class TempAzsTrucks(db.Model):
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     fuel_type = db.Column(db.Integer)
     capacity = db.Column(db.Integer)
+    cells_92 = db.Column(db.Integer)
+    cells_95 = db.Column(db.Integer)
+    cells_50 = db.Column(db.Integer)
 
 
 class TempAzsTrucks2(db.Model):
