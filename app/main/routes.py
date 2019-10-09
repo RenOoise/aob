@@ -982,7 +982,7 @@ def start():
 
                                             variant_counter = variant_counter + 1
         # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базе данных
-        db.engine.execute(TempAzsTrucks.__table__.insert(), temp_azs_truck_list)
+        return temp_azs_truck_list
 
     Close1_Tank1 = Close1Tank1.query.all()
     Close1_Tank2 = Close1Tank2.query.all()
@@ -1039,6 +1039,7 @@ def start():
 
     # функция формирует все возмоные варианты слива топлива на АЗС
     def preparation_two():
+
         # очищаем таблицу
         db.engine.execute("TRUNCATE TABLE `temp_azs_trucks2`")
         # создаем массив для хранения сформированных итоговых данных
@@ -1046,20 +1047,21 @@ def start():
         temp_azs_trucks_2_list = list()
         temp_azs_trucks_2_dict = dict()
         # помещаем таблицу всех вариантов налива бензовозов TempAzsTrucks в переменную
-        temp_azs_trucks = TempAzsTrucks.query.all()
+        temp_azs_trucks = preparation()
         # помещаем таблицу всех АКТИВНЫХ АЗС в переменную
         table_azs_list = AzsList.query.filter_by(active=True).all()
         # помещаем таблицу все АКТИВНЫЕ резервуары АЗС в переменную
         table_tanks = Tanks.query.filter_by(active=True).all()
 
         # Получаем количество вариантов заполнения бензовоза (благодаря таблице TempAzsTrucks полю - variant_id)
-        preparation_one_last = TempAzsTrucks.query.order_by(desc('variant_id')).first_or_404()
         # счетчик варианта слива для таблицы TempAzsTrucks2
         variant_counter_sliv = 1
         # Для каждой АКТИВНОЙ АЗС считаем количество АКТИЫНЫХ резервуаров по каждому из видов топлива
         tanks_count = dict()
         # перебираем таблицу со списком АКТИВНЫХ АЗС
+
         for i in table_azs_list:
+
             # счетчик для хранения количества АКТИВНЫХ резервуаров данной азс
             tank_count_92 = 0
             tank_count_95 = 0
@@ -1090,20 +1092,21 @@ def start():
         # создаем словарь с обобщенными даннными для каждого варианта налива (основным ключем в словаре
         # является variant_id)
         slovar = dict()
+
         # создаем словарь с заполнеными ключами "variant_id, truck_id, cells_92, cells_95 и cells_50".
         # Остальные ячейки обнуляем
         for i in temp_azs_trucks:
-            slovar[i.variant_id] = {'azs_id': i.azs_id,
+            slovar[i['variant_id']] = {'azs_id': i['azs_id'],
                                     'cells_list_92': [],
                                     'cells_list_95': [],
                                     'cells_list_50': [],
                                     'capacity_92': 0,
                                     'capacity_95': 0,
                                     'capacity_50': 0,
-                                    'cells_92': i.cells_92,
-                                    'cells_95': i.cells_95,
-                                    'cells_50': i.cells_50,
-                                    'truck_id': i.truck_id,
+                                    'cells_92': i['cells_92'],
+                                    'cells_95': i['cells_95'],
+                                    'cells_50': i['cells_50'],
+                                    'truck_id': i['truck_id'],
                                     'cells_capacity_list_92': [],
                                     'cells_capacity_list_95': [],
                                     'cells_capacity_list_50': []
@@ -1111,21 +1114,21 @@ def start():
         # перебираем таблицу TempAzsTrucks с вариантами налива и дополняем словарь
         for i in temp_azs_trucks:
             # обращаемся к ячейкам словаря по ключу variant_id
-            temp_variant = i.variant_id
+            temp_variant = i['variant_id']
             # если в текущей строке в таблице TempAzsTrucks вид топлива - 92,
             # то заполняем словарь согласно таблице для этого вида топлива
-            if i.fuel_type == 92:
+            if i['fuel_type'] == 92:
                 # создаем пустой список для хранения айдишников отвеков бензовоза
                 cells_list_92 = list()
                 # создаем пустой список для хранения емкостей отсеков бензовоза
                 cells_capacity_list_92 = list()
                 # добавляем емкость отсека из текущей строки в список
-                cells_capacity_list_92.append(i.capacity)
+                cells_capacity_list_92.append(i['capacity'])
                 # добавляем айдишник отсека из текущей строки в список
-                cells_list_92.append(i.truck_tank_id)
+                cells_list_92.append(i['truck_tank_id'])
                 # обновляем данные в словаре
-                slovar[temp_variant] = {'azs_id': i.azs_id,
-                                        'capacity_92': slovar[temp_variant]['capacity_92'] + i.capacity,
+                slovar[temp_variant] = {'azs_id': i['azs_id'],
+                                        'capacity_92': slovar[temp_variant]['capacity_92'] + i['capacity'],
                                         'capacity_95': slovar[temp_variant]['capacity_95'],
                                         'capacity_50': slovar[temp_variant]['capacity_50'],
                                         'cells_list_92': slovar[temp_variant]['cells_list_92'] + cells_list_92,
@@ -1140,14 +1143,14 @@ def start():
                                         'cells_capacity_list_50': slovar[temp_variant]['cells_capacity_list_50']
                                         }
             # выполняем действия для 95 вида топлива по аналогии с 92 видом топлива
-            if i.fuel_type == 95:
+            if i['fuel_type'] == 95:
                 cells_list_95 = list()
                 cells_capacity_list_95 = list()
-                cells_capacity_list_95.append(i.capacity)
-                cells_list_95.append(i.truck_tank_id)
-                slovar[temp_variant] = {'azs_id': i.azs_id,
+                cells_capacity_list_95.append(i['capacity'])
+                cells_list_95.append(i['truck_tank_id'])
+                slovar[temp_variant] = {'azs_id': i['azs_id'],
                                         'capacity_92': slovar[temp_variant]['capacity_92'],
-                                        'capacity_95': slovar[temp_variant]['capacity_95'] + i.capacity,
+                                        'capacity_95': slovar[temp_variant]['capacity_95'] + i['capacity'],
                                         'capacity_50': slovar[temp_variant]['capacity_50'],
                                         'cells_list_92': slovar[temp_variant]['cells_list_92'],
                                         'cells_list_95': slovar[temp_variant]['cells_list_95'] + cells_list_95,
@@ -1162,15 +1165,15 @@ def start():
                                       }
 
             # выполняем действия для дизеля вида топлива по аналогии с 92 и 95 видами топлива
-            if i.fuel_type == 50:
+            if i['fuel_type'] == 50:
                 cells_list_50 = list()
                 cells_capacity_list_50 = list()
-                cells_capacity_list_50.append(i.capacity)
-                cells_list_50.append(i.truck_tank_id)
-                slovar[temp_variant] = {'azs_id': i.azs_id,
+                cells_capacity_list_50.append(i['capacity'])
+                cells_list_50.append(i['truck_tank_id'])
+                slovar[temp_variant] = {'azs_id': i['azs_id'],
                                         'capacity_92': slovar[temp_variant]['capacity_92'],
                                         'capacity_95': slovar[temp_variant]['capacity_95'],
-                                        'capacity_50': slovar[temp_variant]['capacity_50'] + i.capacity,
+                                        'capacity_50': slovar[temp_variant]['capacity_50'] + i['capacity'],
                                         'cells_list_92': slovar[temp_variant]['cells_list_92'],
                                         'cells_list_95': slovar[temp_variant]['cells_list_95'],
                                         'cells_list_50': slovar[temp_variant]['cells_list_50'] + cells_list_50,
@@ -1184,7 +1187,7 @@ def start():
                                         }
 
         # перебираем варианты налива от первого до последнего
-        for variant in range(1, preparation_one_last.variant_id):
+        for variant in range(1, temp_azs_trucks[-1]['variant_id']):
             # получаем айдишник текущей АЗС
             azs_id = slovar[variant]['azs_id']
             # Получаем количество резервуаров АЗС по каждому виду топлива
@@ -1950,102 +1953,125 @@ def start():
                                                       }
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
-        # После выполнения функции записываем все полученные данные в таблицу TempAzsTrucks в базу данных
-        db.engine.execute(TempAzsTrucks2.__table__.insert(), temp_azs_trucks_2_list)
+        db.engine.execute(TempAzsTrucks.__table__.insert(), temp_azs_trucks)
+        return temp_azs_trucks_2_list
+
+    ''' 
     # функция определяет может ли вариант слива в данный момент слиться на АЗС,
     # сможет ли вариант слива слиться после времени бензовоза в пути
     # определяет новый запас суток
     # определяет остатки топлива после слива
-
+    '''
     def is_it_fit():
-        # получаем остатки
+        temp_azs_trucks_2_list = preparation_two()
+        # получаем остатки из базы
         residue = FuelResidue.query.all()
+        # получаем реализацию из базы
         realisation = FuelRealisation.query.all()
+        # получаем информацию о времени до азс
         trip = Trip.query.all()
+        # получаем информанию об азс, на которые не могут заехать определенные бензовозы
         trucks_false = TruckFalse.query.all()
-
+        # создаем пустой словарь для хранеия в нем данных о реализации и остатков
         realisation_n_residue = dict()
-        for i in residue:
-            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,
-                                                'fuel_volume': i.fuel_volume,
-                                                'fuel_realisation': 0}
-        for i in realisation:
-            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,
-                                                'fuel_volume': realisation_n_residue[i.tank_id]['fuel_volume'],
-                                                'fuel_realisation': i.fuel_realisation_hour / 6}
+        # создаем пустой словарь для хранеия в нем данных времени пути до АЗС
         azs_trip_access = dict()
-        for i in trip:
-            azs_trip_access[i.azs_id] = {'time_to_before_lunch': i.time_to_before_lunch,
-                                         'time_to': i.time_to,
-                                         'truck_id': [],
-                                         'access': 1}
-        for i in trucks_false:
-            truck_id = list()
-            truck_id.append(i.truck_id)
-            azs_trip_access[i.azs_id] = {'time_to_before_lunch':  azs_trip_access[i.azs_id]['time_to_before_lunch'],
-                                         'time_to':  azs_trip_access[i.azs_id]['time_to'],
-                                         'truck_id': azs_trip_access[i.azs_id]['truck_id'] + truck_id,
-                                         'access': 0}
+        azs_trip_time = dict()
+        # заполняем словарь с данными об остатках топлива
+        for i in residue:
+            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,  # id_АЗС
+                                                'fuel_volume': i.fuel_volume,  # остаток топлива в резервуаре
+                                                'free_volume': i.free_volume,  # свободная емкость в резервуаре
+                                                # реализация в резервуаре (нулевая, так как заполняем ее потом)
+                                                'fuel_realisation': 0,
+                                                # максимальная реализация топлива в резервуаре (среди всех периодов)
+                                                'fuel_realisation_max': 0
+                                                }
+        # заполняем словарь данными о реализации топлива
+        for i in realisation:
+            realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,  # id_АЗС
+                                                # Оставляем прошлое значение остатка топлива в резервуаре
+                                                'fuel_volume': realisation_n_residue[i.tank_id]['fuel_volume'],
+                                                # свободная емкость в резервуаре
+                                                'free_volume': realisation_n_residue[i.tank_id]['free_volume'],
+                                                # Добавляем в словарь реализацию из этого резервуара
+                                                # (среднюю в час за шестичасовой период)
+                                                'fuel_realisation': i.fuel_realisation_hour / 6,
+                                                # максимальная реализация топлива в резервуаре (среди всех периодов)
+                                                'fuel_realisation_max': i.fuel_realisation_max
+                                                }
 
-    def is_it_fit2():
-        # Получаем остатки по всем азс
-        residue = FuelResidue.query.all()
-        # перебираем остатки
-        for re in residue:
-            # выдергиваем из таблицы TempAzsTrucks2 все строки по данному резервуару
-            temp_azs_trucks_2 = TempAzsTrucks2.query.filter_by(tank_id=re.tank_id).all()
-            # выдергиваем строку с информацией о пути до азс и обратно из таблицы Trip
-            trip = Trip.query.filter_by(azs_id=re.azs_id).first()
-            # перебираем полученные данные по текущему резервуару из таблицы TempAzsTrucks2
-            for row in temp_azs_trucks_2:
-                # получаем данные о реализации данного резервуара
-                realisation = FuelRealisation.query.filter_by(tank_id=re.tank_id).first()
-                # проверяем, сольется бензовоз в данный резервуар или нет
-                sliv = re.free_volume - row.sum_sliv
-                # проверяем, сможет ли бензовоз заехать на данную АЗС
-                if TruckFalse.query.filter_by(azs_id=row.azs_id, truck_id=row.truck_id).first():
-                    row.is_it_able_to_enter = False
-                else:
-                    row.is_it_able_to_enter = True
-                # если слив получается отрицательным, то
-                if sliv < 0:
-                    # отмечаем, что бензовоз не сольется
-                    row.is_it_fit = False
-                    # пробуем расчитать, сольется ли он после времени затраченного на дорогу
-                    realis = realisation.fuel_realisation_hour / 6
-                    # переводим время из таблицы в строковое значение
-                    time_to_string = trip.time_to
-                    x = time.strptime(str(time_to_string), '%H:%M:%S')
-                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
-                                                seconds=x.tm_sec).total_seconds()
-                    # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза
-                    realis_time = realis * ((time_to_seconds / 60) / 60)
-                    # проверяем сольется ли бензовоз после времени в пути
-                    sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
-                    # если нет, то нет
-                    if sliv_after_trip < 0:
-                        row.is_it_fit_later = False
-                    # иначе да
-                    else:
-                        row.is_it_fit_later = True
-                # если бензовоз сливается во время расстановки
-                else:
-                    # то отмечаем в таблице
-                    row.is_it_fit = True
-                    realis = realisation.fuel_realisation_hour / 6
-                    time_to_string = trip.time_to
-                    x = time.strptime(str(time_to_string), '%H:%M:%S')
-                    time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
-                                                seconds=x.tm_sec).total_seconds()
-                    realis_time = realis * ((time_to_seconds / 60) / 60)
-                    sliv_after_trip = re.free_volume - realis_time - row.sum_sliv
-                    if sliv_after_trip < 0:
-                        row.is_it_fit_later = False
-                    else:
-                        row.is_it_fit_later = True
-                row.new_fuel_volume = re.fuel_volume + row.sum_sliv
-                row.new_days_stock = (re.fuel_volume + row.sum_sliv) / realisation.fuel_realisation_max
-        db.session.commit()
+        # формируем словарь для хранения данных о растоянии до АЗС и времени пути
+        for i in trip:
+            azs_trip_time[i.azs_id] = {'time_to_before_lunch': i.time_to_before_lunch,
+                                       'time_to': i.time_to,
+                                       'weigher': i.weigher}
+        # формируем словарь для хранения данных о бензовозах и азс на которые они не могут заезжать
+        for i in trucks_false:
+            azs_trip_access[str(i.azs_id)+'-'+str(i.truck_id)] = {'access': False}
+
+        is_it_fit_list = list()
+        for i in temp_azs_trucks_2_list:
+            # проверяем, сольется ли бензовоз в данный момент
+            # из свободной емкости резервуара вычитаем сумму слива бензовоза
+            sliv = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv']
+            # переводим время из вида db.time() в strptime() и переводим результат в секунды
+            time_to_string = azs_trip_time[i['azs_id']]['time_to_before_lunch']
+            x = time.strptime(str(time_to_string), '%H:%M:%S')
+            time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
+                                        seconds=x.tm_sec).total_seconds()
+            # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза
+            realis_time = realisation_n_residue[i["tank_id"]]['fuel_realisation'] * ((time_to_seconds / 60) / 60)
+            # проверяем сольется ли бензовоз, с учетом реализации за время его пути к АЗС
+            # из свободной емкости резервуара вычитаем сумму слива бензовоза, и прибавляем количество топлива,
+            # которое реализуется у данного резервуара за время пути бензовоза к ней
+            sliv_later = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv'] + realis_time
+
+            # если бензовоз не сливается в данный момент (то есть переменная sliv - меньше нуля)
+            if sliv < 0:
+                # записываем в базу, что бензовоз в данный момент слиться не сможет
+                i['is_it_fit'] = False
+                # новый запас суток и новые остатки не считаем
+                i['new_fuel_volume'] = 0
+                i['new_days_stock'] = 0
+            # если бензовоз сможет слиться натекущий момент (то есть переменная sliv - больше нуля)
+            else:
+                # записываем в базу, что бензовоз в данный момент сольется
+                i['is_it_fit'] = True
+                # расчитываем количество отстатков в резервуаре после слива
+                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['free_volume'] + i['sum_sliv']
+                # расчитываем новый запас суток
+                i['new_days_stock'] = i['new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
+            # если бензовоз не сливается после времени затраченного на дорогу (то есть переменная sliv_later
+            # - меньше нуля)
+            if sliv_later < 0:
+                # записываем в базу, что бензовоз слиться не сможет
+                i['is_it_fit_later'] = False
+                # новый запас суток и новые остатки не считаем
+                i['new_fuel_volume'] = 0
+                i['new_days_stock'] = 0
+            else:
+                # записываем в базу, что бензовоз сольется спустя время затраченное на дорогу
+                i['is_it_fit_later'] = True
+                # расчитываем количество отстатков в резервуаре после слива
+                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['free_volume'] + i['sum_sliv']
+                # расчитываем новый запас суток
+                i['new_days_stock'] = i['new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
+            # проверяем, сможет ли бензовоз заехать на АЗС (нет ли для него никаких ограничений)
+            # т.е. проверяем наличие ключа в словаре azs_trip_access, в котором содержатся ограничения для бензовозов
+            # ключ АЗС-АйдиБензовоза
+            if str(i['azs_id']) + '-' + str(i['truck_id']) in azs_trip_access:
+                # если ограничения есть, то ставим False
+                i['is_it_able_to_enter'] = False
+            else:
+                # если ограничений нет, то ставим True
+                i['is_it_able_to_enter'] = True
+
+            # добавляем словарь в список для записи в базу данных, в таблицу TempAzsTrucks2
+            is_it_fit_list.append(i)
+        # записываем данные из списка в базу
+        db.engine.execute(TempAzsTrucks2.__table__.insert(), is_it_fit_list)
+
 
     def preparation_three():
         # Перебираем варианты налива бензовозов
@@ -2322,8 +2348,6 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        #preparation()
-        #preparation_two()
         is_it_fit()
         #preparation_three()
         #is_variant_sliv_good()
