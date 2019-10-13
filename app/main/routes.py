@@ -1961,6 +1961,8 @@ def start():
     # сможет ли вариант слива слиться после времени бензовоза в пути
     # определяет новый запас суток
     # определяет остатки топлива после слива
+    # определяет, может ли бензовой зайти на АЗС
+    # может ли этот варинат налива пройти по дороге с весами
     '''
     def is_it_fit():
         temp_azs_trucks_2_list = preparation_two()
@@ -2066,11 +2068,41 @@ def start():
             else:
                 # если ограничений нет, то ставим True
                 i['is_it_able_to_enter'] = True
-
             # добавляем словарь в список для записи в базу данных, в таблицу TempAzsTrucks2
             is_it_fit_list.append(i)
+
+        fuel_types_dict = dict()
+        is_variant_sliv_good_list = list()
+        for i in is_it_fit_list:
+            fuel_types_dict[str(i['variant'])+':'+str(i['variant_sliv'])] = {'is_it_fit_92': 1,
+                                                                             'is_it_fit_95': 1,
+                                                                             'is_it_fit_50': 1}
+
+        for i in is_it_fit_list:
+            key = str(i['variant']) + ':' + str(i['variant_sliv'])
+            if i['fuel_type'] == 92 and i['is_it_fit_later'] == 0:
+                fuel_types_dict[key] = {'is_it_fit_92': 0,
+                                        'is_it_fit_95': fuel_types_dict[key]['is_it_fit_95'],
+                                        'is_it_fit_50': fuel_types_dict[key]['is_it_fit_50']}
+            if i['fuel_type'] == 95 and i['is_it_fit_later'] == 0:
+                fuel_types_dict[key] = {'is_it_fit_92': fuel_types_dict[key]['is_it_fit_92'],
+                                        'is_it_fit_95': 0,
+                                        'is_it_fit_50': fuel_types_dict[key]['is_it_fit_50']}
+            if i['fuel_type'] == 50 and i['is_it_fit_later'] == 0:
+                fuel_types_dict[key] = {'is_it_fit_92': fuel_types_dict[key]['is_it_fit_92'],
+                                        'is_it_fit_95': fuel_types_dict[key]['is_it_fit_95'],
+                                        'is_it_fit_50': 0}
+        for i in is_it_fit_list:
+            key = str(i['variant']) + ':' + str(i['variant_sliv'])
+            if fuel_types_dict[key]['is_it_fit_92'] == 1 and fuel_types_dict[key]['is_it_fit_95'] == 1 and fuel_types_dict[key]['is_it_fit_50'] == 1:
+                i['is_variant_sliv_good'] = 1
+                print('true')
+                is_variant_sliv_good_list.append(i)
+            else:
+                i['is_variant_sliv_good'] = 0
+                is_variant_sliv_good_list.append(i)
         # записываем данные из списка в базу
-        db.engine.execute(TempAzsTrucks2.__table__.insert(), is_it_fit_list)
+        db.engine.execute(TempAzsTrucks2.__table__.insert(), is_variant_sliv_good_list)
 
 
     def preparation_three():
