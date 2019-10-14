@@ -2070,16 +2070,22 @@ def start():
                 i['is_it_able_to_enter'] = True
             # добавляем словарь в список для записи в базу данных, в таблицу TempAzsTrucks2
             is_it_fit_list.append(i)
-
+        # создаем словарь для хранения переменных с информацией о том, влезет ли определенный вид топлива
+        # в резервуар на АЗС (3 переменные по всем видам топлива)
         fuel_types_dict = dict()
+        # создаем список  для хранеия обновленной таблицы TempAzsTrucks2
         is_variant_sliv_good_list = list()
+        # заполняем переменные словаря fuel_types_dict единицами
+        # ключем в словаре является связка variant:variant_sliv
         for i in is_it_fit_list:
             fuel_types_dict[str(i['variant'])+':'+str(i['variant_sliv'])] = {'is_it_fit_92': 1,
                                                                              'is_it_fit_95': 1,
                                                                              'is_it_fit_50': 1}
-
+        # заново перебираем таблицу TempAzsTrucks2(которая хранится в виде списка словарей)
         for i in is_it_fit_list:
+            # в переменную key заносим ключ итого словаря (связка variant:variant_sliv)
             key = str(i['variant']) + ':' + str(i['variant_sliv'])
+            # если находим вид топлива которое не сливается, то помечаем его нулем
             if i['fuel_type'] == 92 and i['is_it_fit_later'] == 0:
                 fuel_types_dict[key] = {'is_it_fit_92': 0,
                                         'is_it_fit_95': fuel_types_dict[key]['is_it_fit_95'],
@@ -2092,151 +2098,95 @@ def start():
                 fuel_types_dict[key] = {'is_it_fit_92': fuel_types_dict[key]['is_it_fit_92'],
                                         'is_it_fit_95': fuel_types_dict[key]['is_it_fit_95'],
                                         'is_it_fit_50': 0}
+        # снова беребираем список словарей с данными из таблицы TempAzsTrucks2
         for i in is_it_fit_list:
+            # в переменную key заносим ключ итого словаря (связка variant:variant_sliv)
             key = str(i['variant']) + ':' + str(i['variant_sliv'])
+            # если все три вида топлива (или все виды топлива которые мы везем на азс) сливаются, то помечаем столбец
+            # в котором хранится информация о том, сливается ли данный вариант (is_variant_sliv_good) единицей
             if fuel_types_dict[key]['is_it_fit_92'] == 1 and fuel_types_dict[key]['is_it_fit_95'] == 1 and fuel_types_dict[key]['is_it_fit_50'] == 1:
                 i['is_variant_sliv_good'] = 1
-                print('true')
+                # добавляем обновленный словарь в список
                 is_variant_sliv_good_list.append(i)
+            # если не все топливо из данного варианта слива сливается, то ставим в ячейке ноль (False)
             else:
                 i['is_variant_sliv_good'] = 0
+                # добавляем обновленный словарь в список
                 is_variant_sliv_good_list.append(i)
+        # создаем словарь для хранения обновленных данных (по факту - в словаре появится ячейка is_variant_good)
+        is_variant_good_list = dict()
+        # перебираем список словарей с данными из таблицы TempAzsTrucks2 (из предыдущего цикла)
+        for i in is_variant_sliv_good_list:
+            # в созданные ранее словарь добавляем ячейки с нулями
+            is_variant_good_list[str(i['variant'])] = {'is_it_92': 0,
+                                                       'is_it_95': 0,
+                                                       'is_it_50': 0}
+        # снова перебираем список словарей
+        for i in is_variant_sliv_good_list:
+            # если находим определенный вид топлива, и вариант слива относящийся к этой строке таблицы отмечен True,
+            # то помечаем го цифрой 2
+            # а если нет, то единицей
+            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 1:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': 2,
+                                                           'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
+                                                           'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
+            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 0:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': 1,
+                                                           'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
+                                                           'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
+            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 1:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
+                                                           'is_it_95': 2,
+                                                           'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
+            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 0:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
+                                                           'is_it_95': 1,
+                                                           'is_it_50': is_variant_good_list[str(i['variant'])]['is_it_50']}
+            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 1:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
+                                                           'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
+                                                           'is_it_50': 2}
+            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 0:
+                is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
+                                                           'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
+                                                           'is_it_50': 1}
+        # создаем финальный список для данной функции, который будет записан в таблицу TempAzsTrucks2 в БД
+        final_list = list()
+        # перебираем список словарей
+        for i in is_variant_sliv_good_list:
+            # если все виды топлива данного варианта сливаются, то ячейку is_variant_good в таблице записываем True,
+            # если же нет, то в ячейку is_variant_good пишем False
+            if is_variant_good_list[str(i['variant'])]['is_it_92'] != 1 \
+                and is_variant_good_list[str(i['variant'])]['is_it_95'] != 1 \
+                    and is_variant_good_list[str(i['variant'])]['is_it_50'] != 1:
+                i['is_variant_good'] = True
+                # добавляем получившийся словарь в список
+                final_list.append(i)
+            else:
+                i['is_variant_good'] = False
+                # добавляем получившийся словарь в список
+                final_list.append(i)
+
         # записываем данные из списка в базу
-        db.engine.execute(TempAzsTrucks2.__table__.insert(), is_variant_sliv_good_list)
+        db.engine.execute(TempAzsTrucks2.__table__.insert(), final_list)
+        return final_list
 
-
-    def preparation_three():
-        # Перебираем варианты налива бензовозов
-        preparation_two_last = TempAzsTrucks2.query.order_by(desc(TempAzsTrucks2.variant)).first_or_404()
-
-        for variant in range(1, preparation_two_last.variant):
-            is_it_92 = 0
-            is_it_95 = 0
-            is_it_50 = 0
-            is_it_92_sliv = 0
-            is_it_95_sliv = 0
-            is_it_50_sliv = 0
-            temp_azs_trucks = TempAzsTrucks.query.filter_by(variant_id=variant).all()
-
-            for row in temp_azs_trucks:
-                if row.fuel_type == 92:
-                    is_it_92 = True
-
-                if row.fuel_type == 95:
-                    is_it_95 = True
-
-                if row.fuel_type == 50:
-                    is_it_50 = True
-
-            if is_it_92:
-                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).order_by("variant_sliv").first()
-                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).order_by(desc("variant_sliv")).first()
-                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92).all()
-                trigger = 1
-                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
-                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=92, variant_sliv=row).all()
-                    for row in i:
-                        if row.is_it_fit_later == 0:
-                            trigger = 0
-                if trigger == 1:
-                    is_it_92_sliv = 1
-
-            if is_it_95:
-                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).order_by(
-                    "variant_sliv").first()
-                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).order_by(
-                    desc("variant_sliv")).first()
-                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95).all()
-                trigger = 1
-                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
-                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=95, variant_sliv=row).all()
-                    for row in i:
-                        if row.is_it_fit_later == 0:
-                            trigger = 0
-                if trigger == 1:
-                    is_it_95_sliv = 1
-            if is_it_50:
-                temp_variant_sliv_first = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by("variant_sliv").first()
-                temp_variant_sliv_last = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).order_by(desc("variant_sliv")).first()
-                temp_variant_sliv = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50).all()
-                trigger = 1
-                for row in range(temp_variant_sliv_first.variant_sliv, temp_variant_sliv_last.variant_sliv+1):
-                    i = TempAzsTrucks2.query.filter_by(variant=variant, fuel_type=50, variant_sliv=row).all()
-                    for row in i:
-                        if row.is_it_fit_later == 0:
-                            trigger = 0
-                if trigger == 1:
-                    is_it_50_sliv = 1
-            if (is_it_92+is_it_95+is_it_50) == (is_it_92_sliv+is_it_95_sliv+is_it_50_sliv):
-                for row in TempAzsTrucks2.query.filter_by(variant=variant).all():
-                    row.is_variant_good = True
-                db.session.commit()
-
-            else:
-                for row in TempAzsTrucks2.query.filter_by(variant=variant).all():
-                    row.is_variant_good = False
-                db.session.commit()
-
-    def is_variant_sliv_good():
-        first_variant_sliv = TempAzsTrucks2.query.order_by("variant_sliv").first()
-        last_variant_sliv = TempAzsTrucks2.query.order_by(desc("variant_sliv")).first()
-        temp_azs_trucks2 = TempAzsTrucks2.query.all()
-        temp_azs_trucks2_list = list()
-        #  создаем список, перебирая полученный массив из базы и заносим словари с каждой строкой в лист
-        #  таким образом получаем всю таблицу в виде списка словарей
-        for row in temp_azs_trucks2:
-            temp_azs_trucks2_dict = {'id': row.id,
-                                     'variant': row.variant,
-                                     'truck_id': row.truck_id,
-                                     'azs_id': row.azs_id,
-                                     'variant_sliv': row.variant_sliv,
-                                     'fuel_type': row.fuel_type,
-                                     'tank_id': row.tank_id,
-                                     'str_sliv': row.str_sliv,
-                                     'sum_sliv': row.sum_sliv,
-                                     'is_it_fit': row.is_it_fit,
-                                     'truck_tanks_id_string': row.truck_tank_id_string,
-                                     'new_days_stock': row.new_days_stock,
-                                     'new_fuel_volume': row.new_fuel_volume,
-                                     'is_it_fit_later': row.is_it_fit_later,
-                                     'is_it_able_to_enter': row.is_it_able_to_enter,
-                                     'is_variant_good': row.is_variant_good,
-                                     'is_variant_sliv_good': row.is_variant_sliv_good}
-            temp_azs_trucks2_list.append(temp_azs_trucks2_dict)
-        # создаем датафрейм с таблицой №2
-        df = pd.DataFrame(temp_azs_trucks2_list)
-        count_row = len(df)
-        for variant_sliv in range(first_variant_sliv.variant_sliv, last_variant_sliv.variant_sliv):
-            variant_sliv_count = len(df[df['variant_sliv'] == variant_sliv].to_dict('r'))
-            variant_sliv_count_true = \
-                len(df[(df['variant_sliv'] == variant_sliv) & (df['is_it_fit_later'] == 1)].to_dict('r'))
-            if variant_sliv_count == variant_sliv_count_true:
-                for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
-                    row.is_variant_sliv_good = True
-            else:
-                for row in TempAzsTrucks2.query.filter_by(variant_sliv=variant_sliv).all():
-                    row.is_variant_sliv_good = False
-        db.session.commit()
-
+    ''' функция отсеивает все варианты из таблицы TempAzsTrucks2 и дает им оценку'''
     def preparation_four():
-        db.session.query(TempAzsTrucks3).delete()
-        db.session.commit()
-        table = TempAzsTrucks2.query.filter_by(is_it_fit_later=True, is_it_able_to_enter=True,
-                                               is_variant_good=True, is_variant_sliv_good=True).all()
-        for row in table:
-            add = TempAzsTrucks3(variant=row.variant,
-                                 truck_id=row.truck_id,
-                                 azs_id=row.azs_id,
-                                 variant_sliv=row.variant_sliv,
-                                 fuel_type=row.fuel_type,
-                                 tank_id=row.tank_id,
-                                 sum_sliv=row.sum_sliv,
-                                 truck_tank_id_string=row.truck_tank_id_string,
-                                 new_fuel_volume=round(row.new_fuel_volume, 1),
-                                 new_days_stock=round(row.new_days_stock, 1))
+        final_list = is_it_fit()
+        # очищаем таблицу
+        db.engine.execute("TRUNCATE TABLE `temp_azs_trucks3`")
+        temp_azs_trucks3_list = list()
+        # перебираем список из предыдущей функции
+        for i in final_list:
+            # если вариант сливается, бензовоз может заехать на АЗС и бензовоз сливается полностью
+            if i['is_it_fit_later'] == True and i['is_it_able_to_enter'] == True and i['is_variant_good'] == True \
+                    and i['is_variant_sliv_good'] == True:
+                # добавляем словарь в базу
+                temp_azs_trucks3_list.append(i)
 
-            db.session.add(add)
-        db.session.commit()
+        # записываем данные из списка в базу
+        db.engine.execute(TempAzsTrucks3.__table__.insert(), temp_azs_trucks3_list)
 
     def preparation_five():
         db.session.query(TempAzsTrucks4).delete()
@@ -2380,12 +2330,10 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        is_it_fit()
-        #preparation_three()
-        #is_variant_sliv_good()
-        #preparation_four()
-        #preparation_five()
-        #preparation_six()
+
+        preparation_four()
+        # preparation_five()
+        # preparation_six()
         flash('Время выполнения %s' % (time.time() - start_time))
         '''today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
