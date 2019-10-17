@@ -165,3 +165,8 @@ class TruckFalseForm(FlaskForm):
     azs = SelectField('АЗС', choices=[], coerce=int)
     reason = StringField('Причина')
     submit = SubmitField('Сохранить')
+
+
+class ManualTanks(FlaskForm):
+    truck_tanks = SelectField('Резервуары', choices=[], coerce=int)
+    submit = SubmitField('Сохранить')

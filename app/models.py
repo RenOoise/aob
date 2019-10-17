@@ -391,9 +391,11 @@ class Trucks(db.Model):
     weight = db.Column(db.Integer)  # вес бензовоза сухой
     weight_limit = db.Column(db.Integer)  # ограничение массы
     driver = db.Column(db.String(120))  # ФИО водителя
+    day_start = db.Column(db.Time)
+    day_end = db.Column(db.Time)
+    manual_tanks = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
+    manual_fuel_tanks = db.Column(db.Integer)
     active = db.Column(db.Boolean)  # активен?
-    # opt
-    # comeback_time
 
 
 class TruckTanks(db.Model):  # резервуары бензовоза
