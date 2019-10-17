@@ -113,6 +113,8 @@ class AddTruckForm(FlaskForm):
     weight = IntegerField(_l('Сухая масса'))
     weight_limit = IntegerField('Максимальная масса', validators=[DataRequired()])
     driver = StringField(_l('ФИО водителя'))
+    start_time = TimeField('Начало рабочего дня')
+    end_time = TimeField('Конец рабочего дня')
     active = BooleanField('Активен?')
     submit = SubmitField('Добавить')
 
@@ -130,6 +132,8 @@ class EditTruckForm(FlaskForm):
     weight = IntegerField(_l('Сухая масса'))
     weight_limit = IntegerField('Максимальная масса', validators=[DataRequired()])
     driver = StringField(_l('ФИО водителя'))
+    start_time = TimeField('Начало рабочего дня')
+    end_time = TimeField('Конец рабочего дня')
     active = BooleanField('Активен?')
     submit = SubmitField('Сохранить')
 
