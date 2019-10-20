@@ -2176,65 +2176,107 @@ def start():
         final_list = is_it_fit()
         # очищаем таблицу
         db.engine.execute("TRUNCATE TABLE `temp_azs_trucks3`")
+        db.engine.execute("TRUNCATE TABLE `temp_azs_trucks4`")
         temp_azs_trucks3_list = list()
+        fuel_realisation = FuelRealisation.query.all()
+        days_stock_dict = dict()
+
         # перебираем список из предыдущей функции
         for i in final_list:
             # если вариант сливается, бензовоз может заехать на АЗС и бензовоз сливается полностью
             if i['is_it_fit_later'] == True and i['is_it_able_to_enter'] == True and i['is_variant_good'] == True \
                     and i['is_variant_sliv_good'] == True:
-                # добавляем словарь в базу
+                # добавляем словарь в список
                 temp_azs_trucks3_list.append(i)
+        new_days_stock_dict = dict()
+        temp_azs_trucks4_dict = dict()
 
+
+        for i in temp_azs_trucks3_list:
+            temp_azs_trucks4_dict[str(i['variant'])] = {'volume_92': 0,
+                                                        'volume_95': 0,
+                                                        'volume_50': 0,
+                                                        'variant_sliv_50': 0,
+                                                        'variant_sliv_92': 0,
+                                                        'variant_sliv_95': 0,
+                                                        'azs_id': None,
+                                                        'truck_id': None
+                                                        }
+
+        for i in temp_azs_trucks3_list:
+            if i['fuel_type'] == 92:
+                temp_azs_trucks4_dict[str(i['variant'])] = {'volume_92': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                             ['volume_92'] + i['sum_sliv'],
+                                                            'volume_95': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_95'],
+                                                            'volume_50': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_50'],
+                                                            'variant_sliv_92': i['variant_sliv'],
+                                                            'variant_sliv_95': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_95'],
+                                                            'variant_sliv_50': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_50'],
+                                                            'azs_id': i['azs_id'],
+                                                            'truck_id': i['truck_id']
+                                                      }
+            if i['fuel_type'] == 95:
+                temp_azs_trucks4_dict[str(i['variant'])] = {'volume_92': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                             ['volume_92'],
+                                                            'volume_95': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_95'] + i['sum_sliv'],
+                                                            'volume_50': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_50'],
+                                                            'variant_sliv_92': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_92'],
+                                                            'variant_sliv_95': i['variant_sliv'],
+                                                            'variant_sliv_50': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_50'],
+                                                            'azs_id': i['azs_id'],
+                                                            'truck_id': i['truck_id']
+                                                      }
+            if i['fuel_type'] == 50:
+                temp_azs_trucks4_dict[str(i['variant'])] = {'volume_92': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                             ['volume_92'],
+                                                            'volume_95': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_95'],
+                                                            'volume_50': temp_azs_trucks4_dict[str(i['variant'])]\
+                                                                ['volume_50'] + i['sum_sliv'],
+                                                            'variant_sliv_92': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_92'],
+                                                            'variant_sliv_95': temp_azs_trucks4_dict[str(i['variant'])] \
+                                                                ['variant_sliv_95'],
+                                                            'variant_sliv_50': i['variant_sliv'],
+                                                            'azs_id': i['azs_id'],
+                                                            'truck_id': i['truck_id']
+                                                            }
+        temp_azs_trucks4_list = list()
+        temp_dict = dict()
+
+        '''for i in temp_azs_trucks4_dict:
+            for x in fuel_realisation:
+                days_stock_dict[(i, x.azs_id, x.tank_id)] = x.days_stock_min
+        for i in temp_azs_trucks3_list:
+            days_stock_dict[(i['variant'], i['azs_id'], i['tank_id'])] = i['new_days_stock']'''
+
+        for i in temp_azs_trucks4_dict:
+
+            temp_dict = {'variant': i,
+                         'sum_92': temp_azs_trucks4_dict[i]['volume_92'],
+                         'sum_95': temp_azs_trucks4_dict[i]['volume_95'],
+                         'sum_50': temp_azs_trucks4_dict[i]['volume_50'],
+                         'min_rez1': 0,
+                         'min_rez2': 0,
+                         'min_rez3': 0,
+                         'variant_sliv_50': temp_azs_trucks4_dict[i]['variant_sliv_50'],
+                         'variant_sliv_92': temp_azs_trucks4_dict[i]['variant_sliv_92'],
+                         'variant_sliv_95': temp_azs_trucks4_dict[i]['variant_sliv_95'],
+                         'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                         'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                         }
+            temp_azs_trucks4_list.append(temp_dict)
         # записываем данные из списка в базу
         db.engine.execute(TempAzsTrucks3.__table__.insert(), temp_azs_trucks3_list)
-
-    def preparation_five():
-        db.session.query(TempAzsTrucks4).delete()
-        db.session.commit()
-        table = TempAzsTrucks3.query.with_entities(TempAzsTrucks3.variant).distinct()
-
-        for row in table:
-            sliv_92 = list()
-            sliv_50 = list()
-            sliv_95 = list()
-            fuel_cap_92 = list()
-            fuel_cap_95 = list()
-            fuel_cap_50 = list()
-            temp = TempAzsTrucks3.query.filter_by(variant=row.variant).first()
-            list_92 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=92).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
-            list_95 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=95).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
-            list_50 = TempAzsTrucks3.query.filter_by(variant=row.variant, fuel_type=50).with_entities(TempAzsTrucks3.variant_sliv, TempAzsTrucks3.sum_sliv).all()
-
-            if list_92:
-                sliv_92.append(list_92[0][0])
-                fuel_cap_92.append((list_92[0][1]))
-            else:
-                sliv_92.append(0)
-                fuel_cap_92.append(0)
-            if list_95:
-                sliv_95.append(list_95[0][0])
-                fuel_cap_95.append((list_95[0][1]))
-            else:
-                sliv_95.append(0)
-                fuel_cap_95.append(0)
-            if list_50:
-                sliv_50.append(list_50[0][0])
-                fuel_cap_50.append((list_50[0][1]))
-            else:
-                sliv_50.append(0)
-                fuel_cap_50.append(0)
-
-            if sliv_95 and sliv_92 and sliv_50:
-                for index_92, a in enumerate(sliv_92):
-                    for index_95, b in enumerate(sliv_95):
-                        for index_50, c in enumerate(sliv_50):
-                            add = TempAzsTrucks4(variant=row.variant, variant_sliv_92=a,
-                                                 variant_sliv_95=b, variant_sliv_50=c,
-                                                 azs_id=temp.azs_id, truck_id=temp.truck_id,
-                                                 sum_92=fuel_cap_92[index_92], sum_95=fuel_cap_95[index_95],
-                                                 sum_50=fuel_cap_50[index_50])
-                            db.session.add(add)
-        db.session.commit()
+        db.engine.execute(TempAzsTrucks4.__table__.insert(), temp_azs_trucks4_list)
 
     # определение худшего запаса суток среди всех резервуаров АЗС
     def preparation_six():
@@ -2251,7 +2293,6 @@ def start():
             if row.variant_sliv_50:
                 variants_list.append(row.variant_sliv_50)
             new_days_stock_dict = dict()
-
             for variant_sliv in variants_list:
                 tanks_from_realisation = FuelRealisation.query.filter_by(azs_id=row.azs_id).all()
                 for tank in tanks_from_realisation:
@@ -2268,13 +2309,8 @@ def start():
 
     def create_today_trip():
         print("Формирование задания на сегодня")
-
         db.session.query(TripForToday).delete()
         db.session.commit()
-        priority = Priority.query.order_by("priority").all()
-        trucks = Trucks.query.all()
-        truck_tanks = TruckTanks.query.all()
-        temp_azs_trucks_2 = TempAzsTrucks2.query.all()
         fuel_list = list()
         trucks_list = list()
         trucks_number_list = list()
@@ -2332,8 +2368,7 @@ def start():
         start_time = time.time()
 
         preparation_four()
-        # preparation_five()
-        # preparation_six()
+        preparation_six()
         flash('Время выполнения %s' % (time.time() - start_time))
         '''today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp

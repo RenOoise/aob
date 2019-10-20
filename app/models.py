@@ -393,7 +393,7 @@ class Trucks(db.Model):
     driver = db.Column(db.String(120))  # ФИО водителя
     day_start = db.Column(db.Time)
     day_end = db.Column(db.Time)
-    manual_tanks = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
+    manual_tanks = db.Column(db.String(120), db.ForeignKey('truck_tanks.id'))
     manual_fuel_tanks = db.Column(db.Integer)
     active = db.Column(db.Boolean)  # активен?
 
