@@ -2274,38 +2274,73 @@ def start():
                          'truck_id': temp_azs_trucks4_dict[i]['truck_id']
                          }
             temp_azs_trucks4_list.append(temp_dict)
-        # записываем данные из списка в базу
         db.engine.execute(TempAzsTrucks3.__table__.insert(), temp_azs_trucks3_list)
-        db.engine.execute(TempAzsTrucks4.__table__.insert(), temp_azs_trucks4_list)
+        return temp_azs_trucks4_list, temp_azs_trucks3_list
 
     # определение худшего запаса суток среди всех резервуаров АЗС
     def preparation_six():
         # берем таблицу 4
-        table_azs_trucks_4 = TempAzsTrucks4.query.all()
-        # построчно выбираем вариант и вариант слива
+        table_azs_trucks_4, table_azs_trucks_3 = preparation_four()
+        table_azs_trucks_4_list = list()
+        fuel_realisation = FuelRealisation.query.all()
+        days_stock_old_dict = dict()
+        for i in fuel_realisation:
+            days_stock_old_dict[i.azs_id] = {'days_stock': [],
+                                             'tank_id': []}
+
+        for i in fuel_realisation:
+            days_stock_min_old_list = [i.days_stock_min]
+            tank_ids_list = [i.tank_id]
+            days_stock_old_dict[i.azs_id] = {'days_stock': days_stock_old_dict[i.azs_id]['days_stock'] + days_stock_min_old_list,
+                                             'tank_id': days_stock_old_dict[i.azs_id]['tank_id'] + tank_ids_list}
+        variants_dict = dict()
+        for i in table_azs_trucks_3:
+            variants_dict[(i['variant'], i['variant_sliv'])] = {'days_stock': [],
+                                                          'tank_id': []}
+        for i in table_azs_trucks_3:
+            days_stock_min_new_list = [i['new_days_stock']]
+            tank_ids_list = [i['tank_id']]
+            variants_dict[(i['variant'], i['variant_sliv'])] = {'days_stock': variants_dict[(i['variant'], i['variant_sliv'])]['days_stock'] + days_stock_min_new_list,
+                                             'tank_id': variants_dict[(i['variant'], i['variant_sliv'])]['tank_id'] + tank_ids_list
+                                                          }
         for row in table_azs_trucks_4:
-            variant = row.variant
+
+            variant = row['variant']
             variants_list = list()
-            if row.variant_sliv_92:
-                variants_list.append(row.variant_sliv_92)
-            if row.variant_sliv_95:
-                variants_list.append(row.variant_sliv_95)
-            if row.variant_sliv_50:
-                variants_list.append(row.variant_sliv_50)
+            if row['variant_sliv_92']:
+                variants_list.append(row['variant_sliv_92'])
+            if row['variant_sliv_95']:
+                variants_list.append(row['variant_sliv_95'])
+            if row['variant_sliv_50']:
+                variants_list.append(row['variant_sliv_50'])
             new_days_stock_dict = dict()
+            tank_list = days_stock_old_dict[row['azs_id']]['tank_id']
+            stock_list = days_stock_old_dict[row['azs_id']]['days_stock']
+            for index, tank in enumerate(tank_list):
+                new_days_stock_dict[tank] = stock_list[index]
             for variant_sliv in variants_list:
-                tanks_from_realisation = FuelRealisation.query.filter_by(azs_id=row.azs_id).all()
-                for tank in tanks_from_realisation:
-                    new_days_stock_dict[tank.tank_id] = tank.days_stock_min
-            for variant_sliv in variants_list:
-                tanks_list = TempAzsTrucks3.query.filter_by(variant=variant, variant_sliv=variant_sliv).all()
-                for tank in tanks_list:
-                    new_days_stock_dict[tank.tank_id] = tank.new_days_stock
+                tank_list_new = variants_dict[(int(row['variant']), variant_sliv)]['tank_id']
+                stock_list_new = variants_dict[(int(row['variant']), variant_sliv)]['days_stock']
+                for index, tank in enumerate(tank_list_new):
+                    new_days_stock_dict[tank] = stock_list_new[index]
+
             sorted_new_days_stock_dict = sorted(new_days_stock_dict.items(), key=lambda x: x[1])
-            row.min_rez1 = sorted_new_days_stock_dict[0][1]
-            row.min_rez2 = sorted_new_days_stock_dict[1][1]
-            row.min_rez3 = sorted_new_days_stock_dict[2][1]
-            db.session.commit()
+            temp_azs_trucks_4_dict = {'truck_id': row['truck_id'],
+                                      'azs_id': row['azs_id'],
+                                      'variant': row['variant'],
+                                      'sum_92': row['sum_92'],
+                                      'sum_95': row['sum_95'],
+                                      'sum_50': row['sum_50'],
+                                      'min_rez1': round(sorted_new_days_stock_dict[0][1], 1),
+                                      'min_rez2': round(sorted_new_days_stock_dict[1][1], 1),
+                                      'min_rez3': round(sorted_new_days_stock_dict[2][1], 1),
+                                      'variant_sliv_92': row['variant_sliv_92'],
+                                      'variant_sliv_95': row['variant_sliv_95'],
+                                      'variant_sliv_50': row['variant_sliv_50']
+                                      }
+            table_azs_trucks_4_list.append(temp_azs_trucks_4_dict)
+
+        db.engine.execute(TempAzsTrucks4.__table__.insert(), table_azs_trucks_4_list)
 
     def create_today_trip():
         print("Формирование задания на сегодня")
@@ -2366,8 +2401,6 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-
-        preparation_four()
         preparation_six()
         flash('Время выполнения %s' % (time.time() - start_time))
         '''today_trip = TripForToday.query.first()
