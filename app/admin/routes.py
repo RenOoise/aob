@@ -309,6 +309,8 @@ def truck_edit(id):
         truck.weight = form.weight.data
         truck.driver = form.driver.data
         truck.active = form.active.data
+        truck.day_start = form.start_time
+        truck.day_end = form.end_time
         truck.weight_limit = form.weight_limit.data
         db.session.commit()
         flash('ТС отредактированно')
@@ -320,6 +322,8 @@ def truck_edit(id):
         form.seals.data = truck.seals
         form.weight.data = truck.weight
         form.driver.data = truck.driver
+        form.start_time = truck.day_start
+        form.end_time = truck.day_end
         form.active.data = truck.active
         form.weight_limit.data = truck.weight_limit
 

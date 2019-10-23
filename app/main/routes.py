@@ -1,10 +1,7 @@
-import collections
-import time
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
-from datetime import date
 import random
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
@@ -20,12 +17,10 @@ from app.main import bp
 import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
 from datetime import datetime, timedelta
-from sqlalchemy import desc, extract, and_
-from sqlalchemy.sql import func
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
 import pygal
 from pygal.style import Style, BlueStyle
 import time
+import random
 
 
 @bp.route('/stats', methods=['GET', 'POST'])
@@ -89,7 +84,7 @@ def index():
                                     or residue.download_time < datetime.now()-timedelta(seconds=600):
                                 if residue.download_time < datetime.now()-timedelta(seconds=600):
                                     error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
-                                                 " - возможно данные об остатках устерели"
+                                                 " - возможно данные об остатках устарели"
                                 else:
                                     error_text = "АЗС №" + str (azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                                  " - нет данных об остатках"
@@ -106,7 +101,7 @@ def index():
                                 or realisation.download_time < datetime.now()-timedelta(seconds=600):
                             if realisation.download_time < datetime.now() - timedelta(seconds=600):
                                 error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
-                                             " - возможно данные о реализации устерели"
+                                             " - возможно данные о реализации устарели"
                             else:
                                 error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                              " - нет данных о реализации"
@@ -2342,6 +2337,63 @@ def start():
 
         db.engine.execute(TempAzsTrucks4.__table__.insert(), table_azs_trucks_4_list)
 
+    def create_trip():
+        table_azs_trucks_4 = TempAzsTrucks4.query.all()
+        trucks_for_azs_dict = dict()
+
+        for i in table_azs_trucks_4:
+            trucks_for_azs_dict[i.azs_id] = {'azs_trucks': [0],
+                                             'min_rez1': [],
+                                             'min_rez2': [],
+                                             'min_rez3': [],
+                                             'variant': []
+                                             }
+        for i in table_azs_trucks_4:
+            trucks_list = list()
+            trucks_list.append(i.truck_id)
+            if i.truck_id not in trucks_for_azs_dict[i.azs_id]['azs_trucks']:
+                min_rez1_list = list()
+                min_rez2_list = list()
+                min_rez3_list = list()
+                variant_list = list()
+                days_stock1 = 0
+                days_stock2 = 0
+                days_stock3 = 0
+                best_variant = 0
+                for k in table_azs_trucks_4:
+                    if i.azs_id == k.azs_id and i.truck_id == k.truck_id and k.min_rez1 >= days_stock1 and k.min_rez2 >= days_stock2 and k.min_rez3 >= days_stock3:
+                        days_stock1 = k.min_rez1
+                        days_stock2 = k.min_rez2
+                        days_stock3 = k.min_rez3
+                        best_variant = k.variant
+
+                variant_list.append(best_variant)
+                min_rez1_list.append(days_stock1)
+                min_rez2_list.append(days_stock2)
+                min_rez3_list.append(days_stock3)
+                trucks_for_azs_dict[i.azs_id] = {'azs_trucks': trucks_for_azs_dict[i.azs_id]['azs_trucks'] + trucks_list,
+                                                 'min_rez1': trucks_for_azs_dict[i.azs_id]['min_rez1'] + min_rez1_list,
+                                                 'min_rez2': trucks_for_azs_dict[i.azs_id]['min_rez2'] + min_rez2_list,
+                                                 'min_rez3': trucks_for_azs_dict[i.azs_id]['min_rez3'] + min_rez3_list,
+                                                 'variant': trucks_for_azs_dict[i.azs_id]['variant'] + variant_list
+                                                 }
+        # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
+
+        active_trucks = Trucks.query.filter_by(active=True).count()
+        active_azs = Priority.query.order_by("id").all()
+        choice_azs_truck_dict = dict()
+        checker = active_trucks
+        while checker > 0:
+            for i in active_azs:
+                if i.azs_id in trucks_for_azs_dict:
+                    azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']
+                    choice_azs_truck_dict[i.azs_id] = {'truck_id': random.choice(azs_trucks)}
+                    checker = checker - 1
+        # trig = 0
+        # for i in choice_azs_truck_dict:
+
+        print(choice_azs_truck_dict)
+
     def create_today_trip():
         print("Формирование задания на сегодня")
         db.session.query(TripForToday).delete()
@@ -2401,7 +2453,8 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        preparation_six()
+        # preparation_six()
+        create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
         '''today_trip = TripForToday.query.first()
         db_date = today_trip.timestamp
