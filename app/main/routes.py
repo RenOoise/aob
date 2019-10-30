@@ -435,7 +435,7 @@ def online():
 @login_required
 def page_azs(id):
     azs_list = AzsList.query.filter_by(id=id).first()
-    tanks_list = Tanks.query.filter_by(azs_id=id).all()
+    tanks_list = Tanks.query.filter_by(azs_id=id, active=True).all()
     online = FuelResidue.query.outerjoin(Tanks).order_by(Tanks.tank_number).all()
     realisation = FuelRealisation.query.all()
     check_if_exist = FuelResidue.query.filter_by(azs_id=id).first()
@@ -2339,60 +2339,106 @@ def start():
 
     def create_trip():
         table_azs_trucks_4 = TempAzsTrucks4.query.all()
+        priority = Priority.query.all()
         trucks_for_azs_dict = dict()
-
+        azs_trucks_best_days_stock = dict()
+        azs_trucks_max_92 = dict()
+        azs_trucks_max_95 = dict()
+        azs_trucks_max_50 = dict()
+        azs_trucks_min_92 = dict()
+        azs_trucks_min_95 = dict()
+        azs_trucks_min_50 = dict()
         for i in table_azs_trucks_4:
-            trucks_for_azs_dict[i.azs_id] = {'azs_trucks': [0],
-                                             'min_rez1': [],
-                                             'min_rez2': [],
-                                             'min_rez3': [],
-                                             'variant': []
-                                             }
+            trucks_for_azs_dict[i.azs_id] = {'azs_trucks': [0]}
+            azs_trucks_best_days_stock[str(i.azs_id)+':'+str(i.truck_id)] = {'min_rez1': -1,
+                                                                             'min_rez2': -1,
+                                                                             'min_rez3': -1,
+                                                                             'variant': 0}
+
+            azs_trucks_max_92[str(i.azs_id)+':'+str(i.truck_id)] = {'max_volume_92': -1,
+                                                                    'min_rez1': -1,
+                                                                    'min_rez2': -1,
+                                                                    'min_rez3': -1,
+                                                                    'variant': 0}
+
+            azs_trucks_max_95[str(i.azs_id)+':'+str(i.truck_id)] = {'max_volume_95': -1,
+                                                                    'min_rez1': -1,
+                                                                    'min_rez2': -1,
+                                                                    'min_rez3': -1,
+                                                                    'variant': 0}
+
+            azs_trucks_max_50[str(i.azs_id)+':'+str(i.truck_id)] = {'max_volume_50': -1,
+                                                                    'min_rez1': -1,
+                                                                    'min_rez2': -1,
+                                                                    'min_rez3': -1,
+                                                                    'variant': 0}
+
+            azs_trucks_min_92[str(i.azs_id) + ':' + str(i.truck_id)] = {'min_volume_92': -1,
+                                                                        'min_rez1': -1,
+                                                                        'min_rez2': -1,
+                                                                        'min_rez3': -1,
+                                                                        'variant': 0}
+
+            azs_trucks_min_95[str(i.azs_id) + ':' + str(i.truck_id)] = {'min_volume_95': -1,
+                                                                        'min_rez1': -1,
+                                                                        'min_rez2': -1,
+                                                                        'min_rez3': -1,
+                                                                        'variant': 0}
+
+            azs_trucks_min_50[str(i.azs_id) + ':' + str(i.truck_id)] = {'mim_volume_50': -1,
+                                                                        'min_rez1': -1,
+                                                                        'min_rez2': -1,
+                                                                        'min_rez3': -1,
+                                                                        'variant': 0}
         for i in table_azs_trucks_4:
             trucks_list = list()
             trucks_list.append(i.truck_id)
             if i.truck_id not in trucks_for_azs_dict[i.azs_id]['azs_trucks']:
-                min_rez1_list = list()
-                min_rez2_list = list()
-                min_rez3_list = list()
-                variant_list = list()
-                days_stock1 = 0
-                days_stock2 = 0
-                days_stock3 = 0
-                best_variant = 0
-                for k in table_azs_trucks_4:
-                    if i.azs_id == k.azs_id and i.truck_id == k.truck_id and k.min_rez1 >= days_stock1 and k.min_rez2 >= days_stock2 and k.min_rez3 >= days_stock3:
-                        days_stock1 = k.min_rez1
-                        days_stock2 = k.min_rez2
-                        days_stock3 = k.min_rez3
-                        best_variant = k.variant
-
-                variant_list.append(best_variant)
-                min_rez1_list.append(days_stock1)
-                min_rez2_list.append(days_stock2)
-                min_rez3_list.append(days_stock3)
-                trucks_for_azs_dict[i.azs_id] = {'azs_trucks': trucks_for_azs_dict[i.azs_id]['azs_trucks'] + trucks_list,
-                                                 'min_rez1': trucks_for_azs_dict[i.azs_id]['min_rez1'] + min_rez1_list,
-                                                 'min_rez2': trucks_for_azs_dict[i.azs_id]['min_rez2'] + min_rez2_list,
-                                                 'min_rez3': trucks_for_azs_dict[i.azs_id]['min_rez3'] + min_rez3_list,
-                                                 'variant': trucks_for_azs_dict[i.azs_id]['variant'] + variant_list
+                trucks_for_azs_dict[i.azs_id] = {'azs_trucks': trucks_for_azs_dict[i.azs_id]['azs_trucks'] + trucks_list
                                                  }
-        # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
 
+        # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
         active_trucks = Trucks.query.filter_by(active=True).count()
         active_azs = Priority.query.order_by("id").all()
-        choice_azs_truck_dict = dict()
-        checker = active_trucks
-        while checker > 0:
-            for i in active_azs:
-                if i.azs_id in trucks_for_azs_dict:
-                    azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']
-                    choice_azs_truck_dict[i.azs_id] = {'truck_id': random.choice(azs_trucks)}
-                    checker = checker - 1
-        # trig = 0
-        # for i in choice_azs_truck_dict:
+        choices_dict = dict()
+        azs_queue_dict = dict()
+        for i in priority:
+            azs_queue_dict[i.azs_id] = {'queue': i.priority}
 
+        for choice in range(0, 10):
+            while True:
+                checker = active_trucks
+                temp_truck_dict = dict()
+                choice_azs_truck_dict = dict()
+                for i in active_azs:
+                    if i.azs_id in trucks_for_azs_dict and checker > 0:
+                        azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']
+                        truck_id = random.choice(azs_trucks)
+                        choice_azs_truck_dict[i.azs_id] = {'truck_id': truck_id}
+                        if truck_id != 0:
+                            temp_truck_dict[truck_id] = 0
+                            checker = checker - 1
+                        if checker <= 0:
+                            break
+                if len(temp_truck_dict) == active_trucks:
+                    break
         print(choice_azs_truck_dict)
+
+        '''# Оцениваем вариант расстановки на предмет не отправки бензовоза на критичные АЗС
+        points = 0
+        for i in choice_azs_truck_dict:
+            if choice_azs_truck_dict[i]['truck_id'] != 0:
+                points = points + 100 / azs_queue_dict[i]['queue']
+
+        choices_dict[choice] = {'variants': choice_azs_truck_dict,
+                                'points': points}
+    final_choice = 0
+    final_points = 0
+    for i in choices_dict:
+        if choices_dict[i]['points'] > final_points:
+            final_points = choices_dict[i]['points']
+            final_choice = i
+    print(choices_dict[final_choice])'''
 
     def create_today_trip():
         print("Формирование задания на сегодня")
