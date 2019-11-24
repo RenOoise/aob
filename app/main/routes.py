@@ -2400,29 +2400,51 @@ def start():
         # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
         active_trucks = Trucks.query.filter_by(active=True).count()
         active_azs = Priority.query.order_by("id").all()
-        choices_dict = dict()
+        choices_dict = dict()  # храним итоговые варианты расстановки с оценкой каждого
         azs_queue_dict = dict()
         for i in priority:
             azs_queue_dict[i.azs_id] = {'queue': i.priority}
 
-        for choice in range(0, 10):
-            while True:
-                checker = active_trucks
-                temp_truck_dict = dict()
-                choice_azs_truck_dict = dict()
-                for i in active_azs:
-                    if i.azs_id in trucks_for_azs_dict and checker > 0:
-                        azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']
-                        truck_id = random.choice(azs_trucks)
+        temp = 0
+        for choice in range(0, 1000000):
+            choice_azs_truck_dict = dict()
+            used_trucks = list()
+            checker = active_trucks
+            good = 1
+            for i in active_azs:
+                if i.azs_id in trucks_for_azs_dict:
+                    azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']
+                    truck_id = random.choice(azs_trucks)
+                    if truck_id in used_trucks and truck_id != 0:
+                        good = 0
+                        break
+                    else:
+                        used_trucks.append(truck_id)
                         choice_azs_truck_dict[i.azs_id] = {'truck_id': truck_id}
                         if truck_id != 0:
-                            temp_truck_dict[truck_id] = 0
-                            checker = checker - 1
-                        if checker <= 0:
-                            break
-                if len(temp_truck_dict) == active_trucks:
-                    break
-        print(choice_azs_truck_dict)
+                            checker = checker-1
+                    if checker == 0:
+                        good = 1
+                        break
+            if good == 1:
+                temp = temp + 1
+                # Оцениваем вариант расстановки на предмет не отправки бензовоза на критичные АЗС
+                points = 0
+                for i in choice_azs_truck_dict:
+                    if choice_azs_truck_dict[i]['truck_id'] != 0:
+                        points = points + 100 / azs_queue_dict[i]['queue']
+
+                choices_dict[temp] = {'variants': choice_azs_truck_dict,
+                                        'points': points}
+        print(temp)
+        max_points = 0
+        best_choice = dict()
+        for i in choices_dict:
+            if choices_dict[i]['points'] > max_points:
+                max_points = choices_dict[i]['points']
+                best_choice = choices_dict[i]['variants']
+        for i in best_choice:
+            print(i, best_choice[i]['truck_id'], "==", trucks_for_azs_dict[i]['azs_trucks'])
 
         '''# Оцениваем вариант расстановки на предмет не отправки бензовоза на критичные АЗС
         points = 0
