@@ -11,87 +11,37 @@
                     <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.residue_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="row">
-                                <input class="form-control" id="myInput" type="text" placeholder="Фильтр по номеру АЗС (например: АЗС № 40)">
-                                <br>
-                                <table id="myTest" class="table table-sm table-hover">
+                                <table data-toggle="table" id="table"
+                                       data-search="true"
+                                       data-show-columns="true"
+                                       data-show-multi-sort="true"
+                                       data-sort-priority='[{"sortName": "azs_number","sortOrder":"asc"},{"sortName":"tank_number","sortOrder":"asc"}]'
+                                       data-url="/online.json"
+
+                                       data-locale="ru-RU">
                                     <thead>
                                     <tr>
-                                        <th>Номер АЗС</th>
-                                        <th>Номер резервуара</th>
-                                        <th>Вид топлива</th>
-                                        <th>Процент заполнения (%)</th>
-                                        <th>Текущий остаток (л)</th>
-                                        <th>Свободная емкость (до 95%) (л)</th>
-                                        <th>Время замера</th>
-                                        <th>Время выгрузки</th>
-                                        <th>Тип формирования</th>
-
+                                        <th data-field="azs_number" data-sortable="true">Номер АЗС</th>
+                                        <th data-field="tank_number" data-sortable="true">Номер резервуара</th>
+                                        <th data-field="product_code" data-sortable="true">Вид топлива</th>
+                                        <th data-field="percent" data-sortable="true">Процент заполнения (%)</th>
+                                        <th data-field="fuel_volume" data-sortable="true">Текущий остаток (л)</th>
+                                        <th data-field="free_volume" data-sortable="true">Свободная емкость (до 95%) (л)</th>
+                                        <th data-field="datetime" data-sortable="true">Время замера</th>
+                                        <th data-field="download_time" data-sortable="true">Время выгрузки</th>
+                                        <th data-field="auto" data-sortable="true">Тип формирования</th>
                                     </tr>
                                     </thead>
-                                    <tbody id="meTable">
-                                    {% for i in online %}
-                                        {% if i.auto %}
-                                            <tr>
-                                                {% else %}
-                                            <tr class="table-warning">
-                                        {% endif %}
-                                    <td>
-                                        {% for x in azs_list %}
-                                            {% if x.id == i.azs_id %}
-                                                <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>
-                                        {% for z in tanks_list %}
-                                            {% if z.id == i.tank_id %}
-                                                {{ z.tank_number }}
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ i.product_code }}</td>
-                                    <td>
-                                        {% for z in tanks_list %}
-                                            {% if z.id == i.tank_id %}
-                                                {% if i.fuel_volume == None %}
-                                                    None
-                                                {% else %}
-                                                    {{ i.percent }}%
-                                                {% endif %}
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ i.fuel_volume }}</td>
-                                    {% for z in tanks_list %}
-                                        {% if z.id == i.tank_id %}
-                                            {% if i.fuel_volume == None %}
-                                                <td>None</td>
-                                            {% else %}
-                                                <td>{{ (z.corrected_capacity - i.fuel_volume)|round(2) }}</td>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    <td>{{ i.datetime }}</td>
-                                    <td>{{ i.download_time }}</td>
-                                    <td>{% if i.auto %}
-                                        Автоматически
-                                    {% else %}
-                                        По книжным остаткам
-                                    {% endif%}
-                                    </td>
-                                    </tr>
-                                    {% endfor %}
-                                    </tbody>
+
                                 </table>
+                                <script>
+                                    $(function() {
+                                        $('#table').bootstrapTable()
+                                    })
+                                </script>
 
-                            </div>
                         </div>
-                    </div>
 
-                </div>
             </div>
         </div>
     </div>

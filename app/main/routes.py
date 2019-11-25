@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app, send_file
+    jsonify, current_app, send_file, Response
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 import random
@@ -21,7 +21,7 @@ import pygal
 from pygal.style import Style, BlueStyle
 import time
 import random
-
+import json
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -429,6 +429,36 @@ def online():
     return render_template('online.html', title='Online остатки', online_active=True,
                            online=online, azs_list=azs_list, tanks_list=tanks_list,
                            datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
+
+
+@bp.route('/online.json', methods=['POST', 'GET'])
+@login_required
+def online_json():
+    rows = list()
+    online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
+    for i in online:
+        azs_number = AzsList.query.filter_by(id=i.azs_id).first()
+        if len(str(azs_number.number)) == 1:
+            azs_number = str(0) + str(azs_number.number)
+        else:
+            azs_number = str(azs_number.number)
+        tank_number = Tanks.query.filter_by(id=i.tank_id).first()
+        if i.auto == True:
+            auto = "Автоматически"
+        else:
+            auto = "По книжным остаткам"
+        row = {'azs_number': "АЗС №" + azs_number,
+               'tank_number': tank_number.tank_number,
+               'product_code': i.product_code,
+               'percent': str(i.percent) + str("%"),
+               'fuel_volume': i.fuel_volume,
+               'free_volume': i.free_volume,
+               'datetime': i.datetime.strftime("(%H:%M) %d.%m.%Y"),
+               'download_time': i.download_time.strftime("(%H:%M) %d.%m.%Y"),
+               'auto': auto
+               }
+        rows.append(row)
+    return Response(json.dumps(rows), mimetype='application/json')
 
 
 @bp.route('/page/azs/id<id>', methods=['POST', 'GET'])
