@@ -11,13 +11,13 @@
                     <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.residue_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
+
                                 <table data-toggle="table" id="table"
                                        data-search="true"
                                        data-show-columns="true"
                                        data-show-multi-sort="true"
                                        data-sort-priority='[{"sortName": "azs_number","sortOrder":"asc"},{"sortName":"tank_number","sortOrder":"asc"}]'
                                        data-url="/online.json"
-
                                        data-locale="ru-RU">
                                     <thead>
                                     <tr>
