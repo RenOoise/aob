@@ -530,6 +530,37 @@ def realisation():
                            datetime=datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
 
+@bp.route('/realisation.json', methods=['POST', 'GET'])
+@login_required
+def realisation_json():
+    rows = list()
+    realisation = FuelRealisation.query.order_by(FuelRealisation.shop_id).all()
+    for i in realisation:
+        tank = Tanks.query.filter_by(id=i.tank_id).first()
+        if tank.deactive !=True:
+            azs_number = AzsList.query.filter_by(id=i.azs_id).first()
+            if len(str(azs_number.number)) == 1:
+                azs_number = str(0) + str(azs_number.number)
+            else:
+                azs_number = str(azs_number.number)
+            tank_number = Tanks.query.filter_by(id=i.tank_id).first()
+            row = {'azs_number': "АЗС №" + azs_number,
+                   'tank_number': tank_number.tank_number,
+                   'product_code': i.product_code,
+                   'fuel_realisation_10_days': i.fuel_realisation_10_days,
+                   'fuel_realisation_7_days': i.fuel_realisation_7_days,
+                   'fuel_realisation_3_days': i.fuel_realisation_3_days,
+                   'fuel_realisation_1_days': i.fuel_realisation_1_days,
+                   'fuel_realisation_week_ago': i.fuel_realisation_week_ago,
+                   'fuel_realisation_hour': i.days_stock_min,
+                   'days_stock_min': i.fuel_realisation_hour,
+                   'download_time': i.download_time.strftime("(%H:%M) %d.%m.%Y")
+                   }
+
+            rows.append(row)
+    return Response(json.dumps(rows), mimetype='application/json')
+
+
 @bp.route('/priority', methods=['GET', 'POST'])
 @login_required
 def priority():
