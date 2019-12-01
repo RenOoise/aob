@@ -204,6 +204,7 @@ def edit_tank(tank_id):
         tank.ams = form.ams.data
         tank.mixing = form.mixing.data
         tank.active = form.active.data
+        tank.deactive = form.deactive.data
         db.session.commit()
         flash('Данные резервуара обновлены!')
         return redirect(url_for('admin.tanks'))
@@ -219,6 +220,7 @@ def edit_tank(tank_id):
         form.ams.data = tank.ams
         form.mixing.data = tank.mixing
         form.active.data = tank.active
+        form.deactive.data = tank.deactive
     return render_template('admin/editor.html', title='Редактирование резервуара', edit_db_config=True, form=form,
                            settings_active=True)
 
@@ -276,8 +278,11 @@ def trucks_list():
 @login_required
 def truck_tanks_list():
     truck_tanks_list = TruckTanks.query.order_by("truck_id").all()
-    return render_template('admin/truck_tanks_list.html', title='Список резервуаров ТС', truck_tanks=True,
-                           settings_active=True, truck_tanks_list=truck_tanks_list)
+    return render_template('admin/truck_tanks_list.html',
+                           title='Список резервуаров ТС',
+                           truck_tanks=True,
+                           settings_active=True,
+                           truck_tanks_list=truck_tanks_list)
 
 
 @bp.route('/admin/truck_tanks/add/id<id>', methods=['POST', 'GET'])
@@ -286,14 +291,46 @@ def truck_tanks_add(id):
     form = AddTruckTankForm()
 
     if form.validate_on_submit():
-        truck_tank = TruckTanks(number=form.number.data, truck_id=id, capacity=form.capacity.data)
+        truck_tank = TruckTanks(number=form.number.data,
+                                truck_id=id,
+                                capacity=form.capacity.data,
+                                if_weigher=form.if_weigher.data)
         db.session.add(truck_tank)
         db.session.commit()
         flash('Резервуар бензовоза добавлен в базу')
         return redirect(url_for('admin.truck', id=id))
 
-    return render_template('admin/add_truck_tank.html', title='Добавление резервуара ТС', truck_tanks=True,
-                           settings_active=True, truck_tanks_list=truck_tanks_list, form=form)
+    return render_template('admin/add_truck_tank.html',
+                           title='Добавление резервуара ТС',
+                           truck_tanks=True,
+                           settings_active=True,
+                           truck_tanks_list=truck_tanks_list,
+                           form=form)
+
+
+@bp.route('/admin/truck_tanks/edit/tank_id<tank_id>', methods=['POST', 'GET'])
+@login_required
+def truck_tanks_edit(tank_id):
+    form = AddTruckTankForm()
+    truck_tanks = TruckTanks.query.filter_by(id=tank_id).first_or_404()
+    if form.validate_on_submit():
+        truck_tanks.number = form.number.data
+        truck_tanks.capacity = form.capacity.data,
+        truck_tanks.diesel = form.diesel.data
+        db.session.commit()
+        flash('Резервуар бензовоза отредактирован')
+        return redirect(url_for('admin.truck', id=truck_tanks.truck_id))
+    elif request.method == 'GET':
+        form.number.data = truck_tanks.number
+        form.capacity.data = truck_tanks.capacity
+        form.diesel.data = truck_tanks.diesel
+
+    return render_template('admin/edit_truck_tank.html',
+                           title='Редактирование резервуара бензовоза',
+                           truck_tanks=True,
+                           settings_active=True,
+                           truck_tanks_list=truck_tanks_list,
+                           form=form)
 
 
 @bp.route('/admin/truck/edit/id<id>', methods=['POST', 'GET'])
@@ -309,8 +346,8 @@ def truck_edit(id):
         truck.weight = form.weight.data
         truck.driver = form.driver.data
         truck.active = form.active.data
-        truck.day_start = form.start_time
-        truck.day_end = form.end_time
+        truck.day_start = form.start_time.data
+        truck.day_end = form.end_time.data
         truck.weight_limit = form.weight_limit.data
         db.session.commit()
         flash('ТС отредактированно')
@@ -322,8 +359,8 @@ def truck_edit(id):
         form.seals.data = truck.seals
         form.weight.data = truck.weight
         form.driver.data = truck.driver
-        form.start_time = truck.day_start
-        form.end_time = truck.day_end
+        form.start_time.data = truck.day_start
+        form.end_time.data = truck.day_end
         form.active.data = truck.active
         form.weight_limit.data = truck.weight_limit
 

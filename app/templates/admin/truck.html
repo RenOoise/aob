@@ -27,7 +27,7 @@
                         <td>Водитель: {{truck.driver}}</td>
                     </tr>
                     {% for i in truck_tanks_list %}
-                        <tr> <td>Резервуар {{ i.number }}: {{ i.capacity }} л.</td></tr>
+                        <td>Резервуар {{ i.number }}: {{ i.capacity }} л. / <a href="{{ url_for('admin.truck_tanks_edit', tank_id=i.id) }}">Редактировать</a></td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

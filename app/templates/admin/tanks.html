@@ -25,7 +25,8 @@
                                 <th>Время после слива (мин)</th>
                                 <th>АИС</th>
                                 <th>Смешение</th>
-                                <th>Активен</th>
+                                <th>Завозить топливо</th>
+                                <th>Активен?</th>
                                 <th>Редактировать</th>
                             </tr>
                             </thead>
@@ -47,9 +48,33 @@
                                     <td>{{i.dead_capacity }}</td>
                                     <td>{{ i.drain_time }}</td>
                                     <td>{{ i.after_drain_time }}</td>
-                                    <td>{{ i.ams }}</td>
-                                    <td>{{ i.mixing }}</td>
-                                    <td>{{ i.active }}</td>
+
+                                    <td>{% if i.ams == True %}
+                                        Есть
+                                    {% else %}
+                                        Нет
+                                    {% endif %}
+                                    </td>
+
+                                    <td>{% if i.mixing == True %}
+                                        Разрешено
+                                    {% else %}
+                                        Запрещено
+                                    {% endif %}
+                                    </td>
+
+                                    <td>{% if i.active == True %}
+                                        Да
+                                    {% else %}
+                                        Нет
+                                    {% endif %}
+                                    </td>
+                                    <td>{% if i.deactive == True %}
+                                        Не активен
+                                    {% else %}
+                                        Активен
+                                    {% endif %}
+                                    </td>
                                     <td><a href="{{ url_for('admin.edit_tank', tank_id=i.id) }}">Редактировать</a></td>
                                 </tr>
                             {% endfor %}

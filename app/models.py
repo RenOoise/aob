@@ -331,8 +331,9 @@ class Tanks(db.Model):
     drain_time = db.Column(db.Integer)  # время слива
     after_drain_time = db.Column(db.Integer)  # время после слива
     mixing = db.Column(db.Boolean)  # разрешено ли смешение топлива (для дизеля)
-    active = db.Column(db.Boolean)  # активен ли резервуар
-    ams = db.Column(db.Boolean)
+    active = db.Column(db.Boolean)  # завозить топливо или нет
+    ams = db.Column(db.Boolean)  # есть ли автоматическая система измерения
+    deactive = db.Column(db.Boolean)  # выключение резервуара из интерфейса
 
     __table_args__ = (db.UniqueConstraint('azs_id', 'tank_number'),)
 
@@ -401,6 +402,7 @@ class Trucks(db.Model):
 class TruckTanks(db.Model):  # резервуары бензовоза
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer)  # порядковый номер резервуара
+    diesel = db.Column(db.Boolean)  # при наличии весов только дизель, если True
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     capacity = db.Column(db.Integer)  # вместимость резервуара
 

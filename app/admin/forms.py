@@ -43,7 +43,8 @@ class AddTankForm(FlaskForm):
     drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
     mixing = BooleanField(_l('Смешение'))
-    active = BooleanField(_l('Активен'))
+    active = BooleanField(_l('Завозить топливо'))
+    deactive = BooleanField('Резервуар не активен (не отображать в интерфейсе)')
     ams = BooleanField(_l('АИС'))
     submit = SubmitField('Добавить')
 
@@ -101,7 +102,8 @@ class EditTankForm(FlaskForm):
     drain_time = IntegerField(_l('Время слива'), validators=[DataRequired()])
     after_drain_time = IntegerField(_l('Время после слива'), validators=[DataRequired()])
     mixing = BooleanField(_l('Смешение'))
-    active = BooleanField(_l('Активен'))
+    active = BooleanField(_l('Завозить топливо'))
+    deactive = BooleanField('Не отображать в интерфейсе, не производить выгрузку остатков')
     ams = BooleanField(_l('АИС'))
     submit = SubmitField('Обновить')
 
@@ -116,13 +118,14 @@ class AddTruckForm(FlaskForm):
     start_time = TimeField('Начало рабочего дня')
     end_time = TimeField('Конец рабочего дня')
     active = BooleanField('Активен?')
-    submit = SubmitField('Добавить')
+    submit = SubmitField('Сохранить')
 
 
 class AddTruckTankForm(FlaskForm):
     number = IntegerField(_l('Порядковый номер'), validators=[DataRequired()])
     capacity = IntegerField(_l('Емкость (л.)'), validators=[DataRequired()])
-    submit = SubmitField('Добавить')
+    diesel = BooleanField('Можно заливать дизель при наличии весов на пути к АЗС')
+    submit = SubmitField('Сохранить')
 
 
 class EditTruckForm(FlaskForm):
