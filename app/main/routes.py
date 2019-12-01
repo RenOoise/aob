@@ -2,7 +2,6 @@ from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file, Response
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
-import random
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
@@ -11,7 +10,6 @@ from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
     Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3,\
     TempAzsTrucks4
-import redis
 from app.translate import translate
 from app.main import bp
 import pandas as pd
@@ -22,7 +20,8 @@ from pygal.style import Style, BlueStyle
 import time
 import random
 import json
-
+import os
+from multiprocessing import Process
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -2640,59 +2639,6 @@ def start():
             final_points = choices_dict[i]['points']
             final_choice = i
     print(choices_dict[final_choice])'''
-
-    def create_today_trip():
-        print("Формирование задания на сегодня")
-        db.session.query(TripForToday).delete()
-        db.session.commit()
-        fuel_list = list()
-        trucks_list = list()
-        trucks_number_list = list()
-        fuel_list = [92, 95, 50]
-        trucks_count = Trucks.query.filter_by(active=True).count()
-        trucks = Trucks.query.filter_by(active=True).all()
-        for truck in trucks:
-            trucks_list.append(truck.id)
-            trucks_number_list.append(truck.reg_number)
-        number_of_priorities = Priority.query.order_by("id").limit(trucks_count*1).all()
-        number_of_azs = list()
-        for azs in number_of_priorities:
-            azs_number = AzsList.query.filter_by(id=azs.azs_id).first()
-            number_of_azs.append(azs_number.number)
-
-        counter = 0
-        for element in range(0, trucks_count):
-            this_truck_tanks = TruckTanks.query.filter_by(truck_id=trucks_list[element]).all()
-            fuel_types = list()
-            fuel_types.clear()
-            for cell in this_truck_tanks:
-                fuel_type = random.choice(fuel_list)
-                fuel_types.append(fuel_type)
-            sql = TripForToday(azs_number=number_of_azs[counter],
-                               truck_number=trucks_number_list[element],
-                               truck_id=trucks_list[element],
-                               zapolnenie=str(fuel_types).strip('[]'),
-                               timestamp=datetime.now(),
-                               trip_number=1)
-            db.session.add(sql)
-            counter = counter + 1
-
-        for element in range(trucks_count, trucks_count*2):
-            this_truck_tanks = TruckTanks.query.filter_by(truck_id=trucks_list[element-trucks_count]).all()
-            fuel_types = list()
-            fuel_types.clear()
-            for cell in this_truck_tanks:
-                fuel_type = random.choice(fuel_list)
-                fuel_types.append(fuel_type)
-            sql = TripForToday(azs_number=number_of_azs[counter],
-                               truck_number=trucks_number_list[element-trucks_count],
-                               truck_id=trucks_list[element-trucks_count],
-                               zapolnenie=str(fuel_types).strip('[]'),
-                               timestamp=datetime.now(),
-                               trip_number=2)
-            db.session.add(sql)
-            counter = counter + 1
-        db.session.commit()
 
     error, tanks = check()
     if error > 10:
