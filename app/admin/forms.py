@@ -164,6 +164,7 @@ class AddTripForm(FlaskForm):
 
 class WorkTypeForm(FlaskForm):
     type = RadioField('Режим работы', choices=[], coerce=int)
+    select_fuel_type = SelectField('Вид топлива', choices=[('0', 'Не выбрано'), ('50', '50'), ('95', '95'), ('92', '92')])
     submit = SubmitField('Сохранить')
 
 
