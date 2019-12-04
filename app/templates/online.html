@@ -2,7 +2,6 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-
     <div class="row py-4">
         <div class="col-md-12">
             <div class="card">
@@ -11,37 +10,36 @@
                     <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.residue_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
-                                <table data-toggle="table"
-                                       id="table"
-                                       data-search="true"
-                                       data-show-columns="true"
-                                       data-show-multi-sort="true"
-                                       data-sort-priority='[{"sortName": "azs_number","sortOrder":"asc"},{"sortName":"tank_number","sortOrder":"asc"}]'
-                                       data-url="/online.json"
-                                       data-locale="ru-RU">
-                                    <thead>
-                                    <tr>
-                                        <th data-field="azs_number" data-sortable="true">Номер АЗС</th>
-                                        <th data-field="tank_number" data-sortable="true">Номер резервуара</th>
-                                        <th data-field="product_code" data-sortable="true">Вид топлива</th>
-                                        <th data-field="percent" data-sortable="true">Процент заполнения (%)</th>
-                                        <th data-field="fuel_volume" data-sortable="true">Текущий остаток (л)</th>
-                                        <th data-field="free_volume" data-sortable="true">Свободная емкость (до 95%) (л)</th>
-                                        <th data-field="datetime" data-sortable="true">Время замера</th>
-                                        <th data-field="download_time" data-sortable="true">Время выгрузки</th>
-                                        <th data-field="auto" data-sortable="true">Тип формирования</th>
-                                    </tr>
-                                    </thead>
-
-                                </table>
-                                <script>
-                                    $(function() {
-                                        $('#table').bootstrapTable()
-                                    })
-                                </script>
-
-                        </div>
-
+                    <table data-toggle="table"
+                           id="table"
+                           data-search="true"
+                           data-show-refresh="true"
+                           data-auto-refresh="true"
+                           data-show-columns="true"
+                           data-show-multi-sort="true"
+                           data-sort-priority='[{"sortName": "azs_number","sortOrder":"asc"},{"sortName":"tank_number","sortOrder":"asc"}]'
+                           data-url="/online.json"
+                           data-locale="ru-RU">
+                        <thead>
+                        <tr>
+                            <th data-field="azs_number" data-sortable="true">Номер АЗС</th>
+                            <th data-field="tank_number" data-sortable="true">Номер резервуара</th>
+                            <th data-field="product_code" data-sortable="true">Вид топлива</th>
+                            <th data-field="percent" data-sortable="true">Процент заполнения (%)</th>
+                            <th data-field="fuel_volume" data-sortable="true">Текущий остаток (л)</th>
+                            <th data-field="free_volume" data-sortable="true">Свободная емкость (до 95%) (л)</th>
+                            <th data-field="datetime" data-sortable="true">Время замера</th>
+                            <th data-field="download_time" data-sortable="true">Время выгрузки</th>
+                            <th data-field="auto" data-sortable="true">Тип формирования</th>
+                        </tr>
+                        </thead>
+                    </table>
+                    <script>
+                        $(function() {
+                            $('#table').bootstrapTable()
+                        })
+                    </script>
+                </div>
             </div>
         </div>
     </div>
