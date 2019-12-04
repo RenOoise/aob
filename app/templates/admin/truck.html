@@ -26,11 +26,45 @@
                     <tr>
                         <td>Водитель: {{truck.driver}}</td>
                     </tr>
-                    {% for i in truck_tanks_list %}
-                        <td>Резервуар {{ i.number }}: {{ i.capacity }} л. / <a href="{{ url_for('admin.truck_tanks_edit', tank_id=i.id) }}">Редактировать</a></td></tr>
-                    {% endfor %}
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <td><b>Порядковый номер</b></td>
+                            <td><b>Объем</b></td>
+                            <td><b>Дизель при </b></td>
+                            <td><b>Редактировать</b></td>
+                            <td><b>Удалить</b></td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in truck_tanks_list %}
+                            <tr>
+                                <td>
+                                    Резервуар №{{ i.number }}
+                                </td>
+                                <td>
+                                    {{ i.capacity }} л.
+                                </td>
+                                <td>
+                                    {% if i.diesel == True %}
+                                        Разрешен
+                                    {% else %}
+                                        Запрещен
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.truck_tanks_edit', tank_id=i.id) }}">Редактировать</a>
+                                </td>
+                                <td>
+                                    <a role="button" class="btn btn-sm btn-danger" href=" {{ url_for('admin.truck_tanks_delete', id=i.id, truck_id=i.truck_id) }}">Удалить</a>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
                     </tbody>
-                </table>
+
             </div>
             <div class="card-footer">
                 <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-left"  href="{{ url_for('admin.truck_tanks_add', id=truck.id) }}">Добавить резервуар</a>

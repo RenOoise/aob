@@ -253,7 +253,6 @@ def edit_azs(azs_id):
 @login_required
 def add_truck():
     form = AddTruckForm()
-
     if form.validate_on_submit():
         trucks = Trucks(reg_number=form.reg_number.data, trailer_reg_number=form.trailer_reg_number.data,
                         seals=form.seals.data, weight=form.weight.data, driver=form.driver.data,
@@ -294,7 +293,7 @@ def truck_tanks_add(id):
         truck_tank = TruckTanks(number=form.number.data,
                                 truck_id=id,
                                 capacity=form.capacity.data,
-                                if_weigher=form.if_weigher.data)
+                                diesel=form.diesel.data)
         db.session.add(truck_tank)
         db.session.commit()
         flash('Резервуар бензовоза добавлен в базу')
@@ -372,6 +371,7 @@ def truck_edit(id):
 @login_required
 def truck(id):
     truck = Trucks.query.filter_by(id=id).first_or_404()
+    truck_id = truck.id
     truck_tanks_list = TruckTanks.query.filter_by(truck_id=id).all()
     truck_tanks_count = TruckTanks.query.filter_by(truck_id=id).count()
     return render_template('admin/truck.html', title='Бензовоз ' + truck.reg_number, truck_active=True,
@@ -589,3 +589,13 @@ def trucks_false_delete(id):
     db.session.commit()
     flash('Данные удалены')
     return redirect(url_for('admin.trucks_false'))
+
+
+@bp.route('/admin/truck_tanks/delete/tank_id<id>/back=<truck_id>', methods=['POST', 'GET'])
+@login_required
+def truck_tanks_delete(id, truck_id):
+    row = TruckTanks.query.filter_by(id=id).first_or_404()
+    db.session.delete(row)
+    db.session.commit()
+    flash('Данные удалены')
+    return redirect(url_for('admin.truck', id=truck_id))
