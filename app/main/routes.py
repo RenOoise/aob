@@ -668,17 +668,18 @@ def start():
             # перебираем таблицу из памяти со всеми АКТИЫНЫМИ резервуарами АЗС
             for row in azs_tanks:
                 # проверяем есть ли у этой АЗС (которую перебираем в цикле) резервуары с 92 топливом
-                if row.azs_id == azs.id and row.fuel_type == 92:
+                if (row.azs_id == azs.id) and (row.fuel_type == 92):
                     is_92 = 1  # если есть, то помечаем соответствующий вид топлива
                 # проверяем есть ли у этой АЗС резервуары с 95 топливом
-                if row.azs_id == azs.id and row.fuel_type == 95:
+                if (row.azs_id == azs.id) and (row.fuel_type == 95):
                     is_95 = 1  # если есть, то помечаем соответствующий вид топлива
                 # проверяем есть ли у этой АЗС резервуары с 50 топливом
-                if row.azs_id == azs.id and row.fuel_type == 50:
+                if (row.azs_id == azs.id) and (row.fuel_type == 50):
                     is_50 = 1  # если есть, то помечаем соответствующий вид топлива
+
                 # для ускорения проверяем, если все три вида топлив есть,
                 # то можно цикл остановить, так как больше точно ничего не найдем
-                if (is_92 == 1) and (is_92 == 1) and (is_50 == 1):
+                if (is_92 == 1 and is_95 == 1 and is_50 == 1) and row.azs_id == azs.id:
                     break
             # В зависимости от найденных видов топлива на АЗС, формируем список
             azs_types = list()
@@ -2250,92 +2251,224 @@ def start():
         new_days_stock_dict = dict()
         temp_azs_trucks4_dict = dict()
 
-
         for i in temp_azs_trucks3_list:
-            temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] = {'volume_92': 0,
-                                                        'volume_95': 0,
-                                                        'volume_50': 0,
-                                                        'variant_sliv_50': 0,
-                                                        'variant_sliv_92': 0,
-                                                        'variant_sliv_95': 0,
-                                                        'azs_id': None,
-                                                        'truck_id': None
+            temp_azs_trucks4_dict[str(i['variant'])] = {'variant_sliv_92': [],
+                                                        'variant_sliv_95': [],
+                                                        'variant_sliv_50': [],
+                                                        'volume_92': [],
+                                                        'volume_95': [],
+                                                        'volume_50': [],
+                                                        'azs_id': i['azs_id'],
+                                                        'truck_id': i['truck_id']
                                                         }
-
         for i in temp_azs_trucks3_list:
+            variant_sliv_92 = list()
+            variant_sliv_95 = list()
+            variant_sliv_50 = list()
+            volume_92 = list()
+            volume_95 = list()
+            volume_50 = list()
+
             if i['fuel_type'] == 92:
-                temp_azs_trucks4_dict[str(i['variant']) + ':' + str(i['variant_sliv'])] = {'volume_92': temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                             ['volume_92'] + i['sum_sliv'],
-                                                            'volume_95':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_95'],
-                                                            'volume_50':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_50'],
-                                                            'variant_sliv_92': i['variant_sliv'],
-                                                            'variant_sliv_95':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_95'],
-                                                            'variant_sliv_50':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_50'],
-                                                            'azs_id': i['azs_id'],
-                                                            'truck_id': i['truck_id']
-                                                      }
+                variant_sliv_92.append(i['variant_sliv'])
+                volume_92.append(i['sum_sliv'])
+                if i['variant_sliv'] in temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_92']:
+                    index = temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_92'].index(i['variant_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_92'].insert(index, temp_azs_trucks4_dict[str(i['variant'])]['volume_92'][index] + i['sum_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_92'].pop(index)
+                else:
+                    temp_azs_trucks4_dict[str(i['variant'])] = {'variant_sliv_92': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_92'] + variant_sliv_92,
+                                                                'variant_sliv_95': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_95'],
+                                                                'variant_sliv_50': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_50'],
+                                                                'volume_92': temp_azs_trucks4_dict[str(i['variant'])]['volume_92'] + volume_92,
+                                                                'volume_95': temp_azs_trucks4_dict[str(i['variant'])]['volume_95'],
+                                                                'volume_50': temp_azs_trucks4_dict[str(i['variant'])]['volume_50'],
+                                                                'azs_id': temp_azs_trucks4_dict[str(i['variant'])]['azs_id'],
+                                                                'truck_id': temp_azs_trucks4_dict[str(i['variant'])]['truck_id']
+                                                                }
             if i['fuel_type'] == 95:
-                temp_azs_trucks4_dict[str(i['variant']) + ':' + str(i['variant_sliv'])] = {'volume_92':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                             ['volume_92'],
-                                                            'volume_95':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_95'] + i['sum_sliv'],
-                                                            'volume_50':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_50'],
-                                                            'variant_sliv_92':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_92'],
-                                                            'variant_sliv_95': i['variant_sliv'],
-                                                            'variant_sliv_50':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_50'],
-                                                            'azs_id': i['azs_id'],
-                                                            'truck_id': i['truck_id']
-                                                      }
-            if i['fuel_type'] == 50:
-                temp_azs_trucks4_dict[str(i['variant']) + ':' + str(i['variant_sliv'])] = {'volume_92':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                             ['volume_92'],
-                                                            'volume_95':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_95'],
-                                                            'volume_50':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])]\
-                                                                ['volume_50'] + i['sum_sliv'],
-                                                            'variant_sliv_92':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_92'],
-                                                            'variant_sliv_95':  temp_azs_trucks4_dict[str(i['variant'])+':'+str(i['variant_sliv'])] \
-                                                                ['variant_sliv_95'],
-                                                            'variant_sliv_50': i['variant_sliv'],
-                                                            'azs_id': i['azs_id'],
-                                                            'truck_id': i['truck_id']
-                                                            }
-        temp_azs_trucks4_list = list()
-        temp_dict = dict()
+                variant_sliv_95.append(i['variant_sliv'])
+                volume_95.append(i['sum_sliv'])
+                if i['variant_sliv'] in temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_95']:
+                    index = temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_95'].index(i['variant_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_95'].insert(index, temp_azs_trucks4_dict[str(i['variant'])]['volume_95'][index] + i['sum_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_95'].pop(index)
+                else:
+                    temp_azs_trucks4_dict[str(i['variant'])] = {'variant_sliv_92': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_92'],
+                                                                'variant_sliv_95': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_95'] + variant_sliv_95,
+                                                                'variant_sliv_50': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_50'],
+                                                                'volume_92': temp_azs_trucks4_dict[str(i['variant'])]['volume_92'],
+                                                                'volume_95': temp_azs_trucks4_dict[str(i['variant'])]['volume_95'] + volume_95,
+                                                                'volume_50': temp_azs_trucks4_dict[str(i['variant'])]['volume_50'],
+                                                                'azs_id': temp_azs_trucks4_dict[str(i['variant'])][
+                                                                    'azs_id'],
+                                                                'truck_id': temp_azs_trucks4_dict[str(i['variant'])][
+                                                                    'truck_id']
 
-        '''for i in temp_azs_trucks4_dict:
-            for x in fuel_realisation:
-                days_stock_dict[(i, x.azs_id, x.tank_id)] = x.days_stock_min
-        for i in temp_azs_trucks3_list:
-            days_stock_dict[(i['variant'], i['azs_id'], i['tank_id'])] = i['new_days_stock']'''
+                                                                }
+            if i['fuel_type'] == 50:
+                variant_sliv_50.append(i['variant_sliv'])
+                volume_50.append(i['sum_sliv'])
+                if i['variant_sliv'] in temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_50']:
+                    index = temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_50'].index(i['variant_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_50'].insert(index, temp_azs_trucks4_dict[str(i['variant'])]['volume_50'][index] + i['sum_sliv'])
+                    temp_azs_trucks4_dict[str(i['variant'])]['volume_50'].pop(index)
+                else:
+                    temp_azs_trucks4_dict[str(i['variant'])] = {'variant_sliv_92': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_92'],
+                                                                'variant_sliv_95': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_95'],
+                                                                'variant_sliv_50': temp_azs_trucks4_dict[str(i['variant'])]['variant_sliv_50'] + variant_sliv_50,
+                                                                'volume_92': temp_azs_trucks4_dict[str(i['variant'])]['volume_92'],
+                                                                'volume_95': temp_azs_trucks4_dict[str(i['variant'])]['volume_95'],
+                                                                'volume_50': temp_azs_trucks4_dict[str(i['variant'])]['volume_50'] + volume_50,
+                                                                'azs_id': temp_azs_trucks4_dict[str(i['variant'])][
+                                                                    'azs_id'],
+                                                                'truck_id': temp_azs_trucks4_dict[str(i['variant'])][
+                                                                    'truck_id']
+                                                                }
+        azs_trucks_4_list_final = list()
+        azs_trucks_4_dict_final = {'variant': 0,
+                                   'sum_92': 0,
+                                   'sum_95': 0,
+                                   'sum_50': 0,
+                                   'min_rez1': 0,
+                                   'min_rez2': 0,
+                                   'min_rez3': 0,
+                                   'variant_sliv_50': 0,
+                                   'variant_sliv_92': 0,
+                                   'variant_sliv_95': 0,
+                                   'azs_id': 0,
+                                   'truck_id': 0
+                                    }
 
         for i in temp_azs_trucks4_dict:
-            variant = i.split(':')
-            variant = str(variant[0])
-            temp_dict = {'variant': variant,
-                         'sum_92': temp_azs_trucks4_dict[i]['volume_92'],
-                         'sum_95': temp_azs_trucks4_dict[i]['volume_95'],
-                         'sum_50': temp_azs_trucks4_dict[i]['volume_50'],
-                         'min_rez1': 0,
-                         'min_rez2': 0,
-                         'min_rez3': 0,
-                         'variant_sliv_50': temp_azs_trucks4_dict[i]['variant_sliv_50'],
-                         'variant_sliv_92': temp_azs_trucks4_dict[i]['variant_sliv_92'],
-                         'variant_sliv_95': temp_azs_trucks4_dict[i]['variant_sliv_95'],
-                         'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
-                         'truck_id': temp_azs_trucks4_dict[i]['truck_id']
-                         }
-            temp_azs_trucks4_list.append(temp_dict)
+            variant_sliv_92 = temp_azs_trucks4_dict[i]['variant_sliv_92']
+            variant_sliv_95 = temp_azs_trucks4_dict[i]['variant_sliv_95']
+            variant_sliv_50 = temp_azs_trucks4_dict[i]['variant_sliv_50']
+            volume_92 = temp_azs_trucks4_dict[i]['volume_92']
+            volume_95 = temp_azs_trucks4_dict[i]['volume_95']
+            volume_50 = temp_azs_trucks4_dict[i]['volume_50']
+            if len(variant_sliv_92) != 0 and len(variant_sliv_95) != 0 and len(variant_sliv_50) != 0:
+                for index_a, a in enumerate(variant_sliv_92):
+                    for index_b, b in enumerate(variant_sliv_95):
+                        for index_c, c in enumerate(variant_sliv_50):
+                            azs_trucks_4_dict_final = {'variant': i,
+                                                       'sum_92': volume_92[index_a],
+                                                       'sum_95': volume_95[index_b],
+                                                       'sum_50': volume_50[index_c],
+                                                       'min_rez1': 0,
+                                                       'min_rez2': 0,
+                                                       'min_rez3': 0,
+                                                       'variant_sliv_50': c,
+                                                       'variant_sliv_92': a,
+                                                       'variant_sliv_95': b,
+                                                       'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                                       'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                                       }
+                            azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+
+            if len(variant_sliv_92) != 0 and len(variant_sliv_95) != 0 and len(variant_sliv_50) == 0:
+                for index_a, a in enumerate(variant_sliv_92):
+                    for index_b, b in enumerate(variant_sliv_95):
+                        azs_trucks_4_dict_final = {'variant': i,
+                                                   'sum_92': volume_92[index_a],
+                                                   'sum_95': volume_95[index_b],
+                                                   'sum_50': 0,
+                                                   'min_rez1': 0,
+                                                   'min_rez2': 0,
+                                                   'min_rez3': 0,
+                                                   'variant_sliv_50': 0,
+                                                   'variant_sliv_92': a,
+                                                   'variant_sliv_95': b,
+                                                   'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                                   'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                                   }
+                        azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+
+            if len(variant_sliv_92) != 0 and len(variant_sliv_95) == 0 and len(variant_sliv_50) != 0:
+                for index_a, a in enumerate(variant_sliv_92):
+                    for index_c, c in enumerate(variant_sliv_50):
+                        azs_trucks_4_dict_final = {'variant': i,
+                                                   'sum_92': volume_92[index_a],
+                                                   'sum_95': 0,
+                                                   'sum_50': volume_50[index_c],
+                                                   'min_rez1': 0,
+                                                   'min_rez2': 0,
+                                                   'min_rez3': 0,
+                                                   'variant_sliv_50': c,
+                                                   'variant_sliv_92': a,
+                                                   'variant_sliv_95': 0,
+                                                   'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                                   'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                                   }
+                        azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+            if len(variant_sliv_92) == 0 and len(variant_sliv_95) != 0 and len(variant_sliv_50) != 0:
+                for index_b, b in enumerate(variant_sliv_95):
+                    for index_c, c in enumerate(variant_sliv_50):
+                        azs_trucks_4_dict_final = {'variant': i,
+                                                   'sum_92': 0,
+                                                   'sum_95': volume_95[index_b],
+                                                   'sum_50': volume_50[index_c],
+                                                   'min_rez1': 0,
+                                                   'min_rez2': 0,
+                                                   'min_rez3': 0,
+                                                   'variant_sliv_50': c,
+                                                   'variant_sliv_92': 0,
+                                                   'variant_sliv_95': b,
+                                                   'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                                   'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                                   }
+                        azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+            if len(variant_sliv_92) == 0 and len(variant_sliv_95) == 0 and len(variant_sliv_50) != 0:
+                for index_c, c in enumerate(variant_sliv_50):
+                    azs_trucks_4_dict_final = {'variant': i,
+                                               'sum_92': 0,
+                                               'sum_95': 0,
+                                               'sum_50': volume_50[index_c],
+                                               'min_rez1': 0,
+                                               'min_rez2': 0,
+                                               'min_rez3': 0,
+                                               'variant_sliv_50': c,
+                                               'variant_sliv_92': 0,
+                                               'variant_sliv_95': 0,
+                                               'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                               'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                               }
+                    azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+            if len(variant_sliv_92) == 0 and len(variant_sliv_95) != 0 and len(variant_sliv_50) == 0:
+                for index_b, b in enumerate(variant_sliv_95):
+                    azs_trucks_4_dict_final = {'variant': i,
+                                               'sum_92': 0,
+                                               'sum_95': volume_95[index_b],
+                                               'sum_50': 0,
+                                               'min_rez1': 0,
+                                               'min_rez2': 0,
+                                               'min_rez3': 0,
+                                               'variant_sliv_50': 0,
+                                               'variant_sliv_92': 0,
+                                               'variant_sliv_95': b,
+                                               'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                               'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                               }
+                    azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+            if len(variant_sliv_92) != 0 and len(variant_sliv_95) == 0 and len(variant_sliv_50) == 0:
+                for index_a, a in enumerate(variant_sliv_92):
+                    azs_trucks_4_dict_final = {'variant': i,
+                                               'sum_92': volume_92[index_a],
+                                               'sum_95': 0,
+                                               'sum_50': 0,
+                                               'min_rez1': 0,
+                                               'min_rez2': 0,
+                                               'min_rez3': 0,
+                                               'variant_sliv_50': 0,
+                                               'variant_sliv_92': a,
+                                               'variant_sliv_95': 0,
+                                               'azs_id': temp_azs_trucks4_dict[i]['azs_id'],
+                                               'truck_id': temp_azs_trucks4_dict[i]['truck_id']
+                                               }
+                    azs_trucks_4_list_final.append(azs_trucks_4_dict_final)
+
         db.engine.execute(TempAzsTrucks3.__table__.insert(), temp_azs_trucks3_list)
-        return temp_azs_trucks4_list, temp_azs_trucks3_list
+        return azs_trucks_4_list_final, temp_azs_trucks3_list
 
     # определение худшего запаса суток среди всех резервуаров АЗС
     def preparation_six():
@@ -2560,7 +2693,7 @@ def start():
 
         # таймаут для принудительной остановки расстановки бензовозов через
         # указанное количество времени (сейчас минута)
-        timeout = time.time() + 60 * 3
+        timeout = time.time() + 30 * 1
 
         # количество успешных расстановок
         number_of_success_loops = 0
@@ -2677,19 +2810,21 @@ def start():
                                             azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])][
                                                 'max_volume_50']
                         # для 92 топлива
-                        if (azs_trucks_max_92[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']) < min_days_stock1_work_type_2:
+                        if (azs_trucks_max_92[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']) \
+                                < min_days_stock1_work_type_2:
                             min_days_stock1_work_type_2 = azs_trucks_max_92[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
 
                         # для 95 топлива
-                        if (azs_trucks_max_95[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1'] < min_days_stock1_work_type_2):
+                        if (azs_trucks_max_95[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
+                                < min_days_stock1_work_type_2):
                             min_days_stock1_work_type_2 = azs_trucks_max_95[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
 
                         # для 50 топлива
-                        if (azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1'] < min_days_stock1_work_type_2):
+                        if (azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
+                                < min_days_stock1_work_type_2):
                             min_days_stock1_work_type_2 = azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
                     else:
                         min_days_stock1_work_type_2 = 0
-
 
                 '''**************************************************************************************************'''
 
@@ -2744,31 +2879,6 @@ def start():
                 print('Режим работы № 3')
             else:
                 alarm = 1
-            '''
-            # находим самый лучший вариант из всех расстановок
-            # сначала находим вариант расстановки с максимальной оценкой (по пропускам критичных АЗС)
-
-            # переменная для хранения значения максимальной оценки из словаря с оценками
-            max_points = 0
-            min_days_stock1 = 1000
-            min_days_stock2 = 1000
-            # создаем словарь для хранения итогового (самого лучшего) варианта расстановки
-            best_choice = dict()
-            # перебираем все варианты расстановки
-            for i in choices_dict:
-                # если значение оценки выше, чем значение переменной  max_points
-                if choices_dict[i]['points'] > max_points and ((choices_dict[i]['days_stock_min1'] < min_days_stock1)
-                                                               or (choices_dict[i]['days_stock_min1'] == min_days_stock1
-                                                                   and choices_dict[i]['days_stock_min2'] < min_days_stock2)):
-                    # то помещаем это значение в переменную
-                    max_points = choices_dict[i]['points']
-                    min_days_stock1 = choices_dict[i]['days_stock_min1']
-                    min_days_stock2 = choices_dict[i]['days_stock_min2']
-                    # в словарь best_choice записываем самый лучший вариант расстановки
-                    best_choice = choices_dict[i]['variants']
-
-            print(max_points, min_days_stock1, min_days_stock2)
-            '''
             if work_type.id == 1:
                 # создаем список, в котором будем хранить лучшие варианты расстановки
                 best_choices = list()
@@ -2783,18 +2893,19 @@ def start():
                     print(i, choices_dict_work_type_1[i]['points'], choices_dict_work_type_1[i]['days_stock_min1'],
                           choices_dict_work_type_1[i]['days_stock_min2'])
                     for x in choices_dict_work_type_1[i]['variants']:
-                        print("АЗС: ", x, "бензовоз: ",
-                              choices_dict_work_type_1[i]['variants'][x]['truck_id'],
-                              azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant'],
-                              azs_trucks_best_days_stock[
-                                  str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                              azs_trucks_best_days_stock[
-                                  str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                              azs_trucks_best_days_stock[
-                                  str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
+                        if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
+                            print("АЗС: ", x, "бензовоз: ",
+                                  choices_dict_work_type_1[i]['variants'][x]['truck_id'],
+                                  azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant'],
+                                  azs_trucks_best_days_stock[
+                                      str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
+                                  azs_trucks_best_days_stock[
+                                      str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
+                                  azs_trucks_best_days_stock[
+                                      str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
 
             elif work_type.id == 2:
-
+                print('2222222222222222222222222222222222')
                 # создаем список, в котором будем хранить лучшие варианты расстановки
                 best_choices = list()
                 # перебираем отсортированные от худшего к лучшему варианты расстановки
@@ -2811,36 +2922,37 @@ def start():
                           'max_volume_95', choices_dict_work_type_2[i]['max_volume_95'],
                           'max_volume_50', choices_dict_work_type_2[i]['max_volume_50'],)
                     for x in choices_dict_work_type_2[i]['variants']:
-                        if fuel_type == 92:
-                            print("АЗС:", x, "бензовоз:",
-                                  choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                  'variants:', azs_trucks_max_92[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
-                                  'sliv_92:', azs_trucks_max_92[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                                  'sliv_95:', azs_trucks_max_92[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                                  'sliv_50:', azs_trucks_max_92[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-                        elif fuel_type == 95:
-                            print("АЗС:", x, "бензовоз:",
-                                  choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                  'variants:', azs_trucks_max_95[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
-                                  'sliv_92:', azs_trucks_max_95[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                                  'sliv_95:', azs_trucks_max_95[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                                  'sliv_50:', azs_trucks_max_95[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-                        elif fuel_type == 50:
-                            print("АЗС:", x, "бензовоз:",
-                                  choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                  'variants:', azs_trucks_max_50[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
-                                  'sliv_92:', azs_trucks_max_50[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                                  'sliv_95:', azs_trucks_max_50[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                                  'sliv_50:', azs_trucks_max_50[
-                                      str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
+                        if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
+                            if fuel_type == 92:
+                                print("АЗС:", x, "бензовоз:",
+                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
+                                      'variants:', azs_trucks_max_92[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
+                                      'sliv_92:', azs_trucks_max_92[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
+                                      'sliv_95:', azs_trucks_max_92[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
+                                      'sliv_50:', azs_trucks_max_92[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
+                            elif fuel_type == 95:
+                                print("АЗС:", x, "бензовоз:",
+                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
+                                      'variants:', azs_trucks_max_95[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
+                                      'sliv_92:', azs_trucks_max_95[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
+                                      'sliv_95:', azs_trucks_max_95[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
+                                      'sliv_50:', azs_trucks_max_95[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
+                            elif fuel_type == 50:
+                                print("АЗС:", x, "бензовоз:",
+                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
+                                      'variants:', azs_trucks_max_50[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
+                                      'sliv_92:', azs_trucks_max_50[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
+                                      'sliv_95:', azs_trucks_max_50[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
+                                      'sliv_50:', azs_trucks_max_50[
+                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
             '''
             for i in best_choice:
                 print(i, best_choice[i]['truck_id'], "==", trucks_for_azs_dict[i]['azs_trucks'])
@@ -2853,7 +2965,7 @@ def start():
     else:
         start_time = time.time()
         #preparation_six()
-        # time.sleep(10)
+        #time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
         '''today_trip = TripForToday.query.first()

@@ -164,7 +164,12 @@ class AddTripForm(FlaskForm):
 
 class WorkTypeForm(FlaskForm):
     type = RadioField('Режим работы', choices=[], coerce=int)
-    select_fuel_type = SelectField('Вид топлива', choices=[('0', 'Не выбрано'), ('50', '50'), ('95', '95'), ('92', '92')])
+    select_fuel_type = SelectField('Вид топлива', choices=[('50', '50'), ('95', '95'), ('92', '92')])
+    days_stock_limit = SelectField('Минимальный запас суток, который должен быть обеспечен',
+                                   choices=[('0.5', '0.5'), ('1', '1'), ('1.5', '1.5'), ('2', '2'), ('2.5', '2.5'),
+                                            ('3', '3'), ('3.5', '3.5'), ('4', '4'), ('4.5', '4.5'), ('5', '5'),
+                                            ('5.5', '5.5'), ('6', '6'), ('6.5', '6.5'), ('7', '7'),
+                                            ('Без ограничений', '-1')])
     submit = SubmitField('Сохранить')
 
 
