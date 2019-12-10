@@ -458,6 +458,7 @@ class WorkType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(600))  # режим работы приложения
     fuel_type = db.Column(db.Integer)  # вид топлива
+    days_stock_limit = db.Column(db.Integer)
     active = db.Column(db.Boolean)  # активен или нет
 
 
@@ -713,3 +714,30 @@ class RealisationStats(db.Model):
     fuel_type = db.Column(db.Integer)
     fuel_type_name = db.Column(db.String(40))
     date = db.Column(db.DateTime)
+
+
+class Trips(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    trip_number = db.Column(db.Integer)
+    date = db.Column(db.DateTime)
+    work_type_id = db.Column(db.Integer, db.ForeignKey('work_type.id'))
+    variant_number = db.Column(db.Integer)  # номер предложеного варианта расстановки
+    calculate_id = db.Column(db.Integer)
+
+
+#  результат расстановки бензовозов
+class Result(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
+    variant = db.Column(db.Integer)  # вариант налива бензовоза
+    variant_sliv_92 = db.Column(db.Integer)  # вариант слива бензовоза для 92 топлива
+    variant_sliv_95 = db.Column(db.Integer)  # вариант слива бензовоза для 95 топлива
+    variant_sliv_50 = db.Column(db.Integer)  # вариант слива бензовоза для 50 топлива
+    min_rez1 = db.Column(db.Float)  # новый минимальный запас суток среди всех резервуаров азс
+    min_rez2 = db.Column(db.Float)
+    min_rez3 = db.Column(db.Float)
+    volume_92 = db.Column(db.Integer)  # сколько 92 топлива будет слито
+    volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
+    volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
+    calculate_id = db.Column(db.Integer)

@@ -535,11 +535,13 @@ def work_type():
             i.active = 0
         id = form.type.data
         type = WorkType.query.filter_by(id=id).first()
+        type.days_stock_limit = form.days_stock_limit.data
         type.active = True
         type.fuel_type = form.select_fuel_type.data
         db.session.commit()
     else:
         form.type.data = active.id
+        form.days_stock_limit.data = active.days_stock_limit
         form.select_fuel_type.data = active.fuel_type
     return render_template('admin/work_type.html', form=form)
 
