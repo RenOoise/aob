@@ -741,3 +741,10 @@ class Result(db.Model):
     volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
     volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
     calculate_id = db.Column(db.Integer)
+
+
+class TrucksForAzs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    number_of_trucks = db.Column(db.Integer)
+    calculate_id = db.Column(db.Integer)

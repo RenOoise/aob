@@ -6,7 +6,7 @@ from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors, \
-    Trips, Result
+    Trips, Result, TrucksForAzs
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
     Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3,\
@@ -22,6 +22,7 @@ import time
 import random
 import json
 from sqlalchemy import desc
+
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -2656,6 +2657,7 @@ def start():
                                                                                  'variant_sliv_92': i.variant_sliv_92,
                                                                                  'variant_sliv_95': i.variant_sliv_95,
                                                                                  'variant_sliv_50': i.variant_sliv_50}
+
         if work_type.id == 2:
             if min_days_stock_global == -1:
                 for i in table_azs_trucks_4:
@@ -3105,9 +3107,15 @@ def start():
                     print(i, choices_dict_work_type_1[i]['points'], choices_dict_work_type_1[i]['days_stock_min1'],
                           choices_dict_work_type_1[i]['days_stock_min2'])
 
+                    for z in trucks_for_azs_dict:
+                        trucks_for_azs = TrucksForAzs(azs_id=z,
+                                                      number_of_trucks=len(trucks_for_azs_dict[z]['azs_trucks']) - 1,
+                                                      calculate_id=previous_variant_id + 1)
+
+                        db.session.add(trucks_for_azs)
+
                     for x in choices_dict_work_type_1[i]['variants']:
                         if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
-
                             variant_sliv_92 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_92']
                             variant = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant']
                             truck_id = choices_dict_work_type_1[i]['variants'][x]['truck_id']
@@ -3118,6 +3126,7 @@ def start():
                             min_rez2 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez2']
                             min_rez3 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez3']
                             query_variant = TempAzsTrucks4.query.filter_by(azs_id=azs_id, truck_id=truck_id, variant=variant, variant_sliv_92=variant_sliv_92).first()
+                            calculate_id = previous_variant_id + 1
                             result = Result(azs_id=azs_id, truck_id=truck_id,
                                             variant=variant,
                                             variant_sliv_92=variant_sliv_92,
@@ -3129,7 +3138,7 @@ def start():
                                             volume_92=query_variant.sum_92,
                                             volume_95=query_variant.sum_95,
                                             volume_50=query_variant.sum_50,
-                                            calculate_id=previous_variant_id + 1)
+                                            calculate_id=calculate_id)
                             db.session.add(result)
 
                             print("АЗС:", azs_id,
@@ -3138,7 +3147,9 @@ def start():
                                   "Вариант слива 92:", variant_sliv_92,
                                   "Вариант слива 95:", variant_sliv_95,
                                   "Вариант слива 50:", variant_sliv_50)
+
                 db.session.commit()
+
             elif work_type.id == 2:
                 # создаем список, в котором будем хранить лучшие варианты расстановки
                 best_choices = list()
@@ -3148,7 +3159,6 @@ def start():
                     best_choices.append(i)
                     # сокращаем список до 1
                     best_choices = sort_choices_dict[-1:]
-
 
                 # берем айди предыдущего варианта расстановки
                 trips_last = Trips.query.order_by(desc("calculate_id")).first()
@@ -3235,4 +3245,10 @@ def start_trip():
 def trip_creation():
     priority = Priority.query.all()
 
-    return render_template('trip_creation.html', title='Отправка бензовозов', trip_creation=True)
+    trips = Trips.query.order_by(desc("calculate_id")).first()
+    result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
+    trucks = Trucks.query.all()
+    azs = AzsList.query.all()
+    trucks_for_azs = TrucksForAzs.query.all()
+    return render_template('trip_creation.html', title='Отправка бензовозов', trip_creation=True, priority=priority,
+                           result=result, trips=trips, azs=azs, trucks=trucks, trucks_for_azs=trucks_for_azs)

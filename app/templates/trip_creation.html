@@ -19,10 +19,58 @@
         <div class="card-body">
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-
-
-
-
+                    <table class="table table-sm">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>АЗС</th>
+                            <!---<th>Резервуар</th>--->
+                            <th>Запас суток</th>
+                            <th>Первый рейс</th>
+                            <th>Второй рейс</th>
+                            <th>Новый запас суток</th>
+                            <th>Количество предложенных вариантов</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in priority %}
+                            <tr>
+                                <td>{{ i.priority }}</td>
+                                <td>{{ i.azs_id }}</td>
+                                <!---<th>{{ i.tank_id }}</th>--->
+                                <td>{{ i.day_stock }}</td>
+                                <td>
+                                    {% for x in result %}
+                                        {% if i.azs_id == x.azs_id  %}
+                                            {% for z in trucks %}
+                                                {% if z.id ==x.truck_id %}
+                                                    {{ z.reg_number }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td></td>
+                                <td>
+                                    {% for x in result %}
+                                        {% if i.azs_id == x.azs_id  %}
+                                            {{ x.min_rez1}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% set trig=0 %}
+                                    {% for truck in trucks_for_azs %}
+                                        {% if i.azs_id == truck.azs_id %}
+                                            {{ truck.number_of_trucks }}
+                                            {% set trig=1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">...</div>
                 <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
