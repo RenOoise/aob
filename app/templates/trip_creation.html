@@ -19,61 +19,65 @@
         <div class="card-body">
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                    <table class="table table-sm">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>АЗС</th>
-                            <!---<th>Резервуар</th>--->
-                            <th>Запас суток</th>
-                            <th>Первый рейс</th>
-                            <th>Второй рейс</th>
-                            <th>Новый запас суток</th>
-                            <th>Количество предложенных вариантов</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for i in priority %}
+                    {% if trips %}
+                        <table data-toggle="table" class="table-sm"
+                               id="table"
+                               data-url="/trips.json"
+                               data-click-to-select="true"
+                               data-locale="ru-RU">
+                            <thead>
                             <tr>
-                                <td>{{ i.priority }}</td>
-                                <td>{{ i.azs_id }}</td>
-                                <!---<th>{{ i.tank_id }}</th>--->
-                                <td>{{ i.day_stock }}</td>
-                                <td>
-                                    {% for x in result %}
-                                        {% if i.azs_id == x.azs_id  %}
-                                            {% for z in trucks %}
-                                                {% if z.id ==x.truck_id %}
-                                                    {{ z.reg_number }}
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                                <td></td>
-                                <td>
-                                    {% for x in result %}
-                                        {% if i.azs_id == x.azs_id  %}
-                                            {{ x.min_rez1}}
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% set trig=0 %}
-                                    {% for truck in trucks_for_azs %}
-                                        {% if i.azs_id == truck.azs_id %}
-                                            {{ truck.number_of_trucks }}
-                                            {% set trig=1 %}
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
+                                <th data-field="check"  data-checkbox="true">#</th>
+                                <th data-field="priority" >#</th>
+                                <th data-field="azs_number">Номер АЗС</th>
+                                <th data-field="day_stock">Запас суток</th>
+                                <th data-field="first_trip">Первый рейс</th>
+                                <th data-field="second_trip">Второй рейс</th>
+                                <th data-field="new_day_stock">Новый запас суток</th>
+                                <th data-field="number_of_trucks">Количество бензовозов</th>
+                                <th data-field="datetime">Время формирования задания</th>
                             </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                        </table>
+                        <script>
+                            $(function() {
+                                $('#table').bootstrapTable()
+                            })
+                        </script>
+                    {% else %}
+                        Расстановка бензовозов на сегодня не выполнена
+                        <hr>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                    {% endif %}
                 </div>
-                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">...</div>
-                <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
+                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                    {% if trips %}
+                        Пока пусто
+                        <script>
+                            $(function() {
+                                $('#table').bootstrapTable()
+                            })
+                        </script>
+                    {% else %}
+                        Расстановка бензовозов на сегодня не выполнена
+                        <hr>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                    {% endif %}
+                </div>
+                <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                    {% if trips %}
+                        Пока пусто
+                        <script>
+                            $(function() {
+                                $('#table').bootstrapTable()
+                            })
+                        </script>
+                    {% else %}
+                        Расстановка бензовозов на сегодня не выполнена
+                        <hr>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

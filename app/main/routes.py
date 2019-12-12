@@ -9,13 +9,13 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
     Trips, Result, TrucksForAzs
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3,\
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3, \
     TempAzsTrucks4
 from app.translate import translate
 from app.main import bp
 import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import pygal
 from pygal.style import Style, BlueStyle
 import time
@@ -1159,20 +1159,20 @@ def start():
         # Остальные ячейки обнуляем
         for i in temp_azs_trucks:
             slovar[i['variant_id']] = {'azs_id': i['azs_id'],
-                                    'cells_list_92': [],
-                                    'cells_list_95': [],
-                                    'cells_list_50': [],
-                                    'capacity_92': 0,
-                                    'capacity_95': 0,
-                                    'capacity_50': 0,
-                                    'cells_92': i['cells_92'],
-                                    'cells_95': i['cells_95'],
-                                    'cells_50': i['cells_50'],
-                                    'truck_id': i['truck_id'],
-                                    'cells_capacity_list_92': [],
-                                    'cells_capacity_list_95': [],
-                                    'cells_capacity_list_50': []
-                                    }
+                                       'cells_list_92': [],
+                                       'cells_list_95': [],
+                                       'cells_list_50': [],
+                                       'capacity_92': 0,
+                                       'capacity_95': 0,
+                                       'capacity_50': 0,
+                                       'cells_92': i['cells_92'],
+                                       'cells_95': i['cells_95'],
+                                       'cells_50': i['cells_50'],
+                                       'truck_id': i['truck_id'],
+                                       'cells_capacity_list_92': [],
+                                       'cells_capacity_list_95': [],
+                                       'cells_capacity_list_50': []
+                                       }
         # перебираем таблицу TempAzsTrucks с вариантами налива и дополняем словарь
         for i in temp_azs_trucks:
             # обращаемся к ячейкам словаря по ключу variant_id
@@ -1224,7 +1224,7 @@ def start():
                                         'cells_capacity_list_92': slovar[temp_variant]['cells_capacity_list_92'],
                                         'cells_capacity_list_95': slovar[temp_variant]['cells_capacity_list_95'] + cells_capacity_list_95,
                                         'cells_capacity_list_50': slovar[temp_variant]['cells_capacity_list_50']
-                                      }
+                                        }
 
             # выполняем действия для дизеля вида топлива по аналогии с 92 и 95 видами топлива
             if i['fuel_type'] == 50:
@@ -2219,7 +2219,7 @@ def start():
             # если все виды топлива данного варианта сливаются, то ячейку is_variant_good в таблице записываем True,
             # если же нет, то в ячейку is_variant_good пишем False
             if is_variant_good_list[str(i['variant'])]['is_it_92'] != 1 \
-                and is_variant_good_list[str(i['variant'])]['is_it_95'] != 1 \
+                    and is_variant_good_list[str(i['variant'])]['is_it_95'] != 1 \
                     and is_variant_good_list[str(i['variant'])]['is_it_50'] != 1:
                 i['is_variant_good'] = True
                 # добавляем получившийся словарь в список
@@ -2347,7 +2347,7 @@ def start():
                                    'variant_sliv_95': 0,
                                    'azs_id': 0,
                                    'truck_id': 0
-                                    }
+                                   }
 
         for i in temp_azs_trucks4_dict:
             variant_sliv_92 = temp_azs_trucks4_dict[i]['variant_sliv_92']
@@ -2498,13 +2498,13 @@ def start():
         variants_dict = dict()
         for i in table_azs_trucks_3:
             variants_dict[(i['variant'], i['variant_sliv'])] = {'days_stock': [],
-                                                          'tank_id': []}
+                                                                'tank_id': []}
         for i in table_azs_trucks_3:
             days_stock_min_new_list = [i['new_days_stock']]
             tank_ids_list = [i['tank_id']]
             variants_dict[(i['variant'], i['variant_sliv'])] = {'days_stock': variants_dict[(i['variant'], i['variant_sliv'])]['days_stock'] + days_stock_min_new_list,
-                                             'tank_id': variants_dict[(i['variant'], i['variant_sliv'])]['tank_id'] + tank_ids_list
-                                                          }
+                                                                'tank_id': variants_dict[(i['variant'], i['variant_sliv'])]['tank_id'] + tank_ids_list
+                                                                }
         for row in table_azs_trucks_4:
 
             variant = row['variant']
@@ -2661,7 +2661,7 @@ def start():
         if work_type.id == 2:
             if min_days_stock_global == -1:
                 for i in table_azs_trucks_4:
-                # Заполняем словари для второго режима работы(вывоз максимального количества топлива определенного вида)
+                    # Заполняем словари для второго режима работы(вывоз максимального количества топлива определенного вида)
                     min_rez1_92 = azs_trucks_max_92[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
                     min_rez1_95 = azs_trucks_max_95[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
                     min_rez1_50 = azs_trucks_max_50[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
@@ -2983,10 +2983,10 @@ def start():
                 '''**************************************************************************************************'''
                 # собираем все оцененные варианты расстановки в словарь
                 choices_dict_work_type_1[number_of_success_loops] = {'variants': choice_azs_truck_dict,
-                                        'points': points,
-                                        'days_stock_min1': min_days_stock1_work_type_1,
-                                        'days_stock_min2': min_days_stock2_work_type_1
-                                                         }
+                                                                     'points': points,
+                                                                     'days_stock_min1': min_days_stock1_work_type_1,
+                                                                     'days_stock_min2': min_days_stock2_work_type_1
+                                                                     }
 
                 '''**************************************************************************************************'''
 
@@ -3039,7 +3039,7 @@ def start():
                                                                      'max_volume_92': sum_max_volume_92,
                                                                      'max_volume_95': sum_max_volume_95,
                                                                      'max_volume_50': sum_max_volume_50,
-                                                         }
+                                                                     }
             # если время выполнения превышает значение переменной timeout объявленной выше
             if time.time() > timeout:
                 # то цикл принудительно прерывается
@@ -3226,7 +3226,7 @@ def start():
         # time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.trip_creation'))
 
 
 @bp.route('/start_trip', methods=['POST', 'GET'])
@@ -3243,12 +3243,47 @@ def start_trip():
 @bp.route('/trip_creation', methods=['POST', 'GET'])
 @login_required
 def trip_creation():
-    priority = Priority.query.all()
-
+    datetime = date.today()
+    print(datetime)
     trips = Trips.query.order_by(desc("calculate_id")).first()
-    result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
-    trucks = Trucks.query.all()
-    azs = AzsList.query.all()
-    trucks_for_azs = TrucksForAzs.query.all()
-    return render_template('trip_creation.html', title='Отправка бензовозов', trip_creation=True, priority=priority,
-                           result=result, trips=trips, azs=azs, trucks=trucks, trucks_for_azs=trucks_for_azs)
+    if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y"):
+        trips = True
+    else:
+        trips = False
+    return render_template('trip_creation.html', title='Отправка бензовозов', trip_creation=True, trips=trips)
+
+
+@bp.route('/trips.json', methods=['POST', 'GET'])
+@login_required
+def trips_json():
+    rows = list()
+    priority = Priority.query.all()
+    trips = Trips.query.order_by(desc("calculate_id")).first()
+    for i in priority:
+        azs = AzsList.query.filter_by(id=i.azs_id).first()
+        result = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id).first()
+        trucks_for_azs = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id).first()
+        if result:
+            trucks = Trucks.query.filter_by(id=result.truck_id).first()
+            reg_number = trucks.reg_number
+            new_day_stock = result.min_rez1
+        else:
+            reg_number = "-"
+            new_day_stock = "-"
+        if trucks_for_azs:
+            number_of_trucks = trucks_for_azs.number_of_trucks
+        else:
+            number_of_trucks = "0"
+        if number_of_trucks == "0":
+            reg_number = "Нет вариантов"
+        row = {'priority': i.priority,
+               'azs_number': "АЗС № " + str(azs.number),
+               'day_stock': i.day_stock,
+               'first_trip': reg_number,
+               'second_trip': "-",
+               'new_day_stock': new_day_stock,
+               'number_of_trucks': number_of_trucks,
+               'datetime': trips.date.strftime("%d.%m.%Y"),
+               }
+        rows.append(row)
+    return Response(json.dumps(rows), mimetype='application/json')
