@@ -30,6 +30,7 @@
                                 <th data-field="check"  data-checkbox="true">#</th>
                                 <th data-field="priority" >#</th>
                                 <th data-field="azs_number">Номер АЗС</th>
+                                <th data-field="tank_number">Номер резервуара</th>
                                 <th data-field="day_stock">Запас суток</th>
                                 <th data-field="first_trip">Первый рейс</th>
                                 <th data-field="second_trip">Второй рейс</th>
@@ -52,10 +53,28 @@
                 </div>
                 <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     {% if trips %}
-                        Пока пусто
+                        <table data-toggle="table" class="table-sm"
+                               id="variant_naliva"
+                               data-url="/trips_naliv.json"
+                               data-click-to-select="true"
+                               data-locale="ru-RU">
+                            <thead>
+                            <tr>
+                                <th data-field="check"  data-checkbox="true">#</th>
+                                <th data-field="azs_number">Номер АЗС</th>
+                                <th data-field="truck_number">Бензовоз</th>
+                                <th data-field="naliv_cell_1">Отсек №1</th>
+                                <th data-field="naliv_cell_2">Отсек №2</th>
+                                <th data-field="naliv_cell_3">Отсек №3</th>
+                                <th data-field="naliv_cell_4">Отсек №4</th>
+                                <th data-field="naliv_cell_5">Отсек №5</th>
+                                <th data-field="naliv_cell_6">Отсек №6</th>
+                            </tr>
+                            </thead>
+                        </table>
                         <script>
                             $(function() {
-                                $('#table').bootstrapTable()
+                                $('#variant_naliva').bootstrapTable()
                             })
                         </script>
                     {% else %}
@@ -66,7 +85,25 @@
                 </div>
                 <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
                     {% if trips %}
-                        Пока пусто
+                        <table data-toggle="table" class="table-sm"
+                               id="variant_naliva"
+                               data-url="/trips_naliv.json"
+                               data-click-to-select="true"
+                               data-locale="ru-RU">
+                            <thead>
+                            <tr>
+                                <th data-field="check"  data-checkbox="true">#</th>
+                                <th data-field="azs_number">Номер АЗС</th>
+                                <th data-field="truck_number">Бензовоз</th>
+                                <th data-field="sliv_cell_1">Отсек №1</th>
+                                <th data-field="sliv_cell_2">Отсек №2</th>
+                                <th data-field="sliv_cell_3">Отсек №3</th>
+                                <th data-field="sliv_cell_4">Отсек №4</th>
+                                <th data-field="sliv_cell_5">Отсек №5</th>
+                                <th data-field="sliv_cell_6">Отсек №6</th>
+                            </tr>
+                            </thead>
+                        </table>
                         <script>
                             $(function() {
                                 $('#table').bootstrapTable()

@@ -6,11 +6,19 @@
         <div class="row py-4">
             <div class="col-lg-5">
                 <div class="card">
+                    <h5 class="card-header">Расстановка бензовозов</h5>
+                    <div class="card-body">
+                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-primary my-2 my-sm-0">Изменить расстановку</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 float-left">
+                <div class="card">
                     <h5 class="card-header">Предупреждения</h5>
                     <div class="card-body">
                         <table class="table table-sm table-hover">
                             {% if azs_list %}
-
                                 {% for i in azs_list %}
                                     {% if i['day_stock'] < 1 %}
                                         <tr class="table-danger">
@@ -33,68 +41,33 @@
                 </div>
             </div>
 
-            <div class="col-lg-7 float-right">
-                <div class="card">
-                    <h5 class="card-header">Проблемы</h5>
-                    <div class="card-body">
-                        <table class="table table-sm table-hover">
-                            {% if error_list %}
-                                {% for error in error_list %}
-                                    <tr class="table-danger">
-                                        <td>{{ error }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr class="table-success">
-                                    <td>Проблем нет</td>
-                                </tr>
-                            {% endif %}
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="row py-2">
-            <div class="col-lg-5">
-                <div class="card">
-                    <h5 class="card-header">Расстановка бензовозов</h5>
-                    <div class="card-body">
-                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
-                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary my-2 my-sm-0">Изменить расстановку</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 float-right">
-                <div class="card">
-                    <h5 class="card-header">Текущая расстановка</h5>
-                    <div class="card-body">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                            <tr class="table">
-                                <th>Номер АЗС </th>
-                                <th>Бензовоз</th>
-                                <th>Заполнение</th>
-                                <th>Рейс</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for trip in trip_for_today %}
-                                <tr>
-                                    <td>{{ trip.azs_number }}</td>
-                                    <td>{{ trip.truck_number }}</td>
-                                    <td>{{ trip.zapolnenie}}</td>
-                                    <td>{{ trip.trip_number }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+            <div class="col-lg-7">
 
             </div>
         </div>
 
+        <div class="col-lg-7 float-right">
+            <div class="card">
+                <h5 class="card-header">Проблемы</h5>
+                <div class="card-body">
+                    <table class="table table-sm table-hover">
+                        {% if error_list %}
+                            {% for error in error_list %}
+                                <tr class="table-danger">
+                                    <td>{{ error }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr class="table-success">
+                                <td>Проблем нет</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
 
     </div>
 {% endblock %}

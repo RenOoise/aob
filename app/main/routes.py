@@ -83,8 +83,8 @@ def index():
                         realisation = FuelRealisation.query.filter_by(tank_id=tank.id).first()
                         if residue is not None:
                             if residue.fuel_volume is None or residue.fuel_volume <= 0 \
-                                    or residue.download_time < datetime.now()-timedelta(seconds=600):
-                                if residue.download_time < datetime.now()-timedelta(seconds=600):
+                                    or residue.download_time < datetime.now()-timedelta(seconds=900):
+                                if residue.download_time < datetime.now()-timedelta(seconds=900):
                                     error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                                  " - возможно данные об остатках устарели"
                                 else:
@@ -100,8 +100,8 @@ def index():
                                 errors_list.append(error_text)
 
                         if realisation.fuel_realisation_1_days is None or realisation.fuel_realisation_1_days <= 0 \
-                                or realisation.download_time < datetime.now()-timedelta(seconds=600):
-                            if realisation.download_time < datetime.now() - timedelta(seconds=600):
+                                or realisation.download_time < datetime.now()-timedelta(seconds=900):
+                            if realisation.download_time < datetime.now() - timedelta(seconds=900):
                                 error_text = "АЗС №" + str(azs.number) + ", резервуар №" + str(tank.tank_number) + \
                                              " - возможно данные о реализации устарели"
                             else:
@@ -2328,13 +2328,6 @@ def start():
                                                                 'truck_id': temp_azs_trucks4_dict[str(i['variant'])][
                                                                     'truck_id']
                                                                 }
-        print('Перебираем Таблицу')
-        for i in temp_azs_trucks4_dict:
-            if i == str(7740):
-                for x in temp_azs_trucks4_dict[i]:
-                    print(temp_azs_trucks4_dict[str(i)][x])
-
-        print("Перебор закончен")
         azs_trucks_4_list_final = list()
         azs_trucks_4_dict_final = {'variant': 0,
                                    'sum_92': 0,
@@ -2544,8 +2537,10 @@ def start():
             table_azs_trucks_4_list.append(temp_azs_trucks_4_dict)
 
         db.engine.execute(TempAzsTrucks4.__table__.insert(), table_azs_trucks_4_list)
+        return int(variant)
 
     def create_trip():
+
         work_type = WorkType.query.filter_by(active=True).first_or_404()
         if work_type.id == 2 or work_type.id == 3:
             fuel_type = work_type.fuel_type
@@ -3266,10 +3261,7 @@ def start():
                                           str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
                                       'sliv_50:', azs_trucks_max_50[
                                           str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-            '''
-            for i in best_choice:
-                print(i, best_choice[i]['truck_id'], "==", trucks_for_azs_dict[i]['azs_trucks'])
-            '''
+
 
     error, tanks = check()
     if error > 10:
@@ -3277,7 +3269,7 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        #preparation_six()
+        # preparation_six()
         # time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))

@@ -748,3 +748,27 @@ class TrucksForAzs(db.Model):
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     number_of_trucks = db.Column(db.Integer)
     calculate_id = db.Column(db.Integer)
+
+
+class VariantNalivaForTrip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant_from_table = db.Column(db.Integer)  # айди варианта налива из таблицы azs_trucks (на всякий случай)
+    calculate_id = db.Column(db.Integer)
+    truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    fuel_type = db.Column(db.Integer)
+    capacity = db.Column(db.Integer)
+
+
+class VariantSlivaForTrip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant_from_table = db.Column(db.Integer)  # айди варианта слива из таблицы azs_trucks (на всякий случай)
+    calculate_id = db.Column(db.Integer)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    truck_tank_id = db.Column(db.String(60))
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
+    fuel_type = db.Column(db.Integer)
+    capacity = db.Column(db.Integer)
+
