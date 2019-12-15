@@ -5,12 +5,13 @@ from flask_babel import _, get_locale
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
-    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, TempAzsTrucks, TempAzsTrucks2, WorkType, Errors, \
-    Trips, Result, TrucksForAzs
+    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, WorkType, Errors, \
+    Trips, Result, TrucksForAzs, VariantSlivaForTrip
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse,RealisationStats, TempAzsTrucks3, \
-    TempAzsTrucks4
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse, RealisationStats, \
+    TempAzsTrucks3, TempAzsTrucks4, VariantNalivaForTrip, TempAzsTrucks, TempAzsTrucks2
+
 from app.translate import translate
 from app.main import bp
 import pandas as pd
@@ -2103,7 +2104,7 @@ def start():
                 # записываем в базу, что бензовоз в данный момент сольется
                 i['is_it_fit'] = True
                 # расчитываем количество отстатков в резервуаре после слива
-                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['free_volume'] + i['sum_sliv']
+                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['fuel_volume'] + i['sum_sliv']
                 # расчитываем новый запас суток
                 i['new_days_stock'] = i['new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
             # если бензовоз не сливается после времени затраченного на дорогу (то есть переменная sliv_later
@@ -2118,7 +2119,7 @@ def start():
                 # записываем в базу, что бензовоз сольется спустя время затраченное на дорогу
                 i['is_it_fit_later'] = True
                 # расчитываем количество отстатков в резервуаре после слива
-                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['free_volume'] + i['sum_sliv']
+                i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['fuel_volume'] + i['sum_sliv']
                 # расчитываем новый запас суток
                 i['new_days_stock'] = i['new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
             # проверяем, сможет ли бензовоз заехать на АЗС (нет ли для него никаких ограничений)
@@ -2773,7 +2774,8 @@ def start():
         elif work_type.id == 3:
             if min_days_stock_global == -1:
                 for i in table_azs_trucks_4:
-                    # Заполняем словари для второго режима работы(вывоз максимального количества топлива определенного вида)
+                    # Заполняем словари для второго режима работы
+                    # (вывоз максимального количества топлива определенного вида)
                     min_rez1_92 = azs_trucks_min_92[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
                     min_rez1_95 = azs_trucks_min_95[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
                     min_rez1_50 = azs_trucks_min_50[str(i.azs_id) + ':' + str(i.truck_id)]['min_rez1']
@@ -3113,7 +3115,7 @@ def start():
                                                       calculate_id=previous_variant_id + 1)
 
                         db.session.add(trucks_for_azs)
-
+                    variants_sliva_for_trip = list()
                     for x in choices_dict_work_type_1[i]['variants']:
                         if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
                             variant_sliv_92 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_92']
@@ -3148,6 +3150,59 @@ def start():
                                   "Вариант слива 95:", variant_sliv_95,
                                   "Вариант слива 50:", variant_sliv_50)
 
+
+                            variant_sliva = dict()
+
+                            table_azs_trucks1 = TempAzsTrucks.query.filter_by(variant_id=int(variant)).all()
+                            table_azs_trucks3_92 = TempAzsTrucks3.query.filter_by(variant=int(variant),
+                                                                                  variant_sliv=variant_sliv_92).all()
+                            table_azs_trucks3_95 = TempAzsTrucks3.query.filter_by(variant=int(variant),
+                                                                                  variant_sliv=variant_sliv_95).all()
+                            table_azs_trucks3_50 = TempAzsTrucks3.query.filter_by(variant=int(variant),
+                                                                                  variant_sliv=variant_sliv_50).all()
+
+                            for table_variant in table_azs_trucks1:
+                                variant_naliva = VariantNalivaForTrip(variant_from_table=int(variant),
+                                                                      calculate_id=calculate_id,
+                                                                      truck_tank_id=table_variant.truck_tank_id,
+                                                                      truck_id=truck_id,
+                                                                      azs_id=azs_id,
+                                                                      fuel_type=table_variant.fuel_type,
+                                                                      capacity=table_variant.capacity)
+                                db.session.add(variant_naliva)
+
+                            for row in table_azs_trucks3_92:
+                                variant_sliva = VariantSlivaForTrip(variant_from_table=row.variant,
+                                                                    calculate_id=calculate_id,
+                                                                    azs_id=row.azs_id,
+                                                                    tank_id=row.tank_id,
+                                                                    truck_id=row.truck_id,
+                                                                    truck_tank_id=row.truck_tank_id_string,
+                                                                    fuel_type=row.fuel_type,
+                                                                    capacity=row.sum_sliv)
+                                db.session.add(variant_sliva)
+
+                            for row in table_azs_trucks3_95:
+                                variant_sliva = VariantSlivaForTrip(variant_from_table=row.variant,
+                                                                    calculate_id=calculate_id,
+                                                                    azs_id=row.azs_id,
+                                                                    tank_id=row.tank_id,
+                                                                    truck_id=row.truck_id,
+                                                                    truck_tank_id=row.truck_tank_id_string,
+                                                                    fuel_type=row.fuel_type,
+                                                                    capacity=row.sum_sliv)
+                                db.session.add(variant_sliva)
+
+                            for row in table_azs_trucks3_50:
+                                variant_sliva = VariantSlivaForTrip(variant_from_table=row.variant,
+                                                                    calculate_id=calculate_id,
+                                                                    azs_id=row.azs_id,
+                                                                    tank_id=row.tank_id,
+                                                                    truck_id=row.truck_id,
+                                                                    truck_tank_id=row.truck_tank_id_string,
+                                                                    fuel_type=row.fuel_type,
+                                                                    capacity=row.sum_sliv)
+                                db.session.add(variant_sliva)
                 db.session.commit()
 
             elif work_type.id == 2:
@@ -3222,7 +3277,7 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        # preparation_six()
+        #preparation_six()
         # time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
@@ -3260,6 +3315,7 @@ def trips_json():
     priority = Priority.query.all()
     trips = Trips.query.order_by(desc("calculate_id")).first()
     for i in priority:
+        tank = Tanks.query.filter_by(id=i.tank_id).first()
         azs = AzsList.query.filter_by(id=i.azs_id).first()
         result = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id).first()
         trucks_for_azs = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id).first()
@@ -3278,12 +3334,100 @@ def trips_json():
             reg_number = "Нет вариантов"
         row = {'priority': i.priority,
                'azs_number': "АЗС № " + str(azs.number),
+               'tank_number': tank.tank_number,
                'day_stock': i.day_stock,
                'first_trip': reg_number,
                'second_trip': "-",
                'new_day_stock': new_day_stock,
                'number_of_trucks': number_of_trucks,
                'datetime': trips.date.strftime("%d.%m.%Y"),
+               }
+        rows.append(row)
+    return Response(json.dumps(rows), mimetype='application/json')
+
+
+@bp.route('/trips_naliv.json', methods=['POST', 'GET'])
+@login_required
+def trips_naliv_json():
+    rows = list()
+    naliv_cell_1 = "Отсек отсутствует"
+    naliv_cell_2 = "Отсек отсутствует"
+    naliv_cell_3 = "Отсек отсутствует"
+    naliv_cell_4 = "Отсек отсутствует"
+    naliv_cell_5 = "Отсек отсутствует"
+    naliv_cell_6 = "Отсек отсутствует"
+    sliv_cell_1 = "Отсек отсутствует"
+    sliv_cell_2 = "Отсек отсутствует"
+    sliv_cell_3 = "Отсек отсутствует"
+    sliv_cell_4 = "Отсек отсутствует"
+    sliv_cell_5 = "Отсек отсутствует"
+    sliv_cell_6 = "Отсек отсутствует"
+    trips = Trips.query.order_by(desc("calculate_id")).first()
+    result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
+    for i in result:
+        azs = AzsList.query.filter_by(id=i.azs_id).first()
+        if result:
+            trucks = Trucks.query.filter_by(id=i.truck_id).first()
+            reg_number = trucks.reg_number
+            naliv = VariantNalivaForTrip.query.filter_by(azs_id=i.azs_id,
+                                                         calculate_id=trips.calculate_id,
+                                                         truck_id=i.truck_id,
+                                                         variant_from_table=i.variant).all()
+
+            sliv = VariantSlivaForTrip.query.filter_by(azs_id=i.azs_id,
+                                                       calculate_id=trips.calculate_id,
+                                                       truck_id=i.truck_id,
+                                                       variant_from_table=i.variant).all()
+            for var in naliv:
+                truck_tanks = TruckTanks.query.filter_by(id=var.truck_tank_id).first()
+                if truck_tanks.number == 1:
+                    naliv_cell_1 = var.fuel_type
+                if truck_tanks.number == 2:
+                    naliv_cell_2 = var.fuel_type
+                if truck_tanks.number == 3:
+                    naliv_cell_3 = var.fuel_type
+                if truck_tanks.number == 4:
+                    naliv_cell_4 = var.fuel_type
+                if truck_tanks.number == 5:
+                    naliv_cell_5 = var.fuel_type
+                if truck_tanks.number == 6:
+                    naliv_cell_6 = var.fuel_type
+
+                for var in sliv:
+
+                    truck_tanks_list = var.truck_tank_id.split("+")
+                    for truck_tank in truck_tanks_list:
+                        truck_tank_list = TruckTanks.query.filter_by(id=truck_tank).first()
+                        tank = Tanks.query.filter_by(id=var.tank_id).first()
+                        if truck_tank_list.number == 1:
+                            sliv_cell_1 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+                        if truck_tank_list.number == 2:
+                            sliv_cell_2 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+                        if truck_tank_list.number == 3:
+                            sliv_cell_3 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+                        if truck_tank_list.number == 4:
+                            sliv_cell_4 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+                        if truck_tank_list.number == 5:
+                            sliv_cell_5 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+                        if truck_tank_list.number == 6:
+                            sliv_cell_6 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type)+ ")"
+        else:
+            reg_number = "-"
+
+        row = {'azs_number': "АЗС № " + str(azs.number),
+               'truck_number': reg_number,
+               'naliv_cell_1': naliv_cell_1,
+               'naliv_cell_2': naliv_cell_2,
+               'naliv_cell_3': naliv_cell_3,
+               'naliv_cell_4': naliv_cell_4,
+               'naliv_cell_5': naliv_cell_5,
+               'naliv_cell_6': naliv_cell_6,
+               'sliv_cell_1': sliv_cell_1,
+               'sliv_cell_2': sliv_cell_2,
+               'sliv_cell_3': sliv_cell_3,
+               'sliv_cell_4': sliv_cell_4,
+               'sliv_cell_5': sliv_cell_5,
+               'sliv_cell_6': sliv_cell_6,
                }
         rows.append(row)
     return Response(json.dumps(rows), mimetype='application/json')
