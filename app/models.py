@@ -423,7 +423,7 @@ class Trip(db.Model):
     time_from_before_lunch = db.Column(db.Time)  # время от АЗС до нефтебазы до обеда
     time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
     time_from = db.Column(db.Time)  # время от АЗС до нефтебазы
-    weigher = db.Column(db.String)  # весы
+    weigher = db.Column(db.String(20))  # весы
 
 
 class Priority(db.Model):
@@ -493,6 +493,7 @@ class TempAzsTrucks2(db.Model):
     is_it_able_to_enter = db.Column(db.Boolean)  # сможет ли заехать бензовоз
     is_variant_good = db.Column(db.Boolean)  # подходит ли этот вариант?
     is_variant_sliv_good = db.Column(db.Boolean)  # подходит ли этот вариант слива?
+    is_variant_weigher_good = db.Column(db.Boolean)  # подходит ли вариант налива, если на пути есть весы
 
 
 class TempAzsTrucks3(db.Model):
