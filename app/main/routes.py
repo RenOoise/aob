@@ -3,11 +3,13 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from app import db
-from app.admin.forms import BusinessForm, TimeForm
+from app.admin.forms import CellsForm, FuelForm
+from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
+    BooleanField, FieldList, RadioField, FormField, HiddenField
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, WorkType, Errors, \
-    Trips, Result, TrucksForAzs, VariantSlivaForTrip
+    Trips, Result, TrucksForAzs, VariantSlivaForTrip, TruckTanksVariations
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
     Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse, RealisationStats, \
@@ -24,7 +26,7 @@ import time
 import random
 import json
 from sqlalchemy import desc
-import calendar
+
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -3677,18 +3679,32 @@ def test():
     return 0
 
 
-@bp.route('/testform')
-def test_form():
-    form = BusinessForm()
+@bp.route('/testform/<id>', methods=['POST', 'GET'])
+def test_form(id):
+
+    cells_list = list()
+    cells = TruckTanks.query.filter_by(truck_id=id).all()
+    cells_count = TruckTanks.query.filter_by(truck_id=id).count()
+    CellsForm.fuck = FieldList(FormField(FuelForm), min_entries=cells_count)
+    form = CellsForm()
+    add_data = TruckTanksVariations.query.order_by(desc('variant_good')).first()
+    if add_data:
+        variant_good = add_data.variant_good + 1
+    else:
+        variant_good = 1
+    for i in cells:
+        cells_list.append(i.number)
+
     if form.validate_on_submit():
-        results = []
-        for idx, data in enumerate(form.hours.data):
-            results.append('{day}: [{open}]:[{close}]'.format(
-                day=calendar.day_name[idx],
-                open=data["opening"],
-                close=data["closing"],
-                )
-            )
-        return render_template('results.html', results=results)
-    print(form.errors)
-    return render_template('admin/adder.html', form=form)
+        for entry in form.fuck.entries:
+            truck_cell_id = TruckTanks.query.filter_by(truck_id=id, number=entry.data['id']).first()
+            add_data = TruckTanksVariations(variant_good=variant_good, truck_tank_id=truck_cell_id.id, truck_id=id,
+                                            diesel=entry.data['fuel_type'])
+            db.session.add(add_data)
+
+            print(entry.data['id'])
+            print(entry.data['fuel_type'])
+
+        db.session.commit()
+        return redirect(url_for('admin.truck', id=id))
+    return render_template('admin/add_cell.html', form=form)

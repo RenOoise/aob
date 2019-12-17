@@ -185,12 +185,11 @@ class ManualTanks(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
-class TimeForm(FlaskForm):
-    opening = StringField('Opening Hour')
-    closing = StringField('Closing Hour')
-    day = StringField('Day')
+class FuelForm(FlaskForm):
+    id = IntegerField('Номер отсека')
+    fuel_type = BooleanField('Разрешен ли дизель?')
 
 
-class BusinessForm(FlaskForm):
-    name = StringField('Business Name')
-    hours = FieldList(FormField(TimeForm), min_entries=7, max_entries=7)
+class CellsForm(FlaskForm):
+    fuck = FieldList(FormField(FuelForm), min_entries=4)
+

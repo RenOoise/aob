@@ -5,7 +5,7 @@ from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
     AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse
+    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse, TruckTanksVariations
 from app.admin import bp
 import jsonify
 from sqlalchemy import desc
@@ -372,11 +372,78 @@ def truck_edit(id):
 def truck(id):
     truck = Trucks.query.filter_by(id=id).first_or_404()
     truck_id = truck.id
+
     truck_tanks_list = TruckTanks.query.filter_by(truck_id=id).all()
     truck_tanks_count = TruckTanks.query.filter_by(truck_id=id).count()
+    truck_tanks_variant = TruckTanksVariations.query.filter_by(truck_id=id).all()
+    truck_cells = dict()
+    for i in truck_tanks_variant:
+        truck_cells[i.variant_good] = {'1': None,
+                                       '2': None,
+                                       '3': None,
+                                       '4': None,
+                                       '5': None,
+                                       '6': None
+                                       }
+
+    for i in truck_tanks_variant:
+        for x in truck_tanks_list:
+            if i.truck_tank_id == x.id:
+                number = x.number
+            if number == 1:
+                truck_cells[i.variant_good] = {'1': i.diesel,
+                                               '2': truck_cells[i.variant_good]['2'],
+                                               '3': truck_cells[i.variant_good]['3'],
+                                               '4': truck_cells[i.variant_good]['4'],
+                                               '5': truck_cells[i.variant_good]['5'],
+                                               '6': truck_cells[i.variant_good]['6']
+                                               }
+            if number == 2:
+                truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
+                                               '2': i.diesel,
+                                               '3': truck_cells[i.variant_good]['3'],
+                                               '4': truck_cells[i.variant_good]['4'],
+                                               '5': truck_cells[i.variant_good]['5'],
+                                               '6': truck_cells[i.variant_good]['6']
+                                               }
+            if number == 3:
+                truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
+                                               '2': truck_cells[i.variant_good]['2'],
+                                               '3': i.diesel,
+                                               '4': truck_cells[i.variant_good]['4'],
+                                               '5': truck_cells[i.variant_good]['5'],
+                                               '6': truck_cells[i.variant_good]['6']
+                                               }
+            if number == 4:
+                truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
+                                               '2': truck_cells[i.variant_good]['2'],
+                                               '3': truck_cells[i.variant_good]['3'],
+                                               '4': i.diesel,
+                                               '5': truck_cells[i.variant_good]['5'],
+                                               '6': truck_cells[i.variant_good]['6']
+                                               }
+            if number == 5:
+                truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
+                                               '2': truck_cells[i.variant_good]['2'],
+                                               '3': truck_cells[i.variant_good]['3'],
+                                               '4': truck_cells[i.variant_good]['4'],
+                                               '5': i.diesel,
+                                               '6': truck_cells[i.variant_good]['6']
+                                               }
+            if number == 6:
+                truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
+                                               '2': truck_cells[i.variant_good]['2'],
+                                               '3': truck_cells[i.variant_good]['3'],
+                                               '4': truck_cells[i.variant_good]['4'],
+                                               '5': truck_cells[i.variant_good]['5'],
+                                               '6': i.diesel
+                                               }
+    for var in truck_cells:
+        print(truck_cells[var])
     return render_template('admin/truck.html', title='Бензовоз ' + truck.reg_number, truck_active=True,
                            settings_active=True, truck_tanks_list=truck_tanks_list, truck=truck,
-                           truck_tanks_count=truck_tanks_count)
+                           truck_tanks_count=truck_tanks_count, truck_tanks_variant=truck_tanks_variant,
+                           truck_cells=truck_cells)
 
 
 @bp.route('/admin/priority/add/', methods=['POST', 'GET'])
