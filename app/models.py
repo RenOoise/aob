@@ -773,3 +773,10 @@ class VariantSlivaForTrip(db.Model):
     fuel_type = db.Column(db.Integer)
     capacity = db.Column(db.Integer)
 
+
+class TruckTanksVariations(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant_good = db.Column(db.Integer)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))
+    truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
+    diesel = db.Column(db.Boolean)

@@ -468,8 +468,6 @@ def download_realisation_info(user_id):
 
 
 def prepare_tables(user_id):
-
-
     def preparation():
         # функция создает таблицу всех возможных комбинаций налива топлива в бензовозы
         # для каждой азс и каждого бензовоза

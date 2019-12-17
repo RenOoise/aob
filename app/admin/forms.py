@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField, FieldList, RadioField
+    BooleanField, FieldList, RadioField, FormField, HiddenField
 from wtforms_components import TimeField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
@@ -13,7 +13,7 @@ class AddUserForm(FlaskForm):
     password = PasswordField(_l('Пароль'), validators=[DataRequired()])
     password2 = PasswordField(
         _l('Повторите пароль'), validators=[DataRequired(),
-                                           EqualTo('password')])
+                                            EqualTo('password')])
     role = SelectField('Роль', choices=[('admin', 'Администратор'), ('dispatcher', 'Диспетчер'),
                                         ('director', 'Директор'), ('manager', 'Менеджер')])
     submit = SubmitField(_l('Создать'))
@@ -33,7 +33,7 @@ class AddTankForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     tank = SelectField(_l('Номер резервуара'), choices=[('1', 1), ('2', 2), ('3', 3), ('4', 4), ('5', 5), ('6', 6),
                                                         ('7', 7), ('8', 8), ('9', 9), ('10', 10)],
-                        validators=[DataRequired()])
+                       validators=[DataRequired()])
     fuel_type = SelectField(_l('Тип топлива'), choices=[('95', 95), ('92', 92), ('50', 50), ('51', 51)],
                             validators=[DataRequired()])
     nominal_capacity = FloatField(_l('Номинальный объем (л)'), validators=[DataRequired()])
@@ -181,5 +181,16 @@ class TruckFalseForm(FlaskForm):
 
 
 class ManualTanks(FlaskForm):
-    truck_tanks = SelectField('Резервуары', choices=[], coerce=int)
+    truck_tanks = SelectField('Резервуары', choices=[()], coerce=int)
     submit = SubmitField('Сохранить')
+
+
+class TimeForm(FlaskForm):
+    opening = StringField('Opening Hour')
+    closing = StringField('Closing Hour')
+    day = StringField('Day')
+
+
+class BusinessForm(FlaskForm):
+    name = StringField('Business Name')
+    hours = FieldList(FormField(TimeForm), min_entries=7, max_entries=7)
