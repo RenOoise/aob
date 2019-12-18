@@ -191,5 +191,5 @@ class FuelForm(FlaskForm):
 
 
 class CellsForm(FlaskForm):
-    fuck = FieldList(FormField(FuelForm), min_entries=4)
+    cell = FieldList(FormField(FuelForm), min_entries=1)
 

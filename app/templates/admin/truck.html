@@ -81,7 +81,7 @@
     <div class="row">
         <div class="card w-50 mx-auto">
             <div class="card-header">
-                <h5 class=" float-left">Варианты наполнения дизелем для весов</h5>
+                <h5 class=" float-left">Варианты заполнения для весов</h5>
             </div>
             <div class="card-body">
                 <table class="table table-sm">
@@ -98,8 +98,7 @@
                         <tr>
                             <td>{{ z }}</td>
                             {% for num in range(truck_tanks_count) %}
-                                {% if truck_cells[z][(num)|string] == True %}
-
+                                {% if truck_cells[z][(num + 1)|string] == True %}
                                     <td>1</td>
                                 {% else %}
                                     <td>0</td>

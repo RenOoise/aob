@@ -1,19 +1,28 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
+    <style>
+        legend {
+            display: none;
+        }
+    </style>
     <div class="row py-4">
         <div class="card w-50 mx-auto">
             <div class="card-header">
-                <h5 class=" float-left">{{ title }}</h5>
+                <h5 class=" float-left">Добавление правил налива дизеля для бензовоза</h5>
             </div>
             <div class="card-body">
-                <form action="" method="post" role="form">
+                <form class="form form-horizontal" method="post" role="form">
                     {{ form.hidden_tag() }}
-                    {{ form.fuck() }}
+                    {{ wtf.form_errors(form, hiddens="only") }}
 
-                    <input type="submit" value="Submit!" />
+                    {% for subfield in form.cell %}
+                        {{ wtf.form_field(subfield) }}
+                    {% endfor %}
+                    <input type="submit" class="btn btn-success" value="Сохранить" />
                 </form>
             </div>
         </div>
     </div>
 {% endblock %}
+ц

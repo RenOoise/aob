@@ -3437,8 +3437,10 @@ def test():
     print('TEST')
     test_dict = dict()
     weigher_dict = dict()  # словарь с наполнением при весах
+    weigher_variant_good_dict=dict()
     trip = Trip.query.filter_by(weigher=1).all()
     cells = TruckTanks.query.all()
+    truck_tanks_variations = TruckTanksVariations.query.all()
     temp_azs_trucks2 = TempAzsTrucks2.query.all()
 
     for i in trip:
@@ -3459,9 +3461,7 @@ def test():
         for x in temp_azs_trucks:
             key = str(x.variant_id)+':'+str(x.truck_id)
 
-
             fuel_type_boolean = x.fuel_type
-
             for cell in cells:
                 if cell.id == x.truck_tank_id:
                     if cell.number == 1:
@@ -3545,96 +3545,127 @@ def test():
                                           '8': fuel_type_boolean
                                           }
 
-    for cell in cells:
-        weigher_dict[cell.truck_id] = {'1': None,
-                                       '2': None,
-                                       '3': None,
-                                       '4': None,
-                                       '5': None,
-                                       '6': None,
-                                       '7': None,
-                                       '8': None
-                                       }
+    for cell in truck_tanks_variations:
+        weigher_dict[str(cell.truck_id) + ":" + str(cell.variant_good)] = {'1': None,
+                                                                           '2': None,
+                                                                           '3': None,
+                                                                           '4': None,
+                                                                           '5': None,
+                                                                           '6': None,
+                                                                           '7': None,
+                                                                           '8': None
+                                                                           }
 
-    for cell in cells:
-        if cell.number == 1:
-            weigher_dict[cell.truck_id] = {'1': cell.diesel,
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 2:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': cell.diesel,
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 3:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': cell.diesel,
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 4:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': cell.diesel,
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 5:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': cell.diesel,
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 6:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': cell.diesel,
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 7:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': cell.diesel,
-                                           '8': weigher_dict[cell.truck_id]['8']}
-        if cell.number == 8:
-            weigher_dict[cell.truck_id] = {'1': weigher_dict[cell.truck_id]['1'],
-                                           '2': weigher_dict[cell.truck_id]['2'],
-                                           '3': weigher_dict[cell.truck_id]['3'],
-                                           '4': weigher_dict[cell.truck_id]['4'],
-                                           '5': weigher_dict[cell.truck_id]['5'],
-                                           '6': weigher_dict[cell.truck_id]['6'],
-                                           '7': weigher_dict[cell.truck_id]['7'],
-                                           '8': cell.diesel}
+        weigher_variant_good_dict[cell.truck_id] = {'variant_good': []}
+
+
+    for cell in truck_tanks_variations:
+        if cell.variant_good not in weigher_variant_good_dict[cell.truck_id]['variant_good']:
+            temp_list = list()
+            temp_list.append(cell.variant_good)
+            weigher_variant_good_dict[cell.truck_id] = {'variant_good':
+                                                            weigher_variant_good_dict[cell.truck_id]['variant_good'] + temp_list
+                                                                                               }
+
+        for truck_cell in cells:
+            if truck_cell.id == cell.truck_id:
+                number = truck_cell.number
+
+        key = str(cell.truck_id) + ':' + str(cell.variant_good)
+        if number == 1:
+            weigher_dict[key] = {'1': cell.diesel,
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 2:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': cell.diesel,
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+
+        if number == 3:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': cell.diesel,
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 4:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': cell.diesel,
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 5:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': cell.diesel,
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 6:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': cell.diesel,
+                                 '7': weigher_dict[key]['7'],
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 7:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': cell.diesel,
+                                 '8': weigher_dict[key]['8']
+                                 }
+
+        if number == 8:
+            weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                 '2': weigher_dict[key]['2'],
+                                 '3': weigher_dict[key]['3'],
+                                 '4': weigher_dict[key]['4'],
+                                 '5': weigher_dict[key]['5'],
+                                 '6': weigher_dict[key]['6'],
+                                 '7': weigher_dict[key]['7'],
+                                 '8': cell.diesel
+                                 }
 
     for i in temp_azs_trucks2:
         key = str(i.variant) + ':' + str(i.truck_id)
         if key in test_dict:
             cells_list = list()
-            weigher_list = list()
+
             cell_1 = test_dict[key]['1']
             cells_list.append(cell_1)
             cell_2 = test_dict[key]['2']
@@ -3652,40 +3683,45 @@ def test():
             cell_8 = test_dict[key]['8']
             cells_list.append(cell_8)
 
-            weigher_cell_1 = weigher_dict[i.truck_id]['1']
-            weigher_list.append(weigher_cell_1)
-            weigher_cell_2 = weigher_dict[i.truck_id]['2']
-            weigher_list.append(weigher_cell_2)
-            weigher_cell_3 = weigher_dict[i.truck_id]['3']
-            weigher_list.append(weigher_cell_3)
-            weigher_cell_4 = weigher_dict[i.truck_id]['4']
-            weigher_list.append(weigher_cell_4)
-            weigher_cell_5 = weigher_dict[i.truck_id]['5']
-            weigher_list.append(weigher_cell_5)
-            weigher_cell_6 = weigher_dict[i.truck_id]['6']
-            weigher_list.append(weigher_cell_6)
-            weigher_cell_7 = weigher_dict[i.truck_id]['7']
-            weigher_list.append(weigher_cell_7)
-            weigher_cell_8 = weigher_dict[i.truck_id]['8']
-            weigher_list.append(weigher_cell_8)
+            trig_final = 0  # Изначально считаем, что бензовоз нельзся туда везти из-за весов
+            for variant_good in weigher_variant_good_dict[i.truck_id]['variant_good']:
+                print(i.truck_id)
+                variant_key = str(i.truck_id) + ":" + str(variant_good)
+                # for x in weigher_dict[variant_key]:
+                weigher_list = list()
+                weigher_list.append(weigher_dict[variant_key]['1'])
+                weigher_list.append(weigher_dict[variant_key]['2'])
+                weigher_list.append(weigher_dict[variant_key]['3'])
+                weigher_list.append(weigher_dict[variant_key]['4'])
+                weigher_list.append(weigher_dict[variant_key]['5'])
+                weigher_list.append(weigher_dict[variant_key]['6'])
+                weigher_list.append(weigher_dict[variant_key]['7'])
+                weigher_list.append(weigher_dict[variant_key]['8'])
 
-            trig = 1
-            for index, cell in enumerate(cells_list):
-                if cells_list[index] == 50 and (weigher_list[index] == 0 or weigher_list[index] == None):
-                    trig = 0
-                    break
+
+
+                trig = 1  # Можно завозить дизель для этой комбинации налива
+                for index, cell in enumerate(cells_list):
+                    if cells_list[index] == 50 and (weigher_list[index] == 0 or weigher_list[index] == None):
+                        trig = 0  # Нельзя завозить дизель для этой комбинации налива
+                        break
+
+                if trig == 1:        # Если можнно завозить дизель для одной их всевозможных комбинаций налива,
+                    trig_final = 1   # то значит  можно завозить
+
+            '''if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
+                print('Бензовоз:', i.truck_id, 'Вариант:', i.variant)'''
     print('Время выполнения %s' % (time.time() - start_time))
     print('end')
-    return 0
+    return 'penis'
 
 
 @bp.route('/testform/<id>', methods=['POST', 'GET'])
 def test_form(id):
-
     cells_list = list()
     cells = TruckTanks.query.filter_by(truck_id=id).all()
     cells_count = TruckTanks.query.filter_by(truck_id=id).count()
-    CellsForm.fuck = FieldList(FormField(FuelForm), min_entries=cells_count)
+    CellsForm.cell = FieldList(FormField(FuelForm), min_entries=cells_count)
     form = CellsForm()
     add_data = TruckTanksVariations.query.order_by(desc('variant_good')).first()
     if add_data:
@@ -3696,7 +3732,7 @@ def test_form(id):
         cells_list.append(i.number)
 
     if form.validate_on_submit():
-        for entry in form.fuck.entries:
+        for entry in form.cell.entries:
             truck_cell_id = TruckTanks.query.filter_by(truck_id=id, number=entry.data['id']).first()
             add_data = TruckTanksVariations(variant_good=variant_good, truck_tank_id=truck_cell_id.id, truck_id=id,
                                             diesel=entry.data['fuel_type'])
