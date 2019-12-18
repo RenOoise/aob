@@ -536,6 +536,13 @@ class Errors(db.Model):
     active = db.Column(db.Boolean)
 
 
+class UserLogs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    action = db.Column(db.String(160))
+    timestamp = db.Column(db.DateTime)
+
+
 class TripForToday(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
@@ -724,6 +731,7 @@ class Trips(db.Model):
     work_type_id = db.Column(db.Integer, db.ForeignKey('work_type.id'))
     variant_number = db.Column(db.Integer)  # номер предложеного варианта расстановки
     calculate_id = db.Column(db.Integer)
+    incorrect = db.Column(db.Boolean)  # на случай создания новой расстановки, отмечаем старую неактивной
 
 
 #  результат расстановки бензовозов

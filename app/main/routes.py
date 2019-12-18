@@ -13,7 +13,7 @@ from app.models import User, Post, Message, Notification, FuelResidue, AzsList, 
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
     Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse, RealisationStats, \
-    TempAzsTrucks3, TempAzsTrucks4, VariantNalivaForTrip, TempAzsTrucks, TempAzsTrucks2
+    TempAzsTrucks3, TempAzsTrucks4, VariantNalivaForTrip, TempAzsTrucks, TempAzsTrucks2, UserLogs
 
 from app.translate import translate
 from app.main import bp
@@ -26,7 +26,6 @@ import time
 import random
 import json
 from sqlalchemy import desc
-
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
@@ -126,6 +125,12 @@ def index():
                                           ' не попадает в диапазон приоритетов!!!')
         return errors, errors_list
 
+    trips = Trips.query.order_by(desc("date")).first()
+    if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y"):
+        trips_today = True
+    else:
+        trips_today = False
+
     priority = Priority.query.order_by('priority').all()
     trip_for_today = TripForToday.query.order_by("trip_number").all()
     azs_list = list()
@@ -144,7 +149,7 @@ def index():
     for error in errors:
         error_list.append(error)
     return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True,
-                           trip_for_today=trip_for_today)
+                           trip_for_today=trip_for_today, trips=trips_today)
 
 
 @bp.route('/user/<username>')
@@ -2020,7 +2025,7 @@ def start():
                             temp_azs_trucks_2_list.append(temp_azs_trucks_2_dict)
                         variant_counter_sliv = variant_counter_sliv + 1
         db.engine.execute(TempAzsTrucks.__table__.insert(), temp_azs_trucks)
-        return temp_azs_trucks_2_list
+        return temp_azs_trucks_2_list, temp_azs_trucks
 
     ''' 
     # функция определяет может ли вариант слива в данный момент слиться на АЗС,
@@ -2030,9 +2035,12 @@ def start():
     # определяет, может ли бензовой зайти на АЗС
     # может ли этот варинат налива пройти по дороге с весами
     '''
+    "------------------------------------------------------------------------------------------------------------"
+    "---------------------------- определяем, сможет ли бензовоз пройти весы ------------------------------------"
+    "------------------------------------------------------------------------------------------------------------"
+
     def is_it_fit():
-        temp_azs_trucks_2_list = preparation_two()
-        temp_azs_trucks = TempAzsTrucks.query.join(Trip, Trip.weigher == '1').all()
+        temp_azs_trucks_2_list, temp_azs_trucks = preparation_two()
         # получаем остатки из базы
         residue = FuelResidue.query.all()
         # получаем реализацию из базы
@@ -2048,6 +2056,7 @@ def start():
         # создаем пустой словарь для хранеия в нем данных времени пути до АЗС
         azs_trip_access = dict()
         azs_trip_time = dict()
+
         # заполняем словарь с данными об остатках топлива
         for i in residue:
             realisation_n_residue[i.tank_id] = {'azs_id': i.azs_id,  # id_АЗС
@@ -2105,7 +2114,7 @@ def start():
                 # новый запас суток и новые остатки не считаем
                 i['new_fuel_volume'] = 0
                 i['new_days_stock'] = 0
-            # если бензовоз сможет слиться натекущий момент (то есть переменная sliv - больше нуля)
+            # если бензовоз сможет слиться нат екущий момент (то есть переменная sliv - больше нуля)
             else:
                 # записываем в базу, что бензовоз в данный момент сольется
                 i['is_it_fit'] = True
@@ -2137,6 +2146,7 @@ def start():
             else:
                 # если ограничений нет, то ставим True
                 i['is_it_able_to_enter'] = True
+
             # добавляем словарь в список для записи в базу данных, в таблицу TempAzsTrucks2
             is_it_fit_list.append(i)
         # создаем словарь для хранения переменных с информацией о том, влезет ли определенный вид топлива
@@ -2220,7 +2230,248 @@ def start():
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50': 1}
         # создаем финальный список для данной функции, который будет записан в таблицу TempAzsTrucks2 в БД
+        final_list2 = list()
         final_list = list()
+        test_dict = dict()
+        weigher_dict = dict()  # словарь с наполнением при весах
+        weigher_variant_good_dict = dict()
+        trip = Trip.query.filter_by(weigher=1).all()
+        cells = TruckTanks.query.all()
+        truck_tanks_variations = TruckTanksVariations.query.all()
+        azs_list_weigher_variant_id = list()
+        azs_list_weigher_truck_id = list()
+        azs_list_weigher_fuel_type = list()
+        azs_list_weigher_truck_tank_id = list()
+        for i in trip:
+            for azs in temp_azs_trucks:
+                if azs['azs_id'] == i.azs_id:
+                    azs_list_weigher_variant_id.append(azs['variant_id'])
+                    azs_list_weigher_truck_id.append(azs['truck_id'])
+            for index, x in enumerate(azs_list_weigher_variant_id):
+                key = str(azs_list_weigher_variant_id[index]) + ':' + str(azs_list_weigher_truck_id[index])
+                test_dict[key] = {'1': None,
+                                  '2': None,
+                                  '3': None,
+                                  '4': None,
+                                  '5': None,
+                                  '6': None,
+                                  '7': None,
+                                  '8': None
+                                  }
+
+        azs_list_weigher_variant_id = list()
+        azs_list_weigher_truck_id = list()
+        azs_list_weigher_fuel_type = list()
+        azs_list_weigher_truck_tank_id = list()
+        for i in trip:
+            for azs in temp_azs_trucks:
+                if azs['azs_id'] == i.azs_id:
+                    azs_list_weigher_variant_id.append(azs['variant_id'])
+                    azs_list_weigher_truck_id.append(azs['truck_id'])
+                    azs_list_weigher_fuel_type.append(azs['fuel_type'])
+                    azs_list_weigher_truck_tank_id.append(azs['truck_tank_id'])
+            for index, x in enumerate(azs_list_weigher_variant_id):
+                key = str(azs_list_weigher_variant_id[index]) + ':' + str(azs_list_weigher_truck_id[index])
+
+                fuel_type_boolean = azs_list_weigher_fuel_type[index]
+                for cell in cells:
+                    if cell.id == azs_list_weigher_truck_tank_id[index]:
+                        if cell.number == 1:
+                            test_dict[key] = {'1': fuel_type_boolean,
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['4'],
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 2:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': fuel_type_boolean,
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['4'],
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 3:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': fuel_type_boolean,
+                                              '4': test_dict[key]['4'],
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 4:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': fuel_type_boolean,
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 5:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['4'],
+                                              '5': fuel_type_boolean,
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 6:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['4'],
+                                              '5': test_dict[key]['5'],
+                                              '6': fuel_type_boolean,
+                                              '7': test_dict[key]['7'],
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 7:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['7'],
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': fuel_type_boolean,
+                                              '8': test_dict[key]['8']
+                                              }
+                        if cell.number == 8:
+                            test_dict[key] = {'1': test_dict[key]['1'],
+                                              '2': test_dict[key]['2'],
+                                              '3': test_dict[key]['3'],
+                                              '4': test_dict[key]['4'],
+                                              '5': test_dict[key]['5'],
+                                              '6': test_dict[key]['6'],
+                                              '7': test_dict[key]['7'],
+                                              '8': fuel_type_boolean
+                                              }
+
+        for cell in truck_tanks_variations:
+            weigher_dict[str(cell.truck_id) + ":" + str(cell.variant_good)] = {'1': None,
+                                                                               '2': None,
+                                                                               '3': None,
+                                                                               '4': None,
+                                                                               '5': None,
+                                                                               '6': None,
+                                                                               '7': None,
+                                                                               '8': None
+                                                                               }
+
+            weigher_variant_good_dict[cell.truck_id] = {'variant_good': []}
+
+        for cell in truck_tanks_variations:
+            if cell.variant_good not in weigher_variant_good_dict[cell.truck_id]['variant_good']:
+                temp_list = list()
+                temp_list.append(cell.variant_good)
+                weigher_variant_good_dict[cell.truck_id] = {'variant_good':
+                                                                weigher_variant_good_dict[cell.truck_id][
+                                                                    'variant_good'] + temp_list
+                                                            }
+
+            for truck_cell in cells:
+                if truck_cell.id == cell.truck_tank_id:
+                    number = truck_cell.number
+
+            key = str(cell.truck_id) + ':' + str(cell.variant_good)
+            if number == 1:
+                weigher_dict[key] = {'1': cell.diesel,
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 2:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': cell.diesel,
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 3:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': cell.diesel,
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 4:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': cell.diesel,
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 5:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': cell.diesel,
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 6:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': cell.diesel,
+                                     '7': weigher_dict[key]['7'],
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 7:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': cell.diesel,
+                                     '8': weigher_dict[key]['8']
+                                     }
+
+            if number == 8:
+                weigher_dict[key] = {'1': weigher_dict[key]['1'],
+                                     '2': weigher_dict[key]['2'],
+                                     '3': weigher_dict[key]['3'],
+                                     '4': weigher_dict[key]['4'],
+                                     '5': weigher_dict[key]['5'],
+                                     '6': weigher_dict[key]['6'],
+                                     '7': weigher_dict[key]['7'],
+                                     '8': cell.diesel
+                                     }
+
         # перебираем список словарей
         for i in is_variant_sliv_good_list:
             # если все виды топлива данного варианта сливаются, то ячейку is_variant_good в таблице записываем True,
@@ -2236,9 +2487,68 @@ def start():
                 # добавляем получившийся словарь в список
                 final_list.append(i)
 
+        is_variant_weighter_good = list()
+        is_variant_weighter_not_good = list()
+        for i in final_list:
+            key = str(i['variant']) + ':' + str(i['truck_id'])
+
+            if key in test_dict:
+                trig_final = 0  # Изначально считаем, что бензовоз нельзя везти если есть весы
+                cells_list = list()
+
+                cell_1 = test_dict[key]['1']
+                cells_list.append(cell_1)
+                cell_2 = test_dict[key]['2']
+                cells_list.append(cell_2)
+                cell_3 = test_dict[key]['3']
+                cells_list.append(cell_3)
+                cell_4 = test_dict[key]['4']
+                cells_list.append(cell_4)
+                cell_5 = test_dict[key]['5']
+                cells_list.append(cell_5)
+                cell_6 = test_dict[key]['6']
+                cells_list.append(cell_6)
+                cell_7 = test_dict[key]['7']
+                cells_list.append(cell_7)
+                cell_8 = test_dict[key]['8']
+                cells_list.append(cell_8)
+
+                for variant_good in weigher_variant_good_dict[i['truck_id']]['variant_good']:
+                    variant_key = str(i['truck_id']) + ":" + str(variant_good)
+                    weigher_list = list()
+
+                    weigher_list.append(weigher_dict[variant_key]['1'])
+                    weigher_list.append(weigher_dict[variant_key]['2'])
+                    weigher_list.append(weigher_dict[variant_key]['3'])
+                    weigher_list.append(weigher_dict[variant_key]['4'])
+                    weigher_list.append(weigher_dict[variant_key]['5'])
+                    weigher_list.append(weigher_dict[variant_key]['6'])
+                    weigher_list.append(weigher_dict[variant_key]['7'])
+                    weigher_list.append(weigher_dict[variant_key]['8'])
+
+                    trig = 1  # Можно завозить дизель для этой комбинации налива
+                    for index, cell in enumerate(cells_list):
+                        if cells_list[index] == 50 and (weigher_list[index] == 0 or weigher_list[index] == None):
+                            trig = 0  # Нельзя завозить дизель для этой комбинации налива
+                            break
+
+                    if trig == 1:  # Если можнно завозить дизель для одной их всевозможных комбинаций налива,
+                        trig_final = 1  # то значит  можно завозить
+
+                if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
+                    is_variant_weighter_good.append(i['variant'])
+                else:
+                    is_variant_weighter_not_good.append(i['variant'])
+
+        for i in final_list:
+            if i['variant'] in is_variant_weighter_not_good:
+                i['is_variant_weigher_good'] = False
+            else:
+                i['is_variant_weigher_good'] = True
+            final_list2.append(i)
         # записываем данные из списка в базу
-        db.engine.execute(TempAzsTrucks2.__table__.insert(), final_list)
-        return final_list
+        db.engine.execute(TempAzsTrucks2.__table__.insert(), final_list2)
+        return final_list2
 
     ''' функция отсеивает все варианты из таблицы TempAzsTrucks2 и дает им оценку'''
     def preparation_four():
@@ -2252,9 +2562,10 @@ def start():
 
         # перебираем список из предыдущей функции
         for i in final_list:
-            # если вариант сливается, бензовоз может заехать на АЗС и бензовоз сливается полностью
+            # если вариант сливается, бензовоз может заехать на АЗС и бензовоз сливается полностью,
+            # и бензовоз проходит через весы
             if i['is_it_fit_later'] == True and i['is_it_able_to_enter'] == True and i['is_variant_good'] == True \
-                    and i['is_variant_sliv_good'] == True:
+                    and i['is_variant_sliv_good'] == True and i['is_variant_weigher_good'] == True:
                 # добавляем словарь в список
                 temp_azs_trucks3_list.append(i)
         new_days_stock_dict = dict()
@@ -2543,10 +2854,13 @@ def start():
             table_azs_trucks_4_list.append(temp_azs_trucks_4_dict)
 
         db.engine.execute(TempAzsTrucks4.__table__.insert(), table_azs_trucks_4_list)
-        return int(variant)
 
     def create_trip():
-
+        logs = UserLogs(user_id=current_user.id,
+                        action="trip_creation_started",
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
         work_type = WorkType.query.filter_by(active=True).first_or_404()
         if work_type.id == 2 or work_type.id == 3:
             fuel_type = work_type.fuel_type
@@ -2892,7 +3206,7 @@ def start():
 
         # таймаут для принудительной остановки расстановки бензовозов через
         # указанное количество времени (сейчас минута)
-        timeout = time.time() + 20 * 1
+        timeout = time.time() + 60 * 2
 
         # количество успешных расстановок
         number_of_success_loops = 0
@@ -3267,7 +3581,11 @@ def start():
                                           str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
                                       'sliv_50:', azs_trucks_max_50[
                                           str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-
+        logs = UserLogs(user_id=current_user.id,
+                        action="trip_creation_ended, id="+str(calculate_id),
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
 
     error, tanks = check()
     if error > 10:
@@ -3275,7 +3593,7 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        # preparation_six()
+        #preparation_six()
         # time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
@@ -3285,12 +3603,27 @@ def start():
 @bp.route('/start_trip', methods=['POST', 'GET'])
 @login_required
 def start_trip():
+
     if current_user.get_task_in_progress('prepare_tables'):
         flash(_('Пересчет таблиц уже выполняется данных уже выполняется!'))
     else:
         current_user.launch_task('prepare_tables', _('Начат пересчет подготовительных таблиц...'))
         db.session.commit()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.trip_creation'))
+
+
+@bp.route('/restart_trip', methods=['POST', 'GET'])
+@login_required
+def restart_trip():
+    last_trip = Trips.query.order_by(desc("calculate_id")).first()
+    last_trip.incorrect = True
+    db.session.commit()
+    if current_user.get_task_in_progress('prepare_tables'):
+        flash(_('Пересчет таблиц уже выполняется данных уже выполняется!'))
+    else:
+        current_user.launch_task('prepare_tables', _('Начат пересчет подготовительных таблиц...'))
+        db.session.commit()
+    return redirect(url_for('main.trip_creation'))
 
 
 @bp.route('/trip_creation', methods=['POST', 'GET'])
@@ -3299,7 +3632,7 @@ def trip_creation():
     datetime = date.today()
     print(datetime)
     trips = Trips.query.order_by(desc("calculate_id")).first()
-    if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y"):
+    if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y") and trips.incorrect != True:
         trips = True
     else:
         trips = False
@@ -3433,6 +3766,7 @@ def trips_naliv_json():
 
 @bp.route('/test')
 def test():
+    final_list = list()
     start_time = time.time()
     print('TEST')
     test_dict = dict()
@@ -3568,7 +3902,7 @@ def test():
                                                                                                }
 
         for truck_cell in cells:
-            if truck_cell.id == cell.truck_id:
+            if truck_cell.id == cell.truck_tank_id:
                 number = truck_cell.number
 
         key = str(cell.truck_id) + ':' + str(cell.variant_good)
@@ -3593,7 +3927,6 @@ def test():
                                  '7': weigher_dict[key]['7'],
                                  '8': weigher_dict[key]['8']
                                  }
-
 
         if number == 3:
             weigher_dict[key] = {'1': weigher_dict[key]['1'],
@@ -3685,7 +4018,7 @@ def test():
 
             trig_final = 0  # Изначально считаем, что бензовоз нельзся туда везти из-за весов
             for variant_good in weigher_variant_good_dict[i.truck_id]['variant_good']:
-                print(i.truck_id)
+
                 variant_key = str(i.truck_id) + ":" + str(variant_good)
                 # for x in weigher_dict[variant_key]:
                 weigher_list = list()
@@ -3698,8 +4031,6 @@ def test():
                 weigher_list.append(weigher_dict[variant_key]['7'])
                 weigher_list.append(weigher_dict[variant_key]['8'])
 
-
-
                 trig = 1  # Можно завозить дизель для этой комбинации налива
                 for index, cell in enumerate(cells_list):
                     if cells_list[index] == 50 and (weigher_list[index] == 0 or weigher_list[index] == None):
@@ -3709,14 +4040,17 @@ def test():
                 if trig == 1:        # Если можнно завозить дизель для одной их всевозможных комбинаций налива,
                     trig_final = 1   # то значит  можно завозить
 
-            '''if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
-                print('Бензовоз:', i.truck_id, 'Вариант:', i.variant)'''
+            if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
+                final_list.append(i.variant)
+
+
     print('Время выполнения %s' % (time.time() - start_time))
     print('end')
-    return 'penis'
+    return 'Thats a benis!'
 
 
 @bp.route('/testform/<id>', methods=['POST', 'GET'])
+@login_required
 def test_form(id):
     cells_list = list()
     cells = TruckTanks.query.filter_by(truck_id=id).all()
@@ -3744,3 +4078,12 @@ def test_form(id):
         db.session.commit()
         return redirect(url_for('admin.truck', id=id))
     return render_template('admin/add_cell.html', form=form)
+
+
+@bp.route('/recreate_trip', methods=['POST', 'GET'])
+@login_required
+def recreate_trip():
+    last_trip = Trips.query.order_by(desc("calculate_id")).first()
+    last_trip.incorrect = True
+
+    return render_template('/recreate_trip.html')

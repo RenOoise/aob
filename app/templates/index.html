@@ -3,13 +3,40 @@
 
 {% block app_content %}
     <div class="container">
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Предупреждение</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Расстановка бензовозов на сегодня уже выполнена. Вы хотите её перезаписать?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                        <a href="{{ url_for('main.recreate_trip') }}" type="button" class="btn btn-success">Да</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row py-4">
             <div class="col-lg-5">
                 <div class="card">
                     <h5 class="card-header">Расстановка бензовозов</h5>
                     <div class="card-body">
-                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
-                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-primary my-2 my-sm-0">Изменить расстановку</a>
+                        {% if trips %}
+                            <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModalCenter">
+                                Начать расстановку
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                        {% endif %}
+
+                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-primary my-2 my-sm-0">Просмотреть расстановку</a>
                     </div>
                 </div>
             </div>

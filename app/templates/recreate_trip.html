@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="row py-4">
+        <div class="card w-50 mx-auto">
+            <div class="card-header">
+                <h5 class=" float-left">Перезапуск расстановки бензовозов</h5>
+            </div>
+            <div class="card-body text-center">
+                Вы находитесь на странице изменения текущей расстановки бензовозов.
+                <br/>
+                Перед началом расстановки нажмите кнопку "Запуситить подготовку таблиц".
+                <hr>
+                <a href="{{ url_for('main.restart_trip') }}" class="btn btn-outline-warning my-2 my-sm-0">Запустить подготовку таблиц</a>
+                <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
