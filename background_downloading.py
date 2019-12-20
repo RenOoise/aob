@@ -1043,15 +1043,14 @@ def average_day_stock_by_tanks(azs_id):
     azs = AzsList.query.filter_by(id=azs_id).first()
     if azs.active:
         realisation = FuelRealisation.query.filter_by(azs_id=azs_id).all()
-        tanks = Tanks.query.filter_by(azs_id=azs_id).all()
+        tanks = Tanks.query.filter_by(azs_id=azs_id, active=True).all()
         for tank in tanks:
-            if tank.active:
+            if tank.active == True:
                 stock_list = list()
                 for realis_stock in realisation:
                     if realis_stock.days_stock_min is not None and realis_stock.days_stock_min is not 0:
                         stock_list.append(realis_stock.days_stock_min)
                         add = Priority.query.filter_by(azs_id=azs_id).first()
-
             average_stock = sum(stock_list) / len(stock_list)
             print("Айди резервуара " + str(tank.id) + " запас суток " + str(average_stock))
             add.average_for_azs = round(average_stock, 1)
