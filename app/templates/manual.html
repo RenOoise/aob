@@ -5,12 +5,41 @@
     <div class="row py-4">
         <div class="card w-50 mx-auto">
             <div class="card-header">
-                <h5 class=" float-left">{{ 'Обновление остатков по АЗС № ' + azs_number + ', резервуар № ' + tank_number}}</h5>
+                <h5 class=" float-left">Книжные остатки </h5>
             </div>
             <div class="card-body">
-                <div class="col-md-4">
-                    {{ wtf.quick_form(form) }}
-                </div>
+                <table class="table table-sm, table-striped">
+                    <thead>
+                    <tr>
+                        <th>Номер АЗС</th>
+                        <th>Номер резервуара</th>
+                        <th>Остатки</th>
+                        <th>Примерная реализация в час</th>
+                        <th>Время ввода</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in manual %}
+                        <tr>
+                            <td>
+                                {{ i.azs_id }}
+                            </td>
+                            <td>
+                                {{ i.tank_id }}
+                            </td>
+                            <td>
+                                {{ i.fuel_volume }}
+                            </td>
+                            <td>
+                                {{ i.fuel_realisation_max }}
+                            </td>
+                            <td>
+                                {{ i.timestamp }}
+                            </td>
+                        </tr>
+                        </tbody>
+                    {% endfor %}
+                </table>
             </div>
         </div>
     </div>

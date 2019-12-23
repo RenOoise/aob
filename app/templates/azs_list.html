@@ -12,15 +12,15 @@
                 <div class="row">
                     <table class="table table-sm table-hover">
                         <thead>
-                        <tr>
-                            <th>Номер АЗС</th>
-                            <th>Адрес</th>
-                            <th>Телефон</th>
-                            <th>E-mail</th>
-                            <th>Активна?</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                            <tr>
+                                <th>Номер АЗС</th>
+                                <th>Адрес</th>
+                                <th>Телефон</th>
+                                <th>E-mail</th>
+                                <th>Активна?</th>
+                            </tr>
+                            </thead>
+                            <tbody>
                         {% for i in azs_list %}
                         <tr>
                             <td><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number}}</a></td>

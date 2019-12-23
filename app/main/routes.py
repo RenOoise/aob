@@ -590,17 +590,29 @@ def manual_input(id):
     azs = AzsList.query.filter_by(id=tank.azs_id).first_or_404()
     form = ManualInputForm()
     if form.validate_on_submit():
-        input = ManualInfo(fuel_volume=form.residue.data, fuel_realisation_max=form.realisation.data, tank_id=id,
+        input = ManualInfo(fuel_volume=form.residue.data,
+                           fuel_realisation_max=form.realisation.data,
+                           tank_id=id,
+                           azs_id=tank.azs_id,
                            timestamp=datetime.now())
 
         db.session.add(input)
         db.session.commit()
         return redirect(url_for('main.index'))
-    return render_template('manual.html', title='Ручной ввод данных',
+    return render_template('manual_input.html', title='Ручной ввод данных',
                            manual_input=True,
                            form=form,
                            azs_number=str(azs.number),
                            tank_number=str(tank.tank_number))
+
+
+@bp.route('/manual', methods=['GET', 'POST'])
+@login_required
+def manual():
+    since = datetime.now() - timedelta(hours=3)
+    manual = ManualInfo.query.filter(ManualInfo.timestamp > since).all()
+
+    return render_template('manual.html', title='Остатки введенные в ручную', manual=manual)
 
 
 @bp.route('/azs', methods=['POST', 'GET'])
@@ -2536,6 +2548,9 @@ def start():
                         trig_final = 1  # то значит  можно завозить
 
                 if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
+
+                    if int(i['variant']) == 412:
+                        print("zbs -----------------------------------------------")
                     is_variant_weighter_good.append(i['variant'])
                 else:
                     is_variant_weighter_not_good.append(i['variant'])
@@ -3192,9 +3207,14 @@ def start():
                                                                                         }
         # Заполняем словари для третьего режима работы (вывоз минимального количества топлива определенного вида)
 
-        # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
+        # ПОДГОТОВКА К РАССТАНОВКЕ БЕНЗОВОЗОВ
+        variant_send_truck = 2
+        active_azs_count = Priority.query.count()
         active_trucks = Trucks.query.filter_by(active=True).count()  # получаем количество активных бензовозов
         active_azs = Priority.query.order_by("priority").all()  # получаем список активных АЗС из таблицы Priority
+        '''active_azs_list = list()
+        for i in active_azs:
+            active_azs_list.append(i.azs_id)'''
         # с сортировкой по важности (чем меньше число (стобец priority), тем важнее отправить бензовоз на эту АЗС
         choices_dict_work_type_1 = dict()  # храним итоговые варианты расстановки с оценкой каждого для 1 режима работы
         choices_dict_work_type_2 = dict()  # храним итоговые варианты расстановки с оценкой каждого для 2 режима работы
@@ -3206,7 +3226,10 @@ def start():
 
         # таймаут для принудительной остановки расстановки бензовозов через
         # указанное количество времени (сейчас минута)
-        timeout = time.time() + 60 * 2
+        timeout = time.time() + 60 * 1
+
+        # создаем словарь для хранения всех удачных расстановок
+        good_choices_dict = dict()
 
         # количество успешных расстановок
         number_of_success_loops = 0
@@ -3215,7 +3238,27 @@ def start():
         alarm = 1
 
         # Главный цикл расстановки бензовозов (количество попыток от 0 до 10 млн)
+
+        for x in trucks_for_azs_dict:
+            print("АЗС:", x, "БЕЗОВОЗЫ:", trucks_for_azs_dict[x])
+
+            '''if active_trucks <= active_azs_count:
+        print("Начали!")
+        try_count = 0
+
+        checker = active_trucks
+        try_count_temp = 1
+        max_count_truck_temp = 0
+        trig = 0
         for choice in range(0, 100000000):
+            if try_count == 500000:
+                checker = checker + 1
+                try_count = -100000 * try_count_temp
+                try_count_temp = try_count_temp + 1
+                print("checker", checker, "Максимум бензовозов:", max_count_truck_temp)
+
+            if checker == active_azs_count:
+                break
             # создаем словарь для хранения связки АЗС - бензовозы
             # (словарь для хранения итогового списка азс-бензовоз для каждого варианта расстановки)
             choice_azs_truck_dict = dict()
@@ -3226,19 +3269,27 @@ def start():
 
             # счетчик, равный количеству активных бензовозов
             # (т.е. сколько бензовозов требуется расставить)
-            checker = active_trucks
-            good = 1  # переменная-триггер, по которой определяем, что расстановка удалась (или нет!)
-            for i in active_azs:  # перебираем все активные АЗС
-                if i.azs_id in trucks_for_azs_dict:  # если есть хотябы один бензовоз, который можно отправить на АЗС
-                    azs_trucks = trucks_for_azs_dict[i.azs_id]['azs_trucks']  # получаем список всех бензовозов,
+            trucks_for_azs_dict_sorted = dict()
+            for i in range(0, checker):
+                azs_id = active_azs_list[i]
+                if azs_id in trucks_for_azs_dict:
+                    trucks_for_azs_dict_sorted[azs_id] = {'azs_trucks': trucks_for_azs_dict[azs_id]['azs_trucks'] }
+
+            trucks_for_azs_dict_sorted = sorted(trucks_for_azs_dict_sorted, key=lambda k: len(trucks_for_azs_dict_sorted[k]['azs_trucks']))
+
+            count_truck_temp = 0
+            #for i in range(0, checker):
+                # azs_id = trucks_for_azs_dict_sorted[i]
+            for i in trucks_for_azs_dict_sorted:
+                azs_id = i
+                if azs_id in trucks_for_azs_dict:  # если есть хотябы один бензовоз, который можно отправить на АЗС
+                    azs_trucks = trucks_for_azs_dict[azs_id]['azs_trucks']  # получаем список всех бензовозов,
                     # которые можно отправить на эту АЗС (включая 0 - т.е. АЗС на которую не будет отправлен бензовоз)
                     truck_id = random.choice(azs_trucks)  # функцией RANDOM из списка azs_trucks
                     # выбираем бензовоз для этой АЗС
-                    if truck_id in used_trucks and truck_id != 0: # если данный безовоз уже был в данном варианте
+                    if truck_id in used_trucks and truck_id != 0:  # если данный безовоз уже был в данном варианте
                         # расстановки и он не равен 0, то считаем вариант не удачным, и досрочно прерыываем цикл
-                        good = 0
                         break
-                    # если все хорошо, то
                     else:
                         # добавляем этот бензовоз к списку использованных
                         # в данном варианте бензовозов
@@ -3246,128 +3297,201 @@ def start():
 
                         # добавляем параметр azs_id-truck_id
                         # в словарь с расстановкой
-                        choice_azs_truck_dict[i.azs_id] = {'truck_id': truck_id}
-                        # если безовоз не нулевой, то уменьшаем количество бензовозов которые
+                        choice_azs_truck_dict[azs_id] = {'truck_id': truck_id}
                         if truck_id != 0:
-                            # требуется расставить на 1
-                            checker = checker-1
-                            # если все бензовозы расставлены (счетчик равен 0)
-                    if checker == 0:
-                        # то помечаем вариант хорошим и досрочно завершаем цикл
-                        good = 1
+                            count_truck_temp = count_truck_temp + 1
+
+            try_count = try_count + 1
+
+            if count_truck_temp > max_count_truck_temp:
+                max_count_truck_temp = count_truck_temp
+
+            if count_truck_temp == active_trucks:
+                trig = 1
+                break
+            # если время выполнения превышает значение переменной timeout объявленной выше
+            if time.time() > timeout:
+                # то цикл принудительно прерывается
+                break
+        if trig == 1:
+            print("Успешно расставили все бензовозы")
+            for x in choice_azs_truck_dict:
+                print("АЗС:", x, "Безовоз:", choice_azs_truck_dict[x])
+        else:
+            print("Расстановка не получилась")
+    else:
+        print("Расстановка невозможна!")'''
+
+        # АЛГОРИТМ №1 - СЛУЧАНАЯ РАССТАНОВКА С ОГРОМНЫМ КОЛИЧЕСТВОМ ВАРИАНТОВ
+        if variant_send_truck == 1:
+            if active_trucks <= active_azs_count:
+                trucks_for_azs_dict_sorted = dict()
+                for i in active_azs:
+                    azs_id = i.azs_id
+                    if azs_id in trucks_for_azs_dict:
+                        trucks_for_azs_dict_sorted[azs_id] = {'azs_trucks': trucks_for_azs_dict[azs_id]['azs_trucks']}
+
+                trucks_for_azs_list_sorted = sorted(trucks_for_azs_dict_sorted,
+                                                    key=lambda k: len(trucks_for_azs_dict_sorted[k]['azs_trucks']))
+                print('Sorted table')
+                for k in sorted(trucks_for_azs_dict_sorted,
+                                key=lambda k: len(trucks_for_azs_dict_sorted[k]['azs_trucks'])):
+
+                    print(k, trucks_for_azs_dict_sorted[k]['azs_trucks'])
+
+                print('Start!')
+
+                choise_good = 0  # переменная-триггер, по которой определяем, что расстановка удалась (или нет!)
+                for choice in range(0, 1000000000):
+                    choice_azs_truck_dict = dict()
+                    used_trucks = list()
+                    temp_truck_count = 0
+                    for i in trucks_for_azs_list_sorted:  # перебираем все активные АЗС
+                        azs_id = i
+                        if azs_id in trucks_for_azs_dict:  # если есть хотябы один бензовоз, который можно отправить на АЗС
+                            azs_trucks = trucks_for_azs_dict[azs_id]['azs_trucks']  # получаем список всех бензовозов,
+                            # которые можно отправить на эту АЗС (включая 0 - т.е. АЗС на которую не будет отправлен бензовоз)
+                            truck_id = random.choice(azs_trucks)  # функцией RANDOM из списка azs_trucks
+                            # выбираем бензовоз для этой АЗС
+                            if truck_id in used_trucks and truck_id != 0: # если данный безовоз уже был в данном варианте
+                                # расстановки и он не равен 0, то считаем вариант не удачным, и досрочно прерыываем цикл
+                                #good = 0
+                                break
+                            # если все хорошо, то
+                            else:
+                                # добавляем этот бензовоз к списку использованных
+                                # в данном варианте бензовозов
+                                used_trucks.append(truck_id)
+
+                                # добавляем параметр azs_id-truck_id
+                                # в словарь с расстановкой
+                                choice_azs_truck_dict[azs_id] = {'truck_id': truck_id}
+                                # если безовоз не нулевой, то уменьшаем количество бензовозов которые
+                                if truck_id != 0:
+                                    # требуется расставить на 1
+                                    temp_truck_count = temp_truck_count + 1
+                                    # если все бензовозы расставлены (счетчик равен 0)
+
+                    if temp_truck_count == active_trucks:
+                        # то помечаем вариант хорошим
+                        choise_good = 1
+                        number_of_success_loops = number_of_success_loops + 1
+                        good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+
+
+                    if time.time() > timeout:
+                        # то цикл принудительно прерывается
                         break
 
-            # если все бензовозы расставлены
-            if good == 1:
-                # то расстановка безовозов удалась (переменная = 0)
-                alarm = 0
-                # увеличиваем количество успешных расстановок на 1
-                number_of_success_loops = number_of_success_loops + 1
+                if choise_good == 1:
+                    print("OK! Нашли ", number_of_success_loops , "вариантов")
+                else:
+                    print("NOT OK!!!")
+            else:
+                print("Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
 
+
+        # АЛГОРИТМ №2 - СЛУЧАНАЯ РАССТАНОВКА ОТ ВЕРХА К НИЗУ
+        if variant_send_truck == 2:
+            if active_trucks <= active_azs_count:
+                choise_good = 0
+                for choice in range(0, 1000000000):
+                    choice_azs_truck_dict = dict()
+                    used_trucks = list()
+                    temp_truck_count = 0
+                    good = 0
+                    for i in active_azs:   # перебираем все активные АЗС
+                        azs_id = i.azs_id
+                        if azs_id in trucks_for_azs_dict: # если есть хотябы один бензовоз, который можно отправить на АЗС
+                            trig = 0
+                            for x in range(1, 1000):
+                                azs_trucks = trucks_for_azs_dict[azs_id]['azs_trucks']  # получаем список всех бензовозов,
+                                # которые можно отправить на эту АЗС (включая 0 - т.е. АЗС на которую не будет отправлен бензовоз)
+                                truck_id = random.choice(azs_trucks)  # функцией RANDOM из списка azs_trucks
+                                # выбираем бензовоз для этой АЗС
+                                if truck_id in used_trucks and truck_id != 0:  # если данный безовоз уже был в данном варианте
+                                    d = 1  # заглушка
+                                else: # если все хорошо, то
+                                    # добавляем этот бензовоз к списку использованных
+                                    # в данном варианте бензовозов
+                                    used_trucks.append(truck_id)
+                                    # добавляем параметр azs_id-truck_id
+                                    # в словарь с расстановкой
+                                    choice_azs_truck_dict[azs_id] = {'truck_id': truck_id}
+                                    trig = 1
+                                    if truck_id != 0:
+                                        temp_truck_count = temp_truck_count + 1
+                                    break
+                            if trig == 0:
+                                used_trucks.append(0)
+                                choice_azs_truck_dict[azs_id] = {'truck_id': 0}
+
+                            if temp_truck_count == active_trucks:
+                                good = 1
+                                break
+
+                    if good == 1:
+                        number_of_success_loops = number_of_success_loops + 1
+                        good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+                        choise_good = 1
+
+                    if time.time() > timeout:
+                        # то цикл принудительно прерывается
+                        break
+
+                if choise_good == 1:
+                    print("OK! Нашли ", number_of_success_loops, "вариантов")
+                    '''for rex in range(1, 10):
+                        print('Вариант №', rex)
+                        for xer in good_choices_dict[rex]['variants']:
+                            print(xer, choice_azs_truck_dict[xer]['truck_id'])
+                        print("*------*------*------*------*")'''
+                else:
+                    print("NOT OK!!!")
+            else:
+                print("Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
+
+        if choise_good == 1:
+            for choice in good_choices_dict:
                 '''**************************************************************************************************'''
-
+                choice_azs_truck_dict = good_choices_dict[choice]['variants']
                 # Оцениваем вариант расстановки на предмет не отправки бензовоза на критичные АЗС
-
                 # переменная для хранения оценки текущей расстановки бензовозов (т.е. чем большее количество
                 points = 0
                 # критичных АЗС пропущено, тем меньше оценка (расстановка хуже)
                 for i in choice_azs_truck_dict:  #
                     if choice_azs_truck_dict[i]['truck_id'] != 0:
-                        points = points + (1 / (azs_queue_dict[i]['queue']))*1000
+                        points = points + (1 / (azs_queue_dict[i]['queue'])) * 1000
                 # округляем оценку до целого числа
                 points = int(points)
-
                 '''**************************************************************************************************'''
 
-                # checker = active_trucks  # счетчик, равный количеству активных бензовозов
+                '''**************************************************************************************************'''
                 # минимальный запас суток среди всех АЗС
                 min_days_stock1_work_type_1 = 1234
+                min_days_stock2_work_type_1 = 1234
                 # перебираем список расстановки
                 for i in choice_azs_truck_dict:
                     if choice_azs_truck_dict[i]['truck_id'] != 0 \
-                            and (azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1'] < min_days_stock1_work_type_1):
-                        if min_days_stock1_work_type_1 != 1234:
-                            min_days_stock2_work_type_1 = min_days_stock1_work_type_1
-                        min_days_stock1_work_type_1 = azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
+                            and (azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])][
+                                     'min_rez1'] < min_days_stock1_work_type_1):
+                        min_days_stock2_work_type_1 = min_days_stock1_work_type_1
+                        min_days_stock1_work_type_1 = \
+                            azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
                     else:
                         min_days_stock1_work_type_1 = 0
                         min_days_stock2_work_type_1 = 0
-                    # checker = checker - 1
-                    # if checker == 0:
-                    # break
-
+                '''**************************************************************************************************'''
 
                 '''**************************************************************************************************'''
                 # собираем все оцененные варианты расстановки в словарь
-                choices_dict_work_type_1[number_of_success_loops] = {'variants': choice_azs_truck_dict,
-                                                                     'points': points,
-                                                                     'days_stock_min1': min_days_stock1_work_type_1,
-                                                                     'days_stock_min2': min_days_stock2_work_type_1
-                                                                     }
+                choices_dict_work_type_1[choice] = {'variants': choice_azs_truck_dict,
+                                                    'points': points,
+                                                    'days_stock_min1': min_days_stock1_work_type_1,
+                                                    'days_stock_min2': min_days_stock2_work_type_1
+                                                    }
 
                 '''**************************************************************************************************'''
-
-                # оценка количества вывозимого топлива при текущей расстановке
-                min_days_stock1_work_type_2 = 1000
-                sum_max_volume_92 = 0
-                sum_max_volume_95 = 0
-                sum_max_volume_50 = 0
-
-                for i in choice_azs_truck_dict:
-                    if choice_azs_truck_dict[i]['truck_id'] != 0:
-                        key = str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])
-                        # для 92 топлива
-                        if fuel_type == 92:
-                            sum_max_volume_92 = sum_max_volume_92 + azs_trucks_max_92[key]['max_volume_92']
-                            sum_max_volume_95 = sum_max_volume_95 + azs_trucks_max_92[key]['max_volume_95']
-                            sum_max_volume_50 = sum_max_volume_50 + azs_trucks_max_92[key]['max_volume_50']
-
-                            if (azs_trucks_max_92[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']) \
-                                    < min_days_stock1_work_type_2:
-                                min_days_stock1_work_type_2 = azs_trucks_max_92[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                        # для 95 топлива
-                        elif fuel_type == 95:
-                            sum_max_volume_92 = sum_max_volume_92 + azs_trucks_max_95[key]['max_volume_92']
-                            sum_max_volume_95 = sum_max_volume_95 + azs_trucks_max_95[key]['max_volume_95']
-                            sum_max_volume_50 = sum_max_volume_50 + azs_trucks_max_95[key]['max_volume_50']
-
-                            if (azs_trucks_max_95[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                                    < min_days_stock1_work_type_2):
-                                min_days_stock1_work_type_2 = azs_trucks_max_95[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                        # для 50 топлива
-                        elif fuel_type == 50:
-                            sum_max_volume_92 = sum_max_volume_92 + azs_trucks_max_50[key]['max_volume_92']
-                            sum_max_volume_95 = sum_max_volume_95 + azs_trucks_max_50[key]['max_volume_95']
-                            sum_max_volume_50 = sum_max_volume_50 + azs_trucks_max_50[key]['max_volume_50']
-
-                            if (azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                                    < min_days_stock1_work_type_2):
-                                min_days_stock1_work_type_2 = azs_trucks_max_50[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                    else:
-                        min_days_stock1_work_type_2 = 0
-
-                '''**************************************************************************************************'''
-
-                # собираем все оцененные варианты расстановки в словарь для второго режима работы
-
-                choices_dict_work_type_2[number_of_success_loops] = {'variants': choice_azs_truck_dict,
-                                                                     'points': points,
-                                                                     'days_stock_min1': min_days_stock1_work_type_2,
-                                                                     'max_volume_92': sum_max_volume_92,
-                                                                     'max_volume_95': sum_max_volume_95,
-                                                                     'max_volume_50': sum_max_volume_50,
-                                                                     }
-            # если время выполнения превышает значение переменной timeout объявленной выше
-            if time.time() > timeout:
-                # то цикл принудительно прерывается
-                break
-
-        if alarm == 1:
-            print('Расстановка не удалась')
-        else:
-            print('Расстановка успешно завершена')
-            print(number_of_success_loops)
-
             # сортируем полученные результаты по трем параметрам
             # На выходе получим отсортированный список ключей словаря choices_dict
             if work_type.id == 1:
@@ -3375,31 +3499,6 @@ def start():
                                            key=lambda k: (choices_dict_work_type_1[k]['points'],
                                                           choices_dict_work_type_1[k]['days_stock_min1'],
                                                           choices_dict_work_type_1[k]['days_stock_min2']))
-            elif work_type.id == 2:
-                if fuel_type == 92:
-                    sort_choices_dict = sorted(choices_dict_work_type_2,
-                                               key=lambda k: (choices_dict_work_type_2[k]['points'],
-                                                              choices_dict_work_type_2[k]['max_volume_92'],
-                                                              choices_dict_work_type_2[k]['days_stock_min1']
-                                                              ))
-                elif fuel_type == 95:
-                    sort_choices_dict = sorted(choices_dict_work_type_2,
-                                               key=lambda k: (choices_dict_work_type_2[k]['points'],
-                                                              choices_dict_work_type_2[k]['max_volume_95'],
-                                                              choices_dict_work_type_2[k]['days_stock_min1']
-                                                              ))
-                elif fuel_type == 50:
-                    sort_choices_dict = sorted(choices_dict_work_type_2,
-                                               key=lambda k: (choices_dict_work_type_2[k]['points'],
-                                                              choices_dict_work_type_2[k]['max_volume_50'],
-                                                              choices_dict_work_type_2[k]['days_stock_min1']
-                                                              ))
-
-            elif work_type.id == 3:
-                print('Режим работы № 3')
-            else:
-                alarm = 1
-            if work_type.id == 1:
                 # создаем список, в котором будем хранить лучшие варианты расстановки
                 best_choices = list()
                 # берем айди предыдущего варианта расстановки
@@ -3433,16 +3532,28 @@ def start():
                     variants_sliva_for_trip = list()
                     for x in choices_dict_work_type_1[i]['variants']:
                         if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
-                            variant_sliv_92 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_92']
-                            variant = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant']
+                            variant_sliv_92 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])][
+                                'variant_sliv_92']
+                            variant = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant']
                             truck_id = choices_dict_work_type_1[i]['variants'][x]['truck_id']
                             azs_id = x
-                            variant_sliv_95 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_95']
-                            variant_sliv_50 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['variant_sliv_50']
-                            min_rez1 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez1']
-                            min_rez2 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez2']
-                            min_rez3 = azs_trucks_best_days_stock[str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez3']
-                            query_variant = TempAzsTrucks4.query.filter_by(azs_id=azs_id, truck_id=truck_id, variant=variant, variant_sliv_92=variant_sliv_92).first()
+                            variant_sliv_95 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])][
+                                'variant_sliv_95']
+                            variant_sliv_50 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])][
+                                'variant_sliv_50']
+                            min_rez1 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez1']
+                            min_rez2 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez2']
+                            min_rez3 = azs_trucks_best_days_stock[
+                                str(x) + ':' + str(choices_dict_work_type_1[i]['variants'][x]['truck_id'])]['min_rez3']
+                            query_variant = TempAzsTrucks4.query.filter_by(azs_id=azs_id, truck_id=truck_id,
+                                                                           variant=variant,
+                                                                           variant_sliv_92=variant_sliv_92).first()
                             calculate_id = previous_variant_id + 1
                             result = Result(azs_id=azs_id, truck_id=truck_id,
                                             variant=variant,
@@ -3464,7 +3575,6 @@ def start():
                                   "Вариант слива 92:", variant_sliv_92,
                                   "Вариант слива 95:", variant_sliv_95,
                                   "Вариант слива 50:", variant_sliv_50)
-
 
                             variant_sliva = dict()
 
@@ -3520,72 +3630,6 @@ def start():
                                 db.session.add(variant_sliva)
                 db.session.commit()
 
-            elif work_type.id == 2:
-                # создаем список, в котором будем хранить лучшие варианты расстановки
-                best_choices = list()
-                # перебираем отсортированные от худшего к лучшему варианты расстановки
-                for i in sort_choices_dict:
-                    # каждый вариант добавляем в список
-                    best_choices.append(i)
-                    # сокращаем список до 1
-                    best_choices = sort_choices_dict[-1:]
-
-                # берем айди предыдущего варианта расстановки
-                trips_last = Trips.query.order_by(desc("calculate_id")).first()
-                previous_variant_id = trips_last.calculate_id
-                if not trips_last:
-                    previous_variant_id = 0
-                else:
-                    previous_variant_id = trips_last.calculate_id
-                results = Result.query.all()
-                # перебираем список из 10 лучших вариантов
-                for i in best_choices:
-                    trips = Trips(trip_number=1, date=datetime.today(), work_type_id=work_type.id,
-                                  calculate_id=previous_variant_id + 1)
-                    '''print(i, 'points', choices_dict_work_type_2[i]['points'], 'days_stock1',
-                                 choices_dict_work_type_2[i]['days_stock_min1'],
-                                'max_volume_92', choices_dict_work_type_2[i]['max_volume_92'],
-                                'max_volume_95', choices_dict_work_type_2[i]['max_volume_95'],
-                                'max_volume_50', choices_dict_work_type_2[i]['max_volume_50'],)'''
-                    for x in choices_dict_work_type_2[i]['variants']:
-                        if choices_dict_work_type_1[i]['variants'][x]['truck_id'] != 0:
-                            if fuel_type == 92:
-                                key = str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])
-                                print("АЗС:", x, "бензовоз:",
-                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                      'variants:', azs_trucks_max_92[key ]['variant'],
-                                      'sliv_92:', azs_trucks_max_92[key]['variant_sliv_92'],
-                                      'sliv_95:', azs_trucks_max_92[key]['variant_sliv_95'],
-                                      'sliv_50:', azs_trucks_max_92[key]['variant_sliv_50'],
-                                      'max_volume_92:', azs_trucks_max_92[key]['max_volume_92'],
-                                      'max_volume_95:', azs_trucks_max_92[key]['max_volume_95'],
-                                      'max_volume_50:', azs_trucks_max_92[key]['max_volume_50'],
-                                      )
-                            elif fuel_type == 95:
-                                print("АЗС:", x, "бензовоз:",
-                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                      'variants:', azs_trucks_max_95[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
-                                      'sliv_92:', azs_trucks_max_95[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                                      'sliv_95:', azs_trucks_max_95[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                                      'sliv_50:', azs_trucks_max_95[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-                            elif fuel_type == 50:
-                                print("АЗС:", x, "бензовоз:",
-                                      choices_dict_work_type_2[i]['variants'][x]['truck_id'],
-                                      'variants:', azs_trucks_max_50[str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant'],
-                                      'sliv_92:', azs_trucks_max_50[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_92'],
-                                      'sliv_95:', azs_trucks_max_50[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_95'],
-                                      'sliv_50:', azs_trucks_max_50[
-                                          str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
-        logs = UserLogs(user_id=current_user.id,
-                        action="trip_creation_ended, id="+str(calculate_id),
-                        timestamp=datetime.now())
-        db.session.add(logs)
-        db.session.commit()
 
     error, tanks = check()
     if error > 10:
@@ -3593,7 +3637,7 @@ def start():
         return redirect(url_for('main.index'))
     else:
         start_time = time.time()
-        #preparation_six()
+        # preparation_six()
         # time.sleep(10)
         create_trip()
         flash('Время выполнения %s' % (time.time() - start_time))
@@ -3794,7 +3838,9 @@ def test():
         temp_azs_trucks = TempAzsTrucks.query.filter_by(azs_id=i.azs_id).all()
         for x in temp_azs_trucks:
             key = str(x.variant_id)+':'+str(x.truck_id)
-
+            if x.variant_id == 412:
+                print("XX!!!!!!XX")
+                print("PIZDA", key)
             fuel_type_boolean = x.fuel_type
             for cell in cells:
                 if cell.id == x.truck_tank_id:
@@ -3899,7 +3945,7 @@ def test():
             temp_list.append(cell.variant_good)
             weigher_variant_good_dict[cell.truck_id] = {'variant_good':
                                                             weigher_variant_good_dict[cell.truck_id]['variant_good'] + temp_list
-                                                                                               }
+                                                        }
 
         for truck_cell in cells:
             if truck_cell.id == cell.truck_tank_id:
@@ -3996,6 +4042,11 @@ def test():
 
     for i in temp_azs_trucks2:
         key = str(i.variant) + ':' + str(i.truck_id)
+        if i.variant == 412:
+            print("!!!!!!")
+            print("HUI", key)
+            time.sleep(20)
+
         if key in test_dict:
             cells_list = list()
 
@@ -4015,6 +4066,11 @@ def test():
             cells_list.append(cell_7)
             cell_8 = test_dict[key]['8']
             cells_list.append(cell_8)
+
+            if i.variant == 412:
+                print("!!!!!!")
+                print(cells_list)
+                time.sleep(20)
 
             trig_final = 0  # Изначально считаем, что бензовоз нельзся туда везти из-за весов
             for variant_good in weigher_variant_good_dict[i.truck_id]['variant_good']:
@@ -4043,10 +4099,13 @@ def test():
             if trig_final == 1:  # Значит вариант подходит (дизель можно везти)!
                 final_list.append(i.variant)
 
+                if i.variant == 412:
+                    print('412 412 412')
+                    time.sleep(20)
 
     print('Время выполнения %s' % (time.time() - start_time))
-    print('end')
-    return 'Thats a benis!'
+    print('test')
+    return 'test'
 
 
 @bp.route('/testform/<id>', methods=['POST', 'GET'])
