@@ -2616,7 +2616,6 @@ def prepare_tables(user_id):
         return azs_trucks_4_list_final, temp_azs_trucks3_list
 
 
-
     # определение худшего запаса суток среди всех резервуаров АЗС
     def preparation_six():
         _set_task_progress(75)

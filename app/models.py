@@ -788,3 +788,17 @@ class TruckTanksVariations(db.Model):
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
     truck_tank_id = db.Column(db.Integer, db.ForeignKey('truck_tanks.id'))
     diesel = db.Column(db.Boolean)
+
+
+class GlobalSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(40))
+    description = db.Column(db.String(600))
+
+
+class GlobalSettingsParams(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    setting_id = db.Column(db.Integer, db.ForeignKey('global_settings.id'))
+    value = db.Column(db.Integer)
+    description = db.Column(db.String(120))
+    active = db.Column(db.Boolean)

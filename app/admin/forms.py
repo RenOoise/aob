@@ -193,3 +193,10 @@ class FuelForm(FlaskForm):
 class CellsForm(FlaskForm):
     cell = FieldList(FormField(FuelForm), min_entries=1)
 
+
+class AlgorithmForm(FlaskForm):
+    truck = SelectField('Бензовоз', choices=[], coerce=int)
+    azs = SelectField('АЗС', choices=[], coerce=int)
+    reason = StringField('Причина')
+    submit = SubmitField('Сохранить')
+
