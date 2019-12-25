@@ -1907,7 +1907,7 @@ def prepare_tables(user_id):
         # формируем словарь для хранения данных о растоянии до АЗС и времени пути
         for i in trip:
             azs_trip_time[i.azs_id] = {'time_to_before_lunch': i.time_to_before_lunch,
-                                       'time_to': i.time_to,
+                                       'time_to_after_lunch': i.time_to,
                                        'weigher': i.weigher}
         # формируем словарь для хранения данных о бензовозах и азс на которые они не могут заезжать
         for i in trucks_false:
@@ -1923,12 +1923,37 @@ def prepare_tables(user_id):
             x = time.strptime(str(time_to_string), '%H:%M:%S')
             time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
                                         seconds=x.tm_sec).total_seconds()
-            # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза
+
+            # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза (реализация в час)
             realis_time = realisation_n_residue[i["tank_id"]]['fuel_realisation'] * ((time_to_seconds / 60) / 60)
+
             # проверяем сольется ли бензовоз, с учетом реализации за время его пути к АЗС
             # из свободной емкости резервуара вычитаем сумму слива бензовоза, и прибавляем количество топлива,
             # которое реализуется у данного резервуара за время пути бензовоза к ней
             sliv_later = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv'] + realis_time
+
+            '''
+            # ДЛЯ ВТОРОГО РЕЙСА
+            # переводим время из вида db.time() в strptime() и переводим результат в секунды
+            second_time_to_string = azs_trip_time[i['azs_id']]['time_to_after_lunch']
+            y = time.strptime(str(second_time_to_string), '%H:%M:%S')
+            second_time_to_seconds = timedelta(hours=y.tm_hour, minutes=y.tm_min,
+                                               seconds=y.tm_sec).total_seconds()
+
+            # считаем примерное количество топлива, которое будет реализовано за время пути бензовоза на первый рейс с
+            # возвращением на нефтебазу, время слива и время на пути на второй рейс
+            second_realis_time = realisation_n_residue[i["tank_id"]]['fuel_realisation'] * ((((time_to_seconds * 2) + (second_time_to_seconds + 360)) / 60) / 60)
+
+            # проверяем сольется ли бензовоз, с учетом реализации за время его пути к АЗС
+            # из свободной емкости резервуара вычитаем сумму слива бензовоза, и прибавляем количество топлива,
+            # которое реализуется у данного резервуара за время пути бензовоза к ней
+            sliv_later = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv'] + realis_time
+
+            # проверяем сольется ли бензовоз, с учетом реализации за время его пути к АЗС и с АЗС во время первого
+            # рейса, времени слива и времени в пути на АЗС второго рейса
+            # из свободной емкости резервуара вычитаем сумму слива бензовоза, и прибавляем количество топлива,
+            second_sliv_later = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv'] + second_realis_time
+            '''
 
             # если бензовоз не сливается в данный момент (то есть переменная sliv - меньше нуля)
             if sliv < 0:
@@ -1937,7 +1962,7 @@ def prepare_tables(user_id):
                 # новый запас суток и новые остатки не считаем
                 i['new_fuel_volume'] = 0
                 i['new_days_stock'] = 0
-            # если бензовоз сможет слиться нат екущий момент (то есть переменная sliv - больше нуля)
+            # если бензовоз сможет слиться на текущий момент (то есть переменная sliv - больше нуля)
             else:
                 # записываем в базу, что бензовоз в данный момент сольется
                 i['is_it_fit'] = True
@@ -1960,6 +1985,22 @@ def prepare_tables(user_id):
                 i['new_fuel_volume'] = realisation_n_residue[i['tank_id']]['fuel_volume'] + i['sum_sliv']
                 # расчитываем новый запас суток
                 i['new_days_stock'] = i['new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
+            '''
+            # ДЛЯ ВТОРОГО РЕЙСА
+            if second_sliv_later < 0:
+                # записываем в базу, что бензовоз слиться не сможет
+                i['is_it_fit_on_second_trip'] = False
+                # новый запас суток и новые остатки не считаем
+                i['second_new_fuel_volume'] = 0
+                i['second_new_days_stock'] = 0
+            else:
+                # записываем в базу, что бензовоз сольется спустя время затраченное на дорогу
+                i['is_it_fit_on_second_trip'] = True
+                # расчитываем количество отстатков в резервуаре после слива
+                i['second_new_fuel_volume'] = realisation_n_residue[i['tank_id']]['fuel_volume'] + i['sum_sliv'] - second_realis_time
+                # расчитываем новый запас суток
+                i['second_new_days_stock'] = i['second_new_fuel_volume'] / realisation_n_residue[i['tank_id']]['fuel_realisation_max']
+            '''
             # проверяем, сможет ли бензовоз заехать на АЗС (нет ли для него никаких ограничений)
             # т.е. проверяем наличие ключа в словаре azs_trip_access, в котором содержатся ограничения для бензовозов
             # ключ АЗС-АйдиБензовоза

@@ -488,8 +488,32 @@ class TempAzsTrucks2(db.Model):
     truck_tank_id_string = db.Column(db.String(60))
     is_it_fit = db.Column(db.Boolean)  # входит ли топливо в резервуары?
     is_it_fit_later = db.Column(db.Boolean)  # войдет ли позже?
+    is_it_fit_on_second_trip = db.Column(db.Boolean)  # войдет ли при втором рейсе?
     new_fuel_volume = db.Column(db.Float)  # новый объем
     new_days_stock = db.Column(db.Float)  # новый запас суток
+    second_new_fuel_volume = db.Column(db.Float)  # новый объем для второго рейса
+    second_new_days_stock = db.Column(db.Float)  # новый запас суток для второго рейса
+    is_it_able_to_enter = db.Column(db.Boolean)  # сможет ли заехать бензовоз
+    is_variant_good = db.Column(db.Boolean)  # подходит ли этот вариант?
+    is_variant_sliv_good = db.Column(db.Boolean)  # подходит ли этот вариант слива?
+    is_variant_weigher_good = db.Column(db.Boolean)  # подходит ли вариант налива, если на пути есть весы
+
+
+class TempAzsTrucks2SecondTrip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant = db.Column(db.Integer, index=True)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    variant_sliv = db.Column(db.Integer)
+    fuel_type = db.Column(db.Integer)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
+    str_sliv = db.Column(db.String(120))
+    sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
+    truck_tank_id_string = db.Column(db.String(60))
+    is_it_fit = db.Column(db.Boolean)  # входит ли топливо в резервуары?
+    is_it_fit_on_second_trip = db.Column(db.Boolean)  # войдет ли при втором рейсе?
+    second_new_fuel_volume = db.Column(db.Float)  # новый объем для второго рейса
+    second_new_days_stock = db.Column(db.Float)  # новый запас суток для второго рейса
     is_it_able_to_enter = db.Column(db.Boolean)  # сможет ли заехать бензовоз
     is_variant_good = db.Column(db.Boolean)  # подходит ли этот вариант?
     is_variant_sliv_good = db.Column(db.Boolean)  # подходит ли этот вариант слива?
@@ -511,6 +535,36 @@ class TempAzsTrucks3(db.Model):
 
 
 class TempAzsTrucks4(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    variant = db.Column(db.Integer)
+    sum_92 = db.Column(db.Integer)
+    sum_95 = db.Column(db.Integer)
+    sum_50 = db.Column(db.Integer)
+    min_rez1 = db.Column(db.Float)
+    min_rez2 = db.Column(db.Float)
+    min_rez3 = db.Column(db.Float)
+    variant_sliv_92 = db.Column(db.Integer)
+    variant_sliv_95 = db.Column(db.Integer)
+    variant_sliv_50 = db.Column(db.Integer)
+
+
+class TempAzsTrucks3SecondTrip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    variant = db.Column(db.Integer, index=True)
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
+    variant_sliv = db.Column(db.Integer)
+    fuel_type = db.Column(db.Integer)
+    tank_id = db.Column(db.Integer, db.ForeignKey('tanks.id'))  # айдишник резервуара с этим типом топлива (Tanks)
+    sum_sliv = db.Column(db.Integer)  # сумма количества топлива по ячейкам бензовоза с одним видом топлива
+    truck_tank_id_string = db.Column(db.String(60))
+    new_fuel_volume = db.Column(db.Float)  # новый объем
+    new_days_stock = db.Column(db.Float)  # новый запас суток
+
+
+class TempAzsTrucks4SecondTrip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # к какому бензовозу привязан по id
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
@@ -749,6 +803,7 @@ class Result(db.Model):
     volume_92 = db.Column(db.Integer)  # сколько 92 топлива будет слито
     volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
     volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
+    time_to_return = db.Column(db.Time)  # сколько времени бензовоз был в пути
     calculate_id = db.Column(db.Integer)
 
 
