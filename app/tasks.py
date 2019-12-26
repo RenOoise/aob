@@ -1918,19 +1918,15 @@ def prepare_tables(user_id):
             # проверяем, сольется ли бензовоз в данный момент
             # из свободной емкости резервуара вычитаем сумму слива бензовоза
             sliv = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv']
-            # переводим время из вида db.time() в strptime() и переводим результат в секунды
-            time_to_string = azs_trip_time[i['azs_id']]['time_to_before_lunch']
-            x = time.strptime(str(time_to_string), '%H:%M:%S')
-            time_to_seconds = timedelta(hours=x.tm_hour, minutes=x.tm_min,
-                                        seconds=x.tm_sec).total_seconds()
-
-            # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза (реализация в час)
-            realis_time = realisation_n_residue[i["tank_id"]]['fuel_realisation'] * ((time_to_seconds / 60) / 60)
-
+            # получаем время до азс до обеда (в минутах)
+            time_to = azs_trip_time[i['azs_id']]['time_to_before_lunch']
+            # считаем примерное количество топлива, которое будет реализовано за время в пути бензовоза
+            realis_time = realisation_n_residue[i["tank_id"]]['fuel_realisation'] * (time_to / 60)
             # проверяем сольется ли бензовоз, с учетом реализации за время его пути к АЗС
             # из свободной емкости резервуара вычитаем сумму слива бензовоза, и прибавляем количество топлива,
             # которое реализуется у данного резервуара за время пути бензовоза к ней
             sliv_later = realisation_n_residue[i['tank_id']]['free_volume'] - i['sum_sliv'] + realis_time
+
 
             '''
             # ДЛЯ ВТОРОГО РЕЙСА

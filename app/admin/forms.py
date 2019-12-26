@@ -154,10 +154,10 @@ class EditPriorityListForm(FlaskForm):
 class AddTripForm(FlaskForm):
     azs_id = SelectField(_l('Номер АЗС'), validators=[DataRequired()], choices=[], coerce=int)
     distance = IntegerField('Расстояние от нефтебазы до АЗС')
-    time_to_before_lunch = TimeField('Время до АЗС (до обеда)')
-    time_from_before_lunch = TimeField('Время от АЗС (до обеда)')
-    time_to = TimeField('Время до АЗС (после обеда)')
-    time_from = TimeField('Время от АЗС (после обеда)')
+    time_to_before_lunch = IntegerField('Время до АЗС (до обеда) (в мин)')
+    time_from_before_lunch = IntegerField('Время от АЗС (до обеда) (в мин)')
+    time_to = IntegerField('Время до АЗС (после обеда) (в мин)')
+    time_from = IntegerField('Время от АЗС (после обеда) (в мин)')
     weigher = SelectField('Весы', choices=[('1', 'Да'), ('0', 'Нет')])
     submit = SubmitField('Сохранить')
 

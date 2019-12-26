@@ -419,10 +419,10 @@ class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # к какой азс привязано по id
     distance = db.Column(db.Integer)  # расстояние до азс от нефтебазы
-    time_to_before_lunch = db.Column(db.Time)  # время до АЗС от нефтебазы до обеда
-    time_from_before_lunch = db.Column(db.Time)  # время от АЗС до нефтебазы до обеда
-    time_to = db.Column(db.Time)  # время до АЗС от нефтебазы
-    time_from = db.Column(db.Time)  # время от АЗС до нефтебазы
+    time_to_before_lunch = db.Column(db.Integer)  # время до АЗС от нефтебазы до обеда (минуты)
+    time_from_before_lunch = db.Column(db.Integer)  # время от АЗС до нефтебазы до обеда (минуты)
+    time_to = db.Column(db.Integer)  # время до АЗС от нефтебазы (минуты)
+    time_from = db.Column(db.Integer)  # время от АЗС до нефтебазы (минуты)
     weigher = db.Column(db.String(20))  # весы
 
 
