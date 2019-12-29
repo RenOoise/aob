@@ -803,7 +803,7 @@ class Result(db.Model):
     volume_92 = db.Column(db.Integer)  # сколько 92 топлива будет слито
     volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
     volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
-    time_to_return = db.Column(db.Time)  # сколько времени бензовоз был в пути
+    time_to_return = db.Column(db.Integer)  # сколько времени бензовоз был в пути
     calculate_id = db.Column(db.Integer)
 
 

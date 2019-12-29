@@ -11,19 +11,20 @@ import jsonify
 from sqlalchemy import desc
 
 
-@bp.route('/admin', methods=['POST', 'GET'])
-@login_required
-def settings():
-
-    return render_template('admin/settings.html', title='Настройки', settings=True, settings_active=True)
-
-
 @bp.route('/admin/users', methods=['POST', 'GET'])
 @login_required
 def users():
     users_list = User.query.all()
     return render_template('admin/users.html', title='Пользователи', users=True, settings_active=True,
                            users_list=users_list)
+
+
+@bp.route('/admin/settings', methods=['POST', 'GET'])
+@login_required
+def global_settings():
+    users_list = User.query.all()
+    return render_template('admin/global_settings.html', title='Глобальные настройки', global_settings=True,
+                           settings_active=True, users_list=users_list)
 
 
 @bp.route('/admin/azslist', methods=['POST', 'GET'])
@@ -669,3 +670,4 @@ def truck_tanks_delete(id, truck_id):
     db.session.commit()
     flash('Данные удалены')
     return redirect(url_for('admin.truck', id=truck_id))
+
