@@ -3481,7 +3481,9 @@ def start_first_trip():
                 number_variant = 0
                 conn = sqlite3.connect("mydatabase.db")
                 cursor = conn.cursor()
+                cursor.execute("""DROP TABLE VARIANTS""")
                 cursor.execute("""CREATE TABLE VARIANTS (variant_n int, variant text)""")
+
 
                 for n1 in final_azs_for_trucks[1]["azs_ids"]:
                     for n2 in final_azs_for_trucks[2]["azs_ids"]:
@@ -3522,15 +3524,16 @@ def start_first_trip():
                                                                                                     good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}'''
 
                                                                                                     number_variant = number_variant + 1
-                                                                                                    cursor.execute("""INSERT INTO variants VALUES ("number_variant", "(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10)")""")
+                                                                                                    cursor.execute("INSERT INTO variants VALUES (?, ?)", (number_variant, str((n1, n2, n3, n4, n5, n6, n7, n8, n9, n10))))
+
                                                                                                     #all_variants[number_variant] ={'variant': (n1, n2, n3, n4, n5, n6, n7, n8, n9, n10)}
                                                                                                     #print(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11)
-
             print(time.time() - start_time)
             conn.commit()
+
             #for i in good_choices_dict:
             #print(i)
-            time.sleep(400)
+
 
         if choise_good == 1:
             for choice in good_choices_dict:
