@@ -601,6 +601,11 @@ def manual_input(id):
 
         db.session.add(input)
         db.session.commit()
+        logs = UserLogs(user_id=current_user.id,
+                        action="manual_input_action",
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
         return redirect(url_for('main.index'))
     return render_template('manual_input.html', title='Ручной ввод данных',
                            manual_input=True,
@@ -635,8 +640,18 @@ def azs():
 @bp.route('/start', methods=['POST', 'GET'])
 @login_required
 def start():
-    print("START AT" + str(datetime.now()))
+    logs = UserLogs(user_id=current_user.id,
+                    action="preparation_started",
+                    timestamp=datetime.now())
+    db.session.add(logs)
+    db.session.commit()
+
     def check():
+        logs = UserLogs(user_id=current_user.id,
+                        action="error_check_started",
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
         errors = 0
         azs_list = AzsList.query.all()
         error_tank_list = list()
@@ -672,9 +687,19 @@ def start():
         return errors, error_tank_list
     error, tanks = check()
     if error > 10:
+        logs = UserLogs(user_id=current_user.id,
+                        action="error_check_ended_with_error",
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
         flash("Number of error: " + str(error) + ", wrong tanks " + " ".join(str(x) for x in tanks))
         return redirect(url_for('main.index'))
     else:
+        logs = UserLogs(user_id=current_user.id,
+                        action="error_check_ended_successfully",
+                        timestamp=datetime.now())
+        db.session.add(logs)
+        db.session.commit()
         return redirect(url_for('main.load'))
 
 
@@ -2240,7 +2265,7 @@ def prepare_tables_first():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': 2,
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
-            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_92'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': 1,
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
@@ -2248,7 +2273,7 @@ def prepare_tables_first():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': 2,
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
-            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_95'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': 1,
                                                            'is_it_50': is_variant_good_list[str(i['variant'])]['is_it_50']}
@@ -2256,10 +2281,11 @@ def prepare_tables_first():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50': 2}
-            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_50'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50': 1}
+
         # создаем финальный список для данной функции, который будет записан в таблицу TempAzsTrucks2 в БД
         final_list2 = list()
         final_list = list()
@@ -2912,7 +2938,7 @@ def prepare_tables_first():
 @bp.route('/wait_first', methods=['POST', 'GET'])
 @login_required
 def wait_first():
-    time.sleep(10)
+    time.sleep(3)
     return redirect(url_for('main.start_first_trip'))
 
 
@@ -3370,7 +3396,6 @@ def start_first_trip():
             else:
                 print("Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
 
-
         # АЛГОРИТМ №2 - СЛУЧАНАЯ РАССТАНОВКА ОТ ВЕРХА К НИЗУ
         if variant_send_truck == 2:
             if active_trucks <= active_azs_count:
@@ -3474,16 +3499,19 @@ def start_first_trip():
                 k = k + 1
 
             if active_trucks == 11:
+                # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+                choise_good = 1
                 start_time = time.time()
                 number_of_success_loops = 0
-                all = tuple()
-                all_variants = dict()
                 number_variant = 0
                 conn = sqlite3.connect("mydatabase.db")
                 cursor = conn.cursor()
-                cursor.execute("""DROP TABLE VARIANTS""")
-                cursor.execute("""CREATE TABLE VARIANTS (variant_n int, variant text)""")
+                try:
 
+                    cursor.execute("""DROP TABLE VARIANTS""")
+                except:
+                    pass
+                cursor.execute("""CREATE TABLE VARIANTS (variant_n int, azs_id int, truck_id int)""")
 
                 for n1 in final_azs_for_trucks[1]["azs_ids"]:
                     for n2 in final_azs_for_trucks[2]["azs_ids"]:
@@ -3506,8 +3534,8 @@ def start_first_trip():
                                                                                         if n10 != n9 and n10 != n8 and n10 != n7 and n10 != n6 and n10 != n5 and n10 != n4 and n10 != n3 and n10 != n2 and n10 != n1:
                                                                                             for n11 in final_azs_for_trucks[11]["azs_ids"]:
                                                                                                 if n11 != n10 and n11 != n9 and n11 != n8 and n11 != n7 and n11 != n6 and n11 != n5 and n11 != n4 and n11 != n3 and n11 != n2 and n11 != n1:
-                                                                                                    
-                                                                                                    '''choice_azs_truck_dict = dict()
+
+                                                                                                    choice_azs_truck_dict = dict()
                                                                                                     choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
                                                                                                     choice_azs_truck_dict[n2] = {'truck_id': truck_id_number[2]['truck_id']}
                                                                                                     choice_azs_truck_dict[n3] = {'truck_id': truck_id_number[3]['truck_id']}
@@ -3519,26 +3547,100 @@ def start_first_trip():
                                                                                                     choice_azs_truck_dict[n9] = {'truck_id': truck_id_number[9]['truck_id']}
                                                                                                     choice_azs_truck_dict[n10] = {'truck_id': truck_id_number[10]['truck_id']}
                                                                                                     choice_azs_truck_dict[n11] = {'truck_id': truck_id_number[11]['truck_id']}
-                                                                            
-                                                                                                    number_of_success_loops = number_of_success_loops + 1
-                                                                                                    good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}'''
-
                                                                                                     number_variant = number_variant + 1
-                                                                                                    cursor.execute("INSERT INTO variants VALUES (?, ?)", (number_variant, str((n1, n2, n3, n4, n5, n6, n7, n8, n9, n10))))
+                                                                                                    if number_variant & 1000 == 0:
+                                                                                                        number_of_success_loops = number_of_success_loops + 1
+                                                                                                        good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
 
-                                                                                                    #all_variants[number_variant] ={'variant': (n1, n2, n3, n4, n5, n6, n7, n8, n9, n10)}
-                                                                                                    #print(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11)
+                                                                                                    '''if number_variant & 1000 == 0:
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n1, choice_azs_truck_dict[n1]['truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                              n2,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n2][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n3,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n3][
+                                                                                                                'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n4,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n4][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n5,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n5][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n6,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n6][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n7,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n7][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n8,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n8][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n9,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n9][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n10,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n10][
+                                                                                                                 'truck_id']))
+                                                                                                        cursor.execute(
+                                                                                                            "INSERT INTO variants VALUES (?, ?, ?)",
+                                                                                                            (number_variant,
+                                                                                                             n11,
+                                                                                                             choice_azs_truck_dict[
+                                                                                                                 n11][
+                                                                                                                 'truck_id']))'''
+                                                                                                        #all_variants[number_variant] ={'variant': (n1, n2, n3, n4, n5, n6, n7, n8, n9, n10)}
+                                                                                                        #print(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11)
             print(time.time() - start_time)
-            conn.commit()
+            print(number_variant)
+            #conn.commit()
 
-            #for i in good_choices_dict:
-            #print(i)
-
+            '''for i in good_choices_dict:
+                print(i)
+            print(time.time() - start_time)'''
 
         if choise_good == 1:
             for choice in good_choices_dict:
-                '''**************************************************************************************************'''
                 choice_azs_truck_dict = good_choices_dict[choice]['variants']
+                '''**************************************************************************************************'''
                 # Оцениваем вариант расстановки на предмет не отправки бензовоза на критичные АЗС
                 # переменная для хранения оценки текущей расстановки бензовозов (т.е. чем большее количество
                 points = 0
@@ -3555,16 +3657,16 @@ def start_first_trip():
                 min_days_stock1_work_type_1 = 1234
                 min_days_stock2_work_type_1 = 1234
                 # перебираем список расстановки
+                list_azs_min_days_stock = list()
                 for i in choice_azs_truck_dict:
-                    if choice_azs_truck_dict[i]['truck_id'] != 0 \
-                            and (azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])][
-                                     'min_rez1'] < min_days_stock1_work_type_1):
-                        min_days_stock2_work_type_1 = min_days_stock1_work_type_1
-                        min_days_stock1_work_type_1 = \
-                            azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1']
-                    else:
-                        min_days_stock1_work_type_1 = 0
-                        min_days_stock2_work_type_1 = 0
+                    if choice_azs_truck_dict[i]['truck_id'] != 0:
+                        list_azs_min_days_stock.append(azs_trucks_best_days_stock[str(i) + ':' + str(choice_azs_truck_dict[i]['truck_id'])]['min_rez1'])
+
+                list_azs_min_days_stock.sort()
+
+
+                min_days_stock1_work_type_1 = list_azs_min_days_stock[0]
+                min_days_stock2_work_type_1 = list_azs_min_days_stock[1]
                 '''**************************************************************************************************'''
 
                 '''**************************************************************************************************'''
@@ -4055,7 +4157,7 @@ def start_first_trip():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': 2,
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
-            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 92 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_92'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': 1,
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
@@ -4063,7 +4165,7 @@ def start_first_trip():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': 2,
                                                            'is_it_50':  is_variant_good_list[str(i['variant'])]['is_it_50']}
-            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 95 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_95'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': 1,
                                                            'is_it_50': is_variant_good_list[str(i['variant'])]['is_it_50']}
@@ -4071,7 +4173,7 @@ def start_first_trip():
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50': 2}
-            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 0:
+            if i['fuel_type'] == 50 and i['is_variant_sliv_good'] == 0 and is_variant_good_list[str(i['variant'])]['is_it_50'] != 2:
                 is_variant_good_list[str(i['variant'])] = {'is_it_92': is_variant_good_list[str(i['variant'])]['is_it_92'],
                                                            'is_it_95': is_variant_good_list[str(i['variant'])]['is_it_95'],
                                                            'is_it_50': 1}
@@ -4740,7 +4842,7 @@ def start_first_trip():
 @bp.route('/wait_10', methods=['POST', 'GET'])
 @login_required
 def wait_10():
-    time.sleep(12)
+    time.sleep(3)
     return redirect(url_for('main.start_second_trip'))
 
 
@@ -5232,8 +5334,8 @@ def trip_creation():
 @bp.route('/load', methods=['POST', 'GET'])
 @login_required
 def load():
-
-    return render_template('load.html')
+    #flash(_('Выполняется расстановка безовозов. Ожидайте завершения, страница будет перезагружена автоматически'))
+    return render_template('load.html', title='Выполняется расстановка бензовозов')
 
 
 @bp.route('/trips.json', methods=['POST', 'GET'])

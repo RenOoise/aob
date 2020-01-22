@@ -50,6 +50,8 @@
                                 Админ панель
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a href="{{ url_for('admin.global_settings') }}" class="dropdown-item">Глобальные настройки</a>
+                                <div class="dropdown-divider"></div>
                                 <a href="/admin/azslist" class="dropdown-item">Список АЗС</a>
                                 <a href="/admin/tanks" class="dropdown-item">Список резервуаров</a>
                                 <a href="/admin/config_list" class="dropdown-item">Конфиги подключения к БД</a>
