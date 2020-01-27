@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField, FieldList, RadioField, FormField, HiddenField
+    BooleanField, FieldList, RadioField, FormField, HiddenField, Label
 from wtforms_components import TimeField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
@@ -164,6 +164,9 @@ class AddTripForm(FlaskForm):
 
 class WorkTypeForm(FlaskForm):
     type = RadioField('Режим работы', choices=[], coerce=int)
+    label = Label('Алгоритм расстановки для 1 рейса', text='Алгоритм расстановки для 1 рейса')
+    algorithm = RadioField('Алгоритм расстановки для 1 рейса', choices=[], coerce=int)
+    algorithm_2 = RadioField('Алгоритм расстановки для 2 рейса', choices=[], coerce=int)
     select_fuel_type = SelectField('Вид топлива', choices=[('50', '50'), ('95', '95'), ('92', '92')])
     days_stock_limit = SelectField('Минимальный запас суток, который должен быть обеспечен',
                                    choices=[('0.5', '0.5'), ('1', '1'), ('1.5', '1.5'), ('2', '2'), ('2.5', '2.5'),

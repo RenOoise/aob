@@ -5,7 +5,8 @@ from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
     AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse, TruckTanksVariations
+    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
+    GlobalSettingsParams
 from app.admin import bp
 import jsonify
 from sqlalchemy import desc
@@ -596,8 +597,14 @@ def work_type():
     form = WorkTypeForm()
     work_type_table = WorkType.query.all()
     categories = [(c.id, c.type) for c in WorkType.query.order_by("id").all()]
-    form.type.choices = categories
+    algorithm = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
+    algorithm_2 = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
     active = WorkType.query.filter_by(active=True).first()
+
+
+    form.type.choices = categories
+    form.algorithm.choices = algorithm
+    form.algorithm_2.choices = algorithm_2
 
     if form.validate_on_submit():
         for i in work_type_table:
@@ -607,9 +614,21 @@ def work_type():
         type.days_stock_limit = form.days_stock_limit.data
         type.active = True
         type.fuel_type = form.select_fuel_type.data
+        algorithm1 = GlobalSettings.query.filter_by(name="algorithm").first()
+
+        algorithm1.algorithm_id = form.algorithm.data
+        algorithm2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
+        algorithm2.algorithm_id = form.algorithm_2.data
         db.session.commit()
     else:
+        algorithm1 = GlobalSettings.query.filter_by(name="algorithm").first()
+        form.algorithm.data = algorithm1.algorithm_id
+
+        algorithm2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
+        form.algorithm_2.data = algorithm2.algorithm_id
+
         form.type.data = active.id
+        form.algorithm = form.algorithm.data
         form.days_stock_limit.data = active.days_stock_limit
         form.select_fuel_type.data = active.fuel_type
     return render_template('admin/work_type.html', form=form)

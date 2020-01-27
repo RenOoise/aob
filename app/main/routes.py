@@ -3296,8 +3296,8 @@ def start_first_trip():
         # ПОДГОТОВКА К РАССТАНОВКЕ БЕНЗОВОЗОВ
 
         global_settings = GlobalSettings.query.filter_by(name="algorithm").first()
-        algorithm = GlobalSettingsParams.query.filter_by(setting_id=global_settings.id, active=True).first()
-        variant_send_truck = algorithm.value
+        variant_send_truck = global_settings.algorithm_id
+
         active_azs_count = Priority.query.count()
         active_trucks = Trucks.query.filter_by(active=True).count()  # получаем количество активных бензовозов
         active_azs = Priority.query.order_by("priority").all()  # получаем список активных АЗС из таблицы Priority
@@ -3884,6 +3884,7 @@ def start_first_trip():
         db.session.commit()
 
     create_trip()
+
     def time_to_return():
         # создаем словарь в котором будут сопоставлены БЕНЗОВОЗ-АЗС первого рейса
         trucks_for_azs_first_trip = dict()
@@ -4765,7 +4766,7 @@ def start_first_trip():
 @bp.route('/wait_10', methods=['POST', 'GET'])
 @login_required
 def wait_10():
-    time.sleep(3)
+    time.sleep(10)
     return redirect(url_for('main.start_second_trip'))
 
 
@@ -4809,7 +4810,7 @@ def start_second_trip():
     second_trip_azs_list = list()
     # заполняем список с азс для второго рейса
     for i in azs_list:
-        if i.azs_id not in first_trip_list:
+        if i.azs_id not in first_trip_azs_list:
             second_trip_azs_list.append(i.azs_id)
 
     for i in table_azs_trucks_4:
@@ -4855,10 +4856,9 @@ def start_second_trip():
                                                                                      'variant_sliv_50': i.variant_sliv_50}
 
     # ПОДГОТОВКА К РАССТАНОВКЕ БЕНЗОВОЗОВ
+    global_settings = GlobalSettings.query.filter_by(name="algorithm_2").first()
 
-    global_settings = GlobalSettings.query.filter_by(name="algorithm").first()
-    algorithm = GlobalSettingsParams.query.filter_by(setting_id=global_settings.id, active=True).first()
-    variant_send_truck = algorithm.value
+    variant_send_truck = global_settings.algorithm_id
     active_azs_count = Priority.query.count()
 
     active_trucks = Trucks.query.filter_by(active=True).count()  # получаем количество активных бензовозов
@@ -4875,7 +4875,7 @@ def start_second_trip():
 
     # таймаут для принудительной остановки расстановки бензовозов через
     # указанное количество времени (сейчас минута)
-    timeout = time.time() + 60 * 1
+    timeout = time.time() + 60 * 3
 
     # создаем словарь для хранения всех удачных расстановок
     good_choices_dict = dict()
@@ -4967,6 +4967,7 @@ def start_second_trip():
 
     # АЛГОРИТМ №2 - СЛУЧАЙНАЯ РАССТАНОВКА ОТ ВЕРХА К НИЗУ
     if variant_send_truck == 2:
+
         if active_trucks <= active_azs_count:
             max_trucks_good = 0
             choise_good = 0
@@ -5030,7 +5031,9 @@ def start_second_trip():
         else:
             print(
                 "Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
-
+        print('АНЯ ГЕЙ')
+        print('variant_send_truck:', variant_send_truck)
+        print('max_trucks_good:', max_trucks_good)
     if choise_good == 1:
         for choice in good_choices_dict:
             '''**************************************************************************************************'''
@@ -5441,5 +5444,5 @@ def test_form(id):
 def recreate_trip():
     last_trip = Trips.query.order_by(desc("calculate_id")).first()
     last_trip.incorrect = True
-
+    db.session.commit()
     return render_template('/recreate_trip.html')

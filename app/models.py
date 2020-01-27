@@ -848,7 +848,9 @@ class TruckTanksVariations(db.Model):
 class GlobalSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40))
+    trip_number = db.Column(db.Integer)  # к какому рейсу относится настройка
     description = db.Column(db.String(600))
+    algorithm_id = db.Column(db.Integer, db.ForeignKey('global_settings_params.id'))
 
 
 class GlobalSettingsParams(db.Model):
