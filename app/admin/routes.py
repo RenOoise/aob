@@ -3,13 +3,12 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import EditProfileForm
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
-    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm
+    AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm, \
+    WorkAlgorithmForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
     PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
     GlobalSettingsParams
 from app.admin import bp
-import jsonify
-from sqlalchemy import desc
 
 
 @bp.route('/admin/users', methods=['POST', 'GET'])
@@ -23,9 +22,76 @@ def users():
 @bp.route('/admin/settings', methods=['POST', 'GET'])
 @login_required
 def global_settings():
+    return render_template('admin/settings/global_settings.html', title='Основные настройки',
+                           settings_active=True, global_settings_main=True)
+
+
+@bp.route('/admin/settings/users', methods=['POST', 'GET'])
+@login_required
+def global_settings_users():
     users_list = User.query.all()
-    return render_template('admin/global_settings.html', title='Глобальные настройки', global_settings=True,
-                           settings_active=True, users_list=users_list)
+
+    return render_template('admin/settings/global_settings.html', title='Пользователи',
+                           global_settings_users=True, settings_active=True, users_list=users_list)
+
+
+@bp.route('/admin/settings/algorithm', methods=['POST', 'GET'])
+@login_required
+def global_settings_algorithm():
+    form = WorkAlgorithmForm()
+    algorithm_1 = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
+    algorithm_2 = [(c.id, c.description) for c in
+                   GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
+    form.algorithm_1.choices = algorithm_1
+    form.algorithm_2.choices = algorithm_2
+
+    if form.validate_on_submit():
+        algorithm_1 = GlobalSettings.query.filter_by(name="algorithm").first()
+        algorithm_1.algorithm_id = form.algorithm_1.data
+        algorithm_2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
+        algorithm_2.algorithm_id = form.algorithm_2.data
+
+        db.session.commit()
+        flash('Алгоритм расстановки изменен')
+        return redirect(url_for('admin.global_settings_algorithm'))
+    else:
+        algorithm_1 = GlobalSettings.query.filter_by(name="algorithm").first()
+        form.algorithm_1.data = algorithm_1.algorithm_id
+        algorithm_2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
+        form.algorithm_2.data = algorithm_2.algorithm_id
+
+    return render_template('admin/settings/global_settings.html', title='Алгоритм расстановки бензовозов',
+                           global_settings_algorithm=True, settings_active=True, form=form, form_exists=True)
+
+
+@bp.route('/admin/settings/work_type', methods=['POST', 'GET'])
+@login_required
+def global_settings_work_type():
+    form = WorkTypeForm()
+    categories = [(c.id, c.type) for c in WorkType.query.order_by("id").all()]
+    form.type.choices = categories
+
+    if form.validate_on_submit():
+        work_type_table = WorkType.query.all()
+        for i in work_type_table:
+            i.active = 0
+        id = form.type.data
+        typew = WorkType.query.filter_by(id=id).first()
+        typew.days_stock_limit = form.days_stock_limit.data
+        typew.fuel_type = form.select_fuel_type.data
+        typew.active = True
+        db.session.commit()
+
+        flash('Режим работы приложения изменен')
+        return redirect(url_for('admin.global_settings_work_type'))
+    else:
+        active = WorkType.query.filter_by(active=True).first()
+        form.select_fuel_type.data = active.fuel_type
+        form.days_stock_limit.data = active.days_stock_limit
+        form.type.data = active.id
+
+    return render_template('admin/settings/global_settings.html', form=form, title='Режим работы приложения',
+                           global_settings_work_type=True, form_exists=True)
 
 
 @bp.route('/admin/azslist', methods=['POST', 'GET'])
@@ -589,49 +655,6 @@ def edit_trip(id):
     return render_template('admin/editor.html', title='Изменение пути и времени', edit_trip=True,
                            settings_active=True,
                            form=form)
-
-
-@bp.route('/admin/work_type', methods=['POST', 'GET'])
-@login_required
-def work_type():
-    form = WorkTypeForm()
-    work_type_table = WorkType.query.all()
-    categories = [(c.id, c.type) for c in WorkType.query.order_by("id").all()]
-    algorithm = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
-    algorithm_2 = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
-    active = WorkType.query.filter_by(active=True).first()
-
-
-    form.type.choices = categories
-    form.algorithm.choices = algorithm
-    form.algorithm_2.choices = algorithm_2
-
-    if form.validate_on_submit():
-        for i in work_type_table:
-            i.active = 0
-        id = form.type.data
-        type = WorkType.query.filter_by(id=id).first()
-        type.days_stock_limit = form.days_stock_limit.data
-        type.active = True
-        type.fuel_type = form.select_fuel_type.data
-        algorithm1 = GlobalSettings.query.filter_by(name="algorithm").first()
-
-        algorithm1.algorithm_id = form.algorithm.data
-        algorithm2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
-        algorithm2.algorithm_id = form.algorithm_2.data
-        db.session.commit()
-    else:
-        algorithm1 = GlobalSettings.query.filter_by(name="algorithm").first()
-        form.algorithm.data = algorithm1.algorithm_id
-
-        algorithm2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
-        form.algorithm_2.data = algorithm2.algorithm_id
-
-        form.type.data = active.id
-        form.algorithm = form.algorithm.data
-        form.days_stock_limit.data = active.days_stock_limit
-        form.select_fuel_type.data = active.fuel_type
-    return render_template('admin/work_type.html', form=form)
 
 
 @bp.route('/admin/trucks_false', methods=['POST', 'GET'])

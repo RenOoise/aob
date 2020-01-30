@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-lg-2 py-4">
+            <div class="col-md-9">
+                {% include "admin/settings/_menu.html" %}
+            </div>
+        </div>
+        <div class="col-md-10 py-4">
+            <div class="card mx-auto">
+                <div class="card-header">
+                    <h5 class=" float-left">{{ title }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if form_exists %}
+                        {{ wtf.quick_form(form) }}
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

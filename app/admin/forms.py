@@ -164,9 +164,6 @@ class AddTripForm(FlaskForm):
 
 class WorkTypeForm(FlaskForm):
     type = RadioField('Режим работы', choices=[], coerce=int)
-    label = Label('Алгоритм расстановки для 1 рейса', text='Алгоритм расстановки для 1 рейса')
-    algorithm = RadioField('Алгоритм расстановки для 1 рейса', choices=[], coerce=int)
-    algorithm_2 = RadioField('Алгоритм расстановки для 2 рейса', choices=[], coerce=int)
     select_fuel_type = SelectField('Вид топлива', choices=[('50', '50'), ('95', '95'), ('92', '92')])
     days_stock_limit = SelectField('Минимальный запас суток, который должен быть обеспечен',
                                    choices=[('0.5', '0.5'), ('1', '1'), ('1.5', '1.5'), ('2', '2'), ('2.5', '2.5'),
@@ -180,6 +177,13 @@ class TruckFalseForm(FlaskForm):
     truck = SelectField('Бензовоз', choices=[], coerce=int)
     azs = SelectField('АЗС', choices=[], coerce=int)
     reason = StringField('Причина')
+    submit = SubmitField('Сохранить')
+
+
+class WorkAlgorithmForm(FlaskForm):
+    name = Label('Алгоритм расстановки первого рейса', text='Алгоритм расстановки первого рейса')
+    algorithm_1 = RadioField('Алгоритм расстановки первого рейса', choices=[], coerce=int)
+    algorithm_2 = RadioField('Алгоритм расстановки второго рейса', choices=[], coerce=int)
     submit = SubmitField('Сохранить')
 
 

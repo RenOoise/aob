@@ -457,8 +457,8 @@ class TruckFalse(db.Model):
 class WorkType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(600))  # режим работы приложения
-    fuel_type = db.Column(db.Integer)  # вид топлива
-    days_stock_limit = db.Column(db.Integer)
+    fuel_type = db.Column(db.String(10))  # вид топлива
+    days_stock_limit = db.Column(db.String(10))
     active = db.Column(db.Boolean)  # активен или нет
 
 
