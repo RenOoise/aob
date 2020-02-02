@@ -780,7 +780,7 @@ class RealisationStats(db.Model):
 
 class Trips(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    trip_number = db.Column(db.Integer)
+    trip_number = db.Column(db.Integer)  # порядковый номер рейса
     date = db.Column(db.DateTime)
     work_type_id = db.Column(db.Integer, db.ForeignKey('work_type.id'))
     variant_number = db.Column(db.Integer)  # номер предложеного варианта расстановки
@@ -804,7 +804,8 @@ class Result(db.Model):
     volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
     volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
     time_to_return = db.Column(db.Integer)  # сколько времени бензовоз был в пути
-    calculate_id = db.Column(db.Integer)
+    calculate_id = db.Column(db.Integer)  # порядковый номер расстановки
+    trip_number = db.Column(db.Integer)  # порядковый номер рейса
 
 
 class TrucksForAzs(db.Model):
@@ -812,6 +813,7 @@ class TrucksForAzs(db.Model):
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     number_of_trucks = db.Column(db.Integer)
     calculate_id = db.Column(db.Integer)
+    trip_number = db.Column(db.Integer)
 
 
 class VariantNalivaForTrip(db.Model):

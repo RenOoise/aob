@@ -3716,7 +3716,7 @@ def start_first_trip():
                     for z in trucks_for_azs_dict:
                         trucks_for_azs = TrucksForAzs(azs_id=z,
                                                       number_of_trucks=len(trucks_for_azs_dict[z]['azs_trucks']) - 1,
-                                                      calculate_id=previous_variant_id + 1)
+                                                      calculate_id=previous_variant_id + 1, trip_number=1)
 
                         db.session.add(trucks_for_azs)
                     variants_sliva_for_trip = list()
@@ -3756,7 +3756,8 @@ def start_first_trip():
                                             volume_92=query_variant.sum_92,
                                             volume_95=query_variant.sum_95,
                                             volume_50=query_variant.sum_50,
-                                            calculate_id=calculate_id)
+                                            calculate_id=calculate_id,
+                                            trip_number=1)
                             db.session.add(result)
 
                             print("АЗС:", azs_id,
@@ -4812,10 +4813,9 @@ def start_second_trip():
     for i in azs_list:
         if i.azs_id not in first_trip_azs_list:
             second_trip_azs_list.append(i.azs_id)
-
     for i in table_azs_trucks_4:
         # если на АЗС первым рейсом уже был отправлен бензовоз, то мы исключаем её из списка для второго рейса
-        if i.azs_id not in second_trip_azs_list:
+        if i.azs_id in second_trip_azs_list:
             # словарь для хранения информации о том, какие бензовозы могут отправиться на данную АЗС
             trucks_for_azs_dict[i.azs_id] = {'azs_trucks': [0]}
             # Словарь для первого режима работы
@@ -4830,7 +4830,8 @@ def start_second_trip():
 
     # Перебираем таблицу table_azs_truck_4 для заполнения словарей для всех трех режимов работы
     for i in table_azs_trucks_4:
-        if i.azs_id not in second_trip_azs_list:
+        # если на АЗС первым рейсом уже был отправлен бензовоз, то мы исключаем её из списка для второго рейса
+        if i.azs_id in second_trip_azs_list:
             # заполняем словарь для хранения информации о том, какие бензовозы могут отправиться на данную АЗС
             trucks_list = list()
             trucks_list.append(i.truck_id)
@@ -4967,7 +4968,6 @@ def start_second_trip():
 
     # АЛГОРИТМ №2 - СЛУЧАЙНАЯ РАССТАНОВКА ОТ ВЕРХА К НИЗУ
     if variant_send_truck == 2:
-
         if active_trucks <= active_azs_count:
             max_trucks_good = 0
             choise_good = 0
@@ -5031,9 +5031,7 @@ def start_second_trip():
         else:
             print(
                 "Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
-        print('АНЯ ГЕЙ')
-        print('variant_send_truck:', variant_send_truck)
-        print('max_trucks_good:', max_trucks_good)
+
     if choise_good == 1:
         for choice in good_choices_dict:
             '''**************************************************************************************************'''
@@ -5113,7 +5111,7 @@ def start_second_trip():
                 for z in trucks_for_azs_dict:
                     trucks_for_azs = TrucksForAzs(azs_id=z,
                                                   number_of_trucks=len(trucks_for_azs_dict[z]['azs_trucks']) - 1,
-                                                  calculate_id=previous_variant_id)
+                                                  calculate_id=previous_variant_id, trip_number=2)
 
                     db.session.add(trucks_for_azs)
                 variants_sliva_for_trip = list()
@@ -5153,7 +5151,8 @@ def start_second_trip():
                                         volume_92=query_variant.sum_92,
                                         volume_95=query_variant.sum_95,
                                         volume_50=query_variant.sum_50,
-                                        calculate_id=calculate_id)
+                                        calculate_id=calculate_id,
+                                        trip_number=2)
                         db.session.add(result)
 
                         print("АЗС:", azs_id,
@@ -5273,38 +5272,55 @@ def trips_json():
     for i in priority:
         tank = Tanks.query.filter_by(id=i.tank_id).first()
         azs = AzsList.query.filter_by(id=i.azs_id).first()
-        result = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id).first()
-        trucks_for_azs = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id).first()
+        result_first = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id, trip_number=1).first()
+        result_second = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id, trip_number=2).first()
+        trucks_for_azs_first = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id,
+                                                            trip_number=1).first()
+        trucks_for_azs_second = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id,
+                                                             trip_number=2).first()
         url_name = "АЗС № " + str(azs.number)
         url = '<a href="' + str(url_for('main.page_azs', id=i.azs_id)) + '">' + url_name + '</a>'
 
-        if result:
-            trucks = Trucks.query.filter_by(id=result.truck_id).first()
-            reg_number = trucks.reg_number
-            new_day_stock = result.min_rez1
+        if result_first:
+            trucks = Trucks.query.filter_by(id=result_first.truck_id).first()
+            reg_number_first = trucks.reg_number
+            new_day_stock_first = result_first.min_rez1
+        else:
+            reg_number_first = "-"
+            new_day_stock_first = "-"
+
+        if result_second:
+            trucks = Trucks.query.filter_by(id=result_second.truck_id).first()
+            reg_number_second = trucks.reg_number
+            new_day_stock_second = result_second.min_rez1
 
         else:
-            reg_number = "-"
-            new_day_stock = "-"
-        if trucks_for_azs:
-            number_of_trucks = trucks_for_azs.number_of_trucks
+            reg_number_second = "-"
+            new_day_stock_second = "-"
+
+        if trucks_for_azs_second:
+            number_of_trucks = trucks_for_azs_second.number_of_trucks
         else:
             number_of_trucks = "0"
         if number_of_trucks == "0":
-            reg_number = "Нет вариантов"
+            reg_number_first = "Нет вариантов"
+            reg_number_second = "Нет вариантов"
         trip = Trip.query.filter_by(azs_id=i.azs_id).first()
+
         if trip.weigher == True:
             weighter_icon = ' <i alt="Весы" title="На пути к этой АЗС есть зона весового контроля" ' \
                             'class="fas fa-weight text-info"></i>'
         else:
             weighter_icon = ''
+
         row = {'priority': i.priority,
                'azs_number': url + weighter_icon,
                'tank_number': tank.tank_number,
                'day_stock': i.day_stock,
-               'first_trip': reg_number,
-               'second_trip': "-",
-               'new_day_stock': new_day_stock,
+               'first_trip': reg_number_first,
+               'second_trip': reg_number_second,
+               'new_day_stock_first': new_day_stock_first,
+               'new_day_stock_second': new_day_stock_second,
                'number_of_trucks': number_of_trucks,
                'datetime': trips.date.strftime("%d.%m.%Y"),
                }
