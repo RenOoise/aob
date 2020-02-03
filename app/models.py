@@ -806,6 +806,7 @@ class Result(db.Model):
     time_to_return = db.Column(db.Integer)  # сколько времени бензовоз был в пути
     calculate_id = db.Column(db.Integer)  # порядковый номер расстановки
     trip_number = db.Column(db.Integer)  # порядковый номер рейса
+    trip_end_time = db.Column(db.Time)  # время возвращения на нефтебазу
 
 
 class TrucksForAzs(db.Model):
@@ -825,6 +826,7 @@ class VariantNalivaForTrip(db.Model):
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     fuel_type = db.Column(db.Integer)
     capacity = db.Column(db.Integer)
+    trip_number = db.Column(db.Integer)
 
 
 class VariantSlivaForTrip(db.Model):
@@ -837,6 +839,7 @@ class VariantSlivaForTrip(db.Model):
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
     fuel_type = db.Column(db.Integer)
     capacity = db.Column(db.Integer)
+    trip_number = db.Column(db.Integer)
 
 
 class TruckTanksVariations(db.Model):

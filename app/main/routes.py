@@ -462,7 +462,11 @@ def online_json():
                 auto = "Автоматически"
             else:
                 auto = "По книжным остаткам"
-            row = {'azs_number': "АЗС №" + azs_number,
+            url_name = "АЗС №" + str(azs_number)
+            url = '<p ' + azs_number + '> </p> <a href="' + str(
+                url_for('main.page_azs', id=i.azs_id)) + '">' + url_name + '</a>'
+            tank_number = Tanks.query.filter_by(id=i.tank_id).first()
+            row = {'azs_number': url,
                    'url': url_for('main.page_azs', id=i.azs_id),
                    'tank_number': tank_number.tank_number,
                    'product_code': i.product_code,
@@ -557,8 +561,10 @@ def realisation_json():
                 azs_number = str(0) + str(azs_number.number)
             else:
                 azs_number = str(azs_number.number)
+            url_name = "АЗС №" + str(azs_number)
+            url = '<p ' + azs_number + '> </p> <a href="' + str(url_for('main.page_azs', id=i.azs_id)) + '">' + url_name + '</a>'
             tank_number = Tanks.query.filter_by(id=i.tank_id).first()
-            row = {'azs_number': "АЗС №" + azs_number,
+            row = {'azs_number': url,
                    'tank_number': tank_number.tank_number,
                    'product_code': i.product_code,
                    'fuel_realisation_10_days': i.fuel_realisation_10_days,
@@ -3784,7 +3790,8 @@ def start_first_trip():
                                                                       truck_id=truck_id,
                                                                       azs_id=azs_id,
                                                                       fuel_type=table_variant.fuel_type,
-                                                                      capacity=table_variant.capacity)
+                                                                      capacity=table_variant.capacity,
+                                                                      trip_number=1)
                                 db.session.add(variant_naliva)
 
                             for row in table_azs_trucks3_92:
@@ -3795,7 +3802,8 @@ def start_first_trip():
                                                                     truck_id=row.truck_id,
                                                                     truck_tank_id=row.truck_tank_id_string,
                                                                     fuel_type=row.fuel_type,
-                                                                    capacity=row.sum_sliv)
+                                                                    capacity=row.sum_sliv,
+                                                                    trip_number=1)
                                 db.session.add(variant_sliva)
 
                             for row in table_azs_trucks3_95:
@@ -3806,7 +3814,8 @@ def start_first_trip():
                                                                     truck_id=row.truck_id,
                                                                     truck_tank_id=row.truck_tank_id_string,
                                                                     fuel_type=row.fuel_type,
-                                                                    capacity=row.sum_sliv)
+                                                                    capacity=row.sum_sliv,
+                                                                    trip_number=1)
                                 db.session.add(variant_sliva)
 
                             for row in table_azs_trucks3_50:
@@ -3817,7 +3826,8 @@ def start_first_trip():
                                                                     truck_id=row.truck_id,
                                                                     truck_tank_id=row.truck_tank_id_string,
                                                                     fuel_type=row.fuel_type,
-                                                                    capacity=row.sum_sliv)
+                                                                    capacity=row.sum_sliv,
+                                                                    trip_number=1)
                                 db.session.add(variant_sliva)
                 db.session.commit()
             elif work_type.id == 2:
@@ -3903,8 +3913,13 @@ def start_first_trip():
         for i in first_trip_list:
             full_time = trip_dict[i.azs_id]['time_to_before_lunch'] + trip_dict[i.azs_id]['time_from_before_lunch'] + 60
             trucks_for_azs_first_trip[i.truck_id] = {'full_time_first_trip': full_time}
+            trip_start_time = Trucks.query.filter_by(id=i.truck_id).first_or_404()
+            t = trip_start_time.day_start
+            delta = timedelta(minutes=full_time)
+            trip_end = (datetime.combine(date(1, 1, 1), t) + delta).time()
             result = Result.query.filter_by(calculate_id=first_trip.calculate_id, azs_id=i.azs_id, truck_id=i.truck_id).first()
             result.time_to_return = full_time
+            result.trip_end_time = trip_end
             db.session.commit()
         return trucks_for_azs_first_trip
 
@@ -5179,7 +5194,8 @@ def start_second_trip():
                                                                   truck_id=truck_id,
                                                                   azs_id=azs_id,
                                                                   fuel_type=table_variant.fuel_type,
-                                                                  capacity=table_variant.capacity)
+                                                                  capacity=table_variant.capacity,
+                                                                  trip_number=2)
                             db.session.add(variant_naliva)
 
                         for row in table_azs_trucks3_92:
@@ -5190,7 +5206,8 @@ def start_second_trip():
                                                                 truck_id=row.truck_id,
                                                                 truck_tank_id=row.truck_tank_id_string,
                                                                 fuel_type=row.fuel_type,
-                                                                capacity=row.sum_sliv)
+                                                                capacity=row.sum_sliv,
+                                                                trip_number=2)
                             db.session.add(variant_sliva)
 
                         for row in table_azs_trucks3_95:
@@ -5201,7 +5218,8 @@ def start_second_trip():
                                                                 truck_id=row.truck_id,
                                                                 truck_tank_id=row.truck_tank_id_string,
                                                                 fuel_type=row.fuel_type,
-                                                                capacity=row.sum_sliv)
+                                                                capacity=row.sum_sliv,
+                                                                trip_number=2)
                             db.session.add(variant_sliva)
 
                         for row in table_azs_trucks3_50:
@@ -5212,7 +5230,8 @@ def start_second_trip():
                                                                 truck_id=row.truck_id,
                                                                 truck_tank_id=row.truck_tank_id_string,
                                                                 fuel_type=row.fuel_type,
-                                                                capacity=row.sum_sliv)
+                                                                capacity=row.sum_sliv,
+                                                                trip_number=2)
                             db.session.add(variant_sliva)
             db.session.commit()
 
@@ -5272,39 +5291,48 @@ def trips_json():
     for i in priority:
         tank = Tanks.query.filter_by(id=i.tank_id).first()
         azs = AzsList.query.filter_by(id=i.azs_id).first()
-        result_first = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id, trip_number=1).first()
-        result_second = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id, trip_number=2).first()
+        result = Result.query.filter_by(calculate_id=trips.calculate_id, azs_id=i.azs_id).first()
         trucks_for_azs_first = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id,
                                                             trip_number=1).first()
         trucks_for_azs_second = TrucksForAzs.query.filter_by(azs_id=i.azs_id, calculate_id=trips.calculate_id,
-                                                             trip_number=2).first()
+                                                            trip_number=2).first()
+
         url_name = "АЗС № " + str(azs.number)
         url = '<a href="' + str(url_for('main.page_azs', id=i.azs_id)) + '">' + url_name + '</a>'
 
-        if result_first:
-            trucks = Trucks.query.filter_by(id=result_first.truck_id).first()
-            reg_number_first = trucks.reg_number
-            new_day_stock_first = result_first.min_rez1
+        if result:
+            if result.trip_number == 1:
+                trip_end = result.trip_end_time.strftime("%H:%M")
+                trucks = Trucks.query.filter_by(id=result.truck_id).first()
+                reg_number_first = trucks.reg_number
+                new_day_stock_first = result.min_rez1
+                new_day_stock_second = "-"
+                reg_number_second = "-"
+                number_of_trucks = trucks_for_azs_first.number_of_trucks
+            elif result.trip_number == 2:
+                trip_end = "-"
+                trucks = Trucks.query.filter_by(id=result.truck_id).first()
+                reg_number_second = trucks.reg_number
+                new_day_stock_second = result.min_rez1
+                number_of_trucks = trucks_for_azs_second.number_of_trucks
+                new_day_stock_first = "-"
+                reg_number_first = "-"
+            else:
+                reg_number_second = "-"
+                trip_end = "-"
+                reg_number_first = "-"
+                number_of_trucks = trucks_for_azs_second.number_of_trucks
         else:
             reg_number_first = "-"
-            new_day_stock_first = "-"
-
-        if result_second:
-            trucks = Trucks.query.filter_by(id=result_second.truck_id).first()
-            reg_number_second = trucks.reg_number
-            new_day_stock_second = result_second.min_rez1
-
-        else:
+            trip_end = "-"
             reg_number_second = "-"
+            new_day_stock_first = "-"
             new_day_stock_second = "-"
+            if trucks_for_azs_second:
+                number_of_trucks = trucks_for_azs_second.number_of_trucks
+            else:
+                number_of_trucks = "0"
 
-        if trucks_for_azs_second:
-            number_of_trucks = trucks_for_azs_second.number_of_trucks
-        else:
-            number_of_trucks = "0"
-        if number_of_trucks == "0":
-            reg_number_first = "Нет вариантов"
-            reg_number_second = "Нет вариантов"
         trip = Trip.query.filter_by(azs_id=i.azs_id).first()
 
         if trip.weigher == True:
@@ -5322,7 +5350,7 @@ def trips_json():
                'new_day_stock_first': new_day_stock_first,
                'new_day_stock_second': new_day_stock_second,
                'number_of_trucks': number_of_trucks,
-               'datetime': trips.date.strftime("%d.%m.%Y"),
+               'datetime': trip_end,
                }
         rows.append(row)
     return Response(json.dumps(rows), mimetype='application/json')
