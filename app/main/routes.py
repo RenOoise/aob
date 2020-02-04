@@ -457,7 +457,6 @@ def online_json():
                 azs_number = str(0) + str(azs_number.number)
             else:
                 azs_number = str(azs_number.number)
-            tank_number = Tanks.query.filter_by(id=i.tank_id).first()
             if i.auto == True:
                 auto = "Автоматически"
             else:
@@ -4891,7 +4890,7 @@ def start_second_trip():
 
     # таймаут для принудительной остановки расстановки бензовозов через
     # указанное количество времени (сейчас минута)
-    timeout = time.time() + 60 * 3
+    timeout = time.time() + 60 * 1
 
     # создаем словарь для хранения всех удачных расстановок
     good_choices_dict = dict()
@@ -5235,6 +5234,30 @@ def start_second_trip():
                             db.session.add(variant_sliva)
             db.session.commit()
 
+    def time_to_return_second():
+        # получаем информацию о втором рейсе
+        second_trip = Trips.query.filter_by(trip_number=2).order_by(desc("calculate_id")).first()
+        # получаем информацию о расстановке второго рейса
+        second_trip_list = Result.query.filter_by(calculate_id=second_trip.calculate_id).all()
+        trip = Trip.query.all()
+        trip_dict = dict()
+        for i in trip:
+            trip_dict[i.azs_id] = {'time_to': i.time_to,
+                                   'time_from': i.time_from}
+
+        # заполняем словарь с сопоставлением БЕНЗОВОЗ-АЗС из первого рейса
+        for i in second_trip_list:
+            full_time = trip_dict[i.azs_id]['time_to'] + trip_dict[i.azs_id]['time_from'] + 60
+            trip_start_time = Result.query.filter_by(calculate_id=second_trip.calculate_id, truck_id=i.truck_id,
+                                                     trip_number=1).first()
+            t = trip_start_time.trip_end_time
+            delta = timedelta(minutes=full_time)
+            trip_end = (datetime.combine(date(1, 1, 1), t) + delta).time()
+            result = Result.query.filter_by(calculate_id=first_trip.calculate_id, truck_id=i.truck_id, trip_number=2).first()
+            result.time_to_return = full_time
+            result.trip_end_time = trip_end
+            db.session.commit()
+    time_to_return_second()
     return redirect(url_for('main.trip_creation'))
 
 
@@ -5310,7 +5333,7 @@ def trips_json():
                 reg_number_second = "-"
                 number_of_trucks = trucks_for_azs_first.number_of_trucks
             elif result.trip_number == 2:
-                trip_end = "-"
+                trip_end = result.trip_end_time.strftime("%H:%M")
                 trucks = Trucks.query.filter_by(id=result.truck_id).first()
                 reg_number_second = trucks.reg_number
                 new_day_stock_second = result.min_rez1
@@ -5356,9 +5379,10 @@ def trips_json():
     return Response(json.dumps(rows), mimetype='application/json')
 
 
-@bp.route('/trips_naliv.json', methods=['POST', 'GET'])
+@bp.route('/trip/<trip_number>/trip_naliv.json', methods=['POST', 'GET'])
 @login_required
-def trips_naliv_json():
+def trips_naliv_json(trip_number):
+    trip_number = int(trip_number)
     rows = list()
     naliv_cell_1 = "Отсек отсутствует"
     naliv_cell_2 = "Отсек отсутствует"
@@ -5374,8 +5398,8 @@ def trips_naliv_json():
     sliv_cell_6 = "Отсек отсутствует"
     trips = Trips.query.order_by(desc("calculate_id")).first()
     result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
-    for i in result:
 
+    for i in result:
         trip = Trip.query.filter_by(azs_id=i.azs_id).first()
         if trip.weigher == True:
             weighter_icon = ' <i alt="Весы" title="На пути к этой АЗС есть зона весового контроля" ' \
@@ -5413,7 +5437,6 @@ def trips_naliv_json():
                     naliv_cell_6 = var.fuel_type
 
                 for var in sliv:
-
                     truck_tanks_list = var.truck_tank_id.split("+")
                     for truck_tank in truck_tanks_list:
                         truck_tank_list = TruckTanks.query.filter_by(id=truck_tank).first()
@@ -5432,23 +5455,41 @@ def trips_naliv_json():
                             sliv_cell_6 = "Резервуар №" + str(tank.tank_number) + " (" + str(var.fuel_type) + ")"
         else:
             reg_number = "-"
+        if trip_number == 1 and i.trip_number == 1:
+            row = {'azs_number': url + weighter_icon,
+                   'truck_number': reg_number,
+                   'naliv_cell_1': naliv_cell_1,
+                   'naliv_cell_2': naliv_cell_2,
+                   'naliv_cell_3': naliv_cell_3,
+                   'naliv_cell_4': naliv_cell_4,
+                   'naliv_cell_5': naliv_cell_5,
+                   'naliv_cell_6': naliv_cell_6,
+                   'sliv_cell_1': sliv_cell_1,
+                   'sliv_cell_2': sliv_cell_2,
+                   'sliv_cell_3': sliv_cell_3,
+                   'sliv_cell_4': sliv_cell_4,
+                   'sliv_cell_5': sliv_cell_5,
+                   'sliv_cell_6': sliv_cell_6,
+                   }
+            rows.append(row)
+        elif i.trip_number == 2 and trip_number == 2:
+            row = {'azs_number': url + weighter_icon,
+                   'truck_number': reg_number,
+                   'naliv_cell_1': naliv_cell_1,
+                   'naliv_cell_2': naliv_cell_2,
+                   'naliv_cell_3': naliv_cell_3,
+                   'naliv_cell_4': naliv_cell_4,
+                   'naliv_cell_5': naliv_cell_5,
+                   'naliv_cell_6': naliv_cell_6,
+                   'sliv_cell_1': sliv_cell_1,
+                   'sliv_cell_2': sliv_cell_2,
+                   'sliv_cell_3': sliv_cell_3,
+                   'sliv_cell_4': sliv_cell_4,
+                   'sliv_cell_5': sliv_cell_5,
+                   'sliv_cell_6': sliv_cell_6,
+                   }
+            rows.append(row)
 
-        row = {'azs_number': url + weighter_icon,
-               'truck_number': reg_number,
-               'naliv_cell_1': naliv_cell_1,
-               'naliv_cell_2': naliv_cell_2,
-               'naliv_cell_3': naliv_cell_3,
-               'naliv_cell_4': naliv_cell_4,
-               'naliv_cell_5': naliv_cell_5,
-               'naliv_cell_6': naliv_cell_6,
-               'sliv_cell_1': sliv_cell_1,
-               'sliv_cell_2': sliv_cell_2,
-               'sliv_cell_3': sliv_cell_3,
-               'sliv_cell_4': sliv_cell_4,
-               'sliv_cell_5': sliv_cell_5,
-               'sliv_cell_6': sliv_cell_6,
-               }
-        rows.append(row)
     return Response(json.dumps(rows), mimetype='application/json')
 
 
