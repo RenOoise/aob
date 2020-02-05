@@ -4890,7 +4890,7 @@ def start_second_trip():
 
     # таймаут для принудительной остановки расстановки бензовозов через
     # указанное количество времени (сейчас минута)
-    timeout = time.time() + 60 * 1
+    timeout = time.time() + 20 * 1
 
     # создаем словарь для хранения всех удачных расстановок
     good_choices_dict = dict()
@@ -5238,7 +5238,7 @@ def start_second_trip():
         # получаем информацию о втором рейсе
         second_trip = Trips.query.filter_by(trip_number=2).order_by(desc("calculate_id")).first()
         # получаем информацию о расстановке второго рейса
-        second_trip_list = Result.query.filter_by(calculate_id=second_trip.calculate_id).all()
+        second_trip_list = Result.query.filter_by(calculate_id=second_trip.calculate_id, trip_number=2).all()
         trip = Trip.query.all()
         trip_dict = dict()
         for i in trip:
@@ -5253,7 +5253,8 @@ def start_second_trip():
             t = trip_start_time.trip_end_time
             delta = timedelta(minutes=full_time)
             trip_end = (datetime.combine(date(1, 1, 1), t) + delta).time()
-            result = Result.query.filter_by(calculate_id=first_trip.calculate_id, truck_id=i.truck_id, trip_number=2).first()
+            print(i.truck_id, second_trip.calculate_id, i.trip_number)
+            result = Result.query.filter_by(calculate_id=second_trip.calculate_id, truck_id=i.truck_id, trip_number=2).first_or_404()
             result.time_to_return = full_time
             result.trip_end_time = trip_end
             db.session.commit()
