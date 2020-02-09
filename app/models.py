@@ -518,6 +518,7 @@ class TempAzsTrucks2SecondTrip(db.Model):
     is_variant_good = db.Column(db.Boolean)  # подходит ли этот вариант?
     is_variant_sliv_good = db.Column(db.Boolean)  # подходит ли этот вариант слива?
     is_variant_weigher_good = db.Column(db.Boolean)  # подходит ли вариант налива, если на пути есть весы
+    is_trip_end_time_good = db.Column(db.Boolean)  # успеет ли бензовоз вернуться до конца рабочего дня
 
 
 class TempAzsTrucks3(db.Model):

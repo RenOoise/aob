@@ -9,15 +9,72 @@
             </div>
         </div>
         <div class="col-md-10 py-4">
-            <div class="card mx-auto">
-                <div class="card-header">
-                    <h5 class=" float-left">{{ title }}</h5>
-                </div>
-                <div class="card-body">
-                    {% if form_exists %}
-                        {{ wtf.quick_form(form) }}
-                    {% endif %}
 
+            <div class="card-deck ">
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-header">
+                        Режим работы приложения
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{work_type}}</p>
+
+                    </div>
+                    <div class="card-footer text-muted">
+                        <a href="{{ url_for('admin.global_settings_work_type') }}">Изменить</a>
+                    </div>
+                </div>
+
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-header">
+                        <h5>Алгортим расстановки</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Для первого рейса: {{ first_trip_algorithm }}</p>
+                        <p class="card-text">Для второго рейса: {{ second_trip_algorithm }}</p>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <a href="{{ url_for('admin.global_settings_algorithm') }}">Изменить</a>
+                    </div>
+                </div>
+
+
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-header">
+                        <h5>Количество активных АЗС</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><h2>{{ active_azs }}</h2></p>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <a href="{{ url_for('admin.azslist') }}">Изменить</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-deck mt-3">
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-header">
+                        Количество активных бензовозов
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><h2>{{ active_trucks }}</h2></p>
+
+                    </div>
+                    <div class="card-footer text-muted">
+                        <a href="{{ url_for('admin.trucks_list') }}">Изменить</a>
+                    </div>
+                </div>
+                <div class="card text-center" style="width: 18rem;">
+                    <div class="card-header">
+                        Количество активных резервуаров
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><h2>{{ active_tanks }}</h2></p>
+
+                    </div>
+                    <div class="card-footer text-muted">
+                        <a href="{{ url_for('admin.tanks') }}">Изменить</a>
+                    </div>
                 </div>
             </div>
         </div>

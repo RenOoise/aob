@@ -22,8 +22,19 @@ def users():
 @bp.route('/admin/settings', methods=['POST', 'GET'])
 @login_required
 def global_settings():
+    active_trucks = Trucks.query.filter_by(active=True).count()
+    active_tanks = Tanks.query.filter_by(active=True).count()
+    work_type = WorkType.query.filter_by(active=True).first_or_404()
+    global_settings_first = GlobalSettings.query.filter_by(name="algorithm").first()
+    global_settings_second = GlobalSettings.query.filter_by(name="algorithm_2").first()
+    active_azs = AzsList.query.filter_by(active=True).count()
+    first_trip_algorithm = GlobalSettingsParams.query.filter_by(id=global_settings_first.algorithm_id).first()
+    second_trip_algorithm = GlobalSettingsParams.query.filter_by(id=global_settings_second.algorithm_id).first()
     return render_template('admin/settings/global_settings.html', title='Основные настройки',
-                           settings_active=True, global_settings_main=True)
+                           settings_active=True, global_settings_main=True, work_type=work_type.type,
+                           second_trip_algorithm=second_trip_algorithm.description,
+                           first_trip_algorithm=first_trip_algorithm.description,
+                           active_azs=active_azs, active_trucks=active_trucks, active_tanks=active_tanks)
 
 
 @bp.route('/admin/settings/users', methods=['POST', 'GET'])
@@ -31,7 +42,7 @@ def global_settings():
 def global_settings_users():
     users_list = User.query.all()
 
-    return render_template('admin/settings/global_settings.html', title='Пользователи',
+    return render_template('admin/settings/users.html', title='Пользователи',
                            global_settings_users=True, settings_active=True, users_list=users_list)
 
 
@@ -60,7 +71,7 @@ def global_settings_algorithm():
         algorithm_2 = GlobalSettings.query.filter_by(name="algorithm_2").first()
         form.algorithm_2.data = algorithm_2.algorithm_id
 
-    return render_template('admin/settings/global_settings.html', title='Алгоритм расстановки бензовозов',
+    return render_template('admin/settings/algorithm.html', title='Алгоритм расстановки бензовозов',
                            global_settings_algorithm=True, settings_active=True, form=form, form_exists=True)
 
 
@@ -90,7 +101,7 @@ def global_settings_work_type():
         form.days_stock_limit.data = active.days_stock_limit
         form.type.data = active.id
 
-    return render_template('admin/settings/global_settings.html', form=form, title='Режим работы приложения',
+    return render_template('admin/settings/work_type.html', form=form, title='Режим работы приложения',
                            global_settings_work_type=True, form_exists=True)
 
 
