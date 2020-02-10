@@ -4158,7 +4158,7 @@ def start_first_trip():
                                       'sliv_50:', azs_trucks_max_50[
                                           str(x) + ':' + str(choices_dict_work_type_2[i]['variants'][x]['truck_id'])]['variant_sliv_50'])
             logs = UserLogs(user_id=current_user.id,
-                            action="trip_creation_ended",
+                            action="first_trip_creation_success",
                             timestamp=datetime.now())
             db.session.add(logs)
             db.session.commit()
@@ -4171,7 +4171,7 @@ def start_first_trip():
             db.session.add(logs)
             db.session.commit()
             return result
-    if create_trip() != True:
+    if create_trip() == False:
         return redirect(url_for('main.creation_failed'))
 
     def time_to_return():
@@ -4189,7 +4189,7 @@ def start_first_trip():
 
         # заполняем словарь с сопоставлением БЕНЗОВОЗ-АЗС из первого рейса
         for i in first_trip_list:
-            full_time = trip_dict[i.azs_id]['time_to_before_lunch'] + trip_dict[i.azs_id]['time_from_before_lunch'] + 60
+            full_time = trip_dict[i.azs_id]['time_to_before_lunch'] + trip_dict[i.azs_id]['time_from_before_lunch'] + 60 +120
             trucks_for_azs_first_trip[i.truck_id] = {'full_time_first_trip': full_time}
             trip_start_time = Trucks.query.filter_by(id=i.truck_id).first_or_404()
             t = trip_start_time.day_start
@@ -4756,7 +4756,7 @@ def start_first_trip():
             # если вариант сливается, бензовоз может заехать на АЗС и бензовоз сливается полностью,
             # и бензовоз проходит через весы
             if i['is_it_fit_on_second_trip'] == True and i['is_it_able_to_enter'] == True and i['is_variant_good'] == True \
-                    and i['is_variant_sliv_good'] == True and i['is_variant_weigher_good'] == True:
+                    and i['is_variant_sliv_good'] == True and i['is_variant_weigher_good'] == True and i['is_trip_end_time_good'] == True:
                 # добавляем словарь в список
                 temp_azs_trucks3_list.append(i)
         new_days_stock_dict = dict()
