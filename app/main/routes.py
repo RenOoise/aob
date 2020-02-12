@@ -3,20 +3,18 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from app import db
-import sqlite3
 from app.admin.forms import CellsForm, FuelForm
-from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField, FieldList, RadioField, FormField, HiddenField
+from wtforms import FieldList, FormField
 from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
 from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
     PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, WorkType, Errors, \
     Trips, Result, TrucksForAzs, VariantSlivaForTrip, TruckTanksVariations
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, Test, TripForToday, TruckFalse, RealisationStats, \
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, TripForToday, TruckFalse, RealisationStats, \
     TempAzsTrucks3, TempAzsTrucks4, VariantNalivaForTrip, TempAzsTrucks, TempAzsTrucks2, UserLogs, GlobalSettings, \
     GlobalSettingsParams, TempAzsTrucks2SecondTrip, TempAzsTrucks3SecondTrip, TempAzsTrucks4SecondTrip
-import itertools
+
 from app.translate import translate
 from app.main import bp
 import pandas as pd
