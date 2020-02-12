@@ -5769,21 +5769,11 @@ def start_second_trip():
                                         for n5 in final_azs_for_trucks[5]["azs_ids"]:
                                             if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
                                                 choice_azs_truck_dict = dict()
-                                                choice_azs_truck_dict[n1] = {
-                                                    'truck_id': truck_id_number[1][
-                                                        'truck_id']}
-                                                choice_azs_truck_dict[n2] = {
-                                                    'truck_id': truck_id_number[2][
-                                                        'truck_id']}
-                                                choice_azs_truck_dict[n3] = {
-                                                    'truck_id': truck_id_number[3][
-                                                        'truck_id']}
-                                                choice_azs_truck_dict[n4] = {
-                                                    'truck_id': truck_id_number[4][
-                                                        'truck_id']}
-                                                choice_azs_truck_dict[n5] = {
-                                                    'truck_id': truck_id_number[5][
-                                                        'truck_id']}
+                                                choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
+                                                choice_azs_truck_dict[n2] = {'truck_id': truck_id_number[2]['truck_id']}
+                                                choice_azs_truck_dict[n3] = {'truck_id': truck_id_number[3]['truck_id']}
+                                                choice_azs_truck_dict[n4] = {'truck_id': truck_id_number[4]['truck_id']}
+                                                choice_azs_truck_dict[n5] = {'truck_id': truck_id_number[5]['truck_id']}
 
                                                 number_variant = number_variant + 1
                                                 number_of_success_loops = number_of_success_loops + 1
