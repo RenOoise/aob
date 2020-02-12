@@ -5112,6 +5112,8 @@ def start_second_trip():
     first_trip_azs_list = list()
     # создаем список бензовозов из первого рейса
     first_trip_truck_list = list()
+
+
     # заполняем список с азс первого рейса
     for i in first_trip_list:
         # заполняем список с азс первого рейса
@@ -5127,6 +5129,16 @@ def start_second_trip():
     for i in azs_list:
         if i.azs_id not in first_trip_azs_list:
             second_trip_azs_list.append(i.azs_id)
+
+    # словарь для хранения информации о том, на какие АЗС может отправиться бензовоз
+    azs_for_trucks_dict = dict()
+    for i in table_azs_trucks_4:
+        if i.azs_id in second_trip_azs_list:
+            # инициализируем словарь для хранения информации о том, на какие АЗС может отправиться бензовоз
+            azs_for_trucks_dict[i.truck_id] = {'azs_ids': [],
+                                               'priority': []}
+
+
     for i in table_azs_trucks_4:
         # если на АЗС первым рейсом уже был отправлен бензовоз, то мы исключаем её из списка для второго рейса
         if i.azs_id in second_trip_azs_list:
@@ -5144,8 +5156,15 @@ def start_second_trip():
 
     # Перебираем таблицу table_azs_truck_4 для заполнения словарей для всех трех режимов работы
     for i in table_azs_trucks_4:
+        # заполняем словарь для хранения информации о том, на какие азс может отправиться бензовоз
         # если на АЗС первым рейсом уже был отправлен бензовоз, то мы исключаем её из списка для второго рейса
         if i.azs_id in second_trip_azs_list:
+            azs_list_second_trip = list()
+            azs_list_second_trip.append(i.azs_id)
+            if i.azs_id not in azs_for_trucks_dict[i.truck_id]['azs_ids']:
+                azs_for_trucks_dict[i.truck_id] = {'azs_ids': azs_for_trucks_dict[i.truck_id]['azs_ids'] + azs_list_second_trip,
+                                                   'priority': 0}
+
             # заполняем словарь для хранения информации о том, какие бензовозы могут отправиться на данную АЗС
             trucks_list = list()
             trucks_list.append(i.truck_id)
@@ -5341,6 +5360,501 @@ def start_second_trip():
             print(
                 "Расстановка бензовозов невозможна! Количество активных бензовозов больше числа активных АЗС!")
 
+    # АЛГОРИТМ №3 - ПОЛНЫЙ ПЕРЕБОР
+    if variant_send_truck == 3:
+        choice_azs_truck_dict = dict()
+        azs_for_trucks_with_priority = dict()
+        for i in azs_for_trucks_dict:
+            temp_azs_list = azs_for_trucks_dict[i]['azs_ids']
+            temp_priority = list()
+            for azs in temp_azs_list:
+                temp_priority.append(azs_queue_dict[azs]['queue'])
+            azs_for_trucks_with_priority[i] = {'azs_ids': azs_for_trucks_dict[i]['azs_ids'],
+                                               'priority': temp_priority}
+
+        bubble_azs_for_trucks = dict()
+        # делаем сортировку пузырьком
+
+        for i in azs_for_trucks_with_priority:
+            temp_azs_list = azs_for_trucks_with_priority[i]['azs_ids']
+            temp_priority = azs_for_trucks_with_priority[i]['priority']
+            for n2 in range(1, len(temp_priority)):
+                for n in range(1, len(temp_priority)):
+                    if temp_priority[n] < temp_priority[n - 1]:
+                        temp = temp_priority[n - 1]
+                        temp_priority[n - 1] = temp_priority[n]
+                        temp_priority[n] = temp
+
+                        temp2 = temp_azs_list[n - 1]
+                        temp_azs_list[n - 1] = temp_azs_list[n]
+                        temp_azs_list[n] = temp2
+            bubble_azs_for_trucks[i] = {'azs_ids': temp_azs_list[:active_trucks - 1],
+                                        'priority:': temp_priority[:active_trucks - 1]}
+
+        k = 1
+        final_azs_for_trucks = dict()
+        truck_id_number = dict()
+        for i in bubble_azs_for_trucks:
+            truck_id_number[k] = {'truck_id': i}
+            final_azs_for_trucks[k] = {"azs_ids": bubble_azs_for_trucks[i]['azs_ids']}
+            k = k + 1
+
+        # проверяем, что количество активных бензовозов не меньше, чем количество доступных для отправки на АЗС
+        available_active_trucks = len(azs_for_trucks_dict)
+        # если количество доступных бензовозов меньше, то только это количество считаем активными
+        if active_trucks >= len(azs_for_trucks_dict):
+            active_trucks = available_active_trucks
+        print('---------------LENA POLENO-------------------')
+        print(azs_for_trucks_dict)
+        print(active_trucks)
+        if active_trucks == 11:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        for n7 in final_azs_for_trucks[7]["azs_ids"]:
+                                                            if n7 != n6 and n7 != n5 and n7 != n4 and n7 != n3 and n7 != n2 and n7 != n1:
+                                                                for n8 in final_azs_for_trucks[8]["azs_ids"]:
+                                                                    if n8 != n7 and n8 != n6 and n8 != n5 and n8 != n4 and n8 != n3 and n8 != n2 and n8 != n1:
+                                                                        for n9 in final_azs_for_trucks[9]["azs_ids"]:
+                                                                            if n9 != n8 and n9 != n7 and n9 != n6 and n9 != n5 and n9 != n4 and n9 != n3 and n9 != n2 and n9 != n1:
+                                                                                for n10 in final_azs_for_trucks[10][
+                                                                                    "azs_ids"]:
+                                                                                    if n10 != n9 and n10 != n8 and n10 != n7 and n10 != n6 and n10 != n5 and n10 != n4 and n10 != n3 and n10 != n2 and n10 != n1:
+                                                                                        for n11 in \
+                                                                                        final_azs_for_trucks[11][
+                                                                                            "azs_ids"]:
+                                                                                            if n11 != n10 and n11 != n9 and n11 != n8 and n11 != n7 and n11 != n6 and n11 != n5 and n11 != n4 and n11 != n3 and n11 != n2 and n11 != n1:
+
+                                                                                                choice_azs_truck_dict = dict()
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n1] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   1][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n2] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   2][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n3] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   3][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n4] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   4][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n5] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   5][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n6] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   6][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n7] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   7][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n8] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   8][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n9] = {'truck_id':
+                                                                                                               truck_id_number[
+                                                                                                                   9][
+                                                                                                                   'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n10] = {'truck_id':
+                                                                                                                truck_id_number[
+                                                                                                                    10][
+                                                                                                                    'truck_id']}
+                                                                                                choice_azs_truck_dict[
+                                                                                                    n11] = {'truck_id':
+                                                                                                                truck_id_number[
+                                                                                                                    11][
+                                                                                                                    'truck_id']}
+                                                                                                number_variant = number_variant + 1
+                                                                                                if number_variant & 1000 == 0:
+                                                                                                    number_of_success_loops = number_of_success_loops + 1
+                                                                                                    good_choices_dict[
+                                                                                                        number_of_success_loops] = {
+                                                                                                        'variants': choice_azs_truck_dict}
+        if active_trucks == 10:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        for n7 in final_azs_for_trucks[7]["azs_ids"]:
+                                                            if n7 != n6 and n7 != n5 and n7 != n4 and n7 != n3 and n7 != n2 and n7 != n1:
+                                                                for n8 in final_azs_for_trucks[8]["azs_ids"]:
+                                                                    if n8 != n7 and n8 != n6 and n8 != n5 and n8 != n4 and n8 != n3 and n8 != n2 and n8 != n1:
+                                                                        for n9 in final_azs_for_trucks[9]["azs_ids"]:
+                                                                            if n9 != n8 and n9 != n7 and n9 != n6 and n9 != n5 and n9 != n4 and n9 != n3 and n9 != n2 and n9 != n1:
+                                                                                for n10 in final_azs_for_trucks[10][
+                                                                                    "azs_ids"]:
+                                                                                    if n10 != n9 and n10 != n8 and n10 != n7 and n10 != n6 and n10 != n5 and n10 != n4 and n10 != n3 and n10 != n2 and n10 != n1:
+                                                                                        choice_azs_truck_dict = dict()
+                                                                                        choice_azs_truck_dict[n1] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[1][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n2] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[2][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n3] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[3][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n4] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[4][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n5] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[5][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n6] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[6][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n7] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[7][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n8] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[8][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n9] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[9][
+                                                                                                    'truck_id']}
+                                                                                        choice_azs_truck_dict[n10] = {
+                                                                                            'truck_id':
+                                                                                                truck_id_number[10][
+                                                                                                    'truck_id']}
+                                                                                        number_variant = number_variant + 1
+                                                                                        if number_variant & 1000 == 0:
+                                                                                            number_of_success_loops = number_of_success_loops + 1
+                                                                                            good_choices_dict[
+                                                                                                number_of_success_loops] = {
+                                                                                                'variants': choice_azs_truck_dict}
+        if active_trucks == 9:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        for n7 in final_azs_for_trucks[7]["azs_ids"]:
+                                                            if n7 != n6 and n7 != n5 and n7 != n4 and n7 != n3 and n7 != n2 and n7 != n1:
+                                                                for n8 in final_azs_for_trucks[8]["azs_ids"]:
+                                                                    if n8 != n7 and n8 != n6 and n8 != n5 and n8 != n4 and n8 != n3 and n8 != n2 and n8 != n1:
+                                                                        for n9 in final_azs_for_trucks[9]["azs_ids"]:
+                                                                            if n9 != n8 and n9 != n7 and n9 != n6 and n9 != n5 and n9 != n4 and n9 != n3 and n9 != n2 and n9 != n1:
+                                                                                choice_azs_truck_dict = dict()
+                                                                                choice_azs_truck_dict[n1] = {
+                                                                                    'truck_id': truck_id_number[1][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n2] = {
+                                                                                    'truck_id': truck_id_number[2][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n3] = {
+                                                                                    'truck_id': truck_id_number[3][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n4] = {
+                                                                                    'truck_id': truck_id_number[4][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n5] = {
+                                                                                    'truck_id': truck_id_number[5][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n6] = {
+                                                                                    'truck_id': truck_id_number[6][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n7] = {
+                                                                                    'truck_id': truck_id_number[7][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n8] = {
+                                                                                    'truck_id': truck_id_number[8][
+                                                                                        'truck_id']}
+                                                                                choice_azs_truck_dict[n9] = {
+                                                                                    'truck_id': truck_id_number[9][
+                                                                                        'truck_id']}
+
+                                                                                number_variant = number_variant + 1
+                                                                                if number_variant & 1000 == 0:
+                                                                                    number_of_success_loops = number_of_success_loops + 1
+                                                                                    good_choices_dict[
+                                                                                        number_of_success_loops] = {
+                                                                                        'variants': choice_azs_truck_dict}
+
+        if active_trucks == 8:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        for n7 in final_azs_for_trucks[7]["azs_ids"]:
+                                                            if n7 != n6 and n7 != n5 and n7 != n4 and n7 != n3 and n7 != n2 and n7 != n1:
+                                                                for n8 in final_azs_for_trucks[8]["azs_ids"]:
+                                                                    if n8 != n7 and n8 != n6 and n8 != n5 and n8 != n4 and n8 != n3 and n8 != n2 and n8 != n1:
+                                                                        choice_azs_truck_dict = dict()
+                                                                        choice_azs_truck_dict[n1] = {
+                                                                            'truck_id': truck_id_number[1]['truck_id']}
+                                                                        choice_azs_truck_dict[n2] = {
+                                                                            'truck_id': truck_id_number[2]['truck_id']}
+                                                                        choice_azs_truck_dict[n3] = {
+                                                                            'truck_id': truck_id_number[3]['truck_id']}
+                                                                        choice_azs_truck_dict[n4] = {
+                                                                            'truck_id': truck_id_number[4]['truck_id']}
+                                                                        choice_azs_truck_dict[n5] = {
+                                                                            'truck_id': truck_id_number[5]['truck_id']}
+                                                                        choice_azs_truck_dict[n6] = {
+                                                                            'truck_id': truck_id_number[6]['truck_id']}
+                                                                        choice_azs_truck_dict[n7] = {
+                                                                            'truck_id': truck_id_number[7]['truck_id']}
+                                                                        choice_azs_truck_dict[n8] = {
+                                                                            'truck_id': truck_id_number[8]['truck_id']}
+
+                                                                        number_variant = number_variant + 1
+                                                                        number_of_success_loops = number_of_success_loops + 1
+                                                                        good_choices_dict[number_of_success_loops] = {
+                                                                            'variants': choice_azs_truck_dict}
+        if active_trucks == 7:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        for n7 in final_azs_for_trucks[7]["azs_ids"]:
+                                                            if n7 != n6 and n7 != n5 and n7 != n4 and n7 != n3 and n7 != n2 and n7 != n1:
+                                                                choice_azs_truck_dict = dict()
+                                                                choice_azs_truck_dict[n1] = {
+                                                                    'truck_id': truck_id_number[1]['truck_id']}
+                                                                choice_azs_truck_dict[n2] = {
+                                                                    'truck_id': truck_id_number[2]['truck_id']}
+                                                                choice_azs_truck_dict[n3] = {
+                                                                    'truck_id': truck_id_number[3]['truck_id']}
+                                                                choice_azs_truck_dict[n4] = {
+                                                                    'truck_id': truck_id_number[4]['truck_id']}
+                                                                choice_azs_truck_dict[n5] = {
+                                                                    'truck_id': truck_id_number[5]['truck_id']}
+                                                                choice_azs_truck_dict[n6] = {
+                                                                    'truck_id': truck_id_number[6]['truck_id']}
+                                                                choice_azs_truck_dict[n7] = {
+                                                                    'truck_id': truck_id_number[7]['truck_id']}
+
+                                                                number_variant = number_variant + 1
+
+                                                                number_of_success_loops = number_of_success_loops + 1
+                                                                good_choices_dict[number_of_success_loops] = {
+                                                                    'variants': choice_azs_truck_dict}
+
+        if active_trucks == 6:
+            print('6 бензовозов')
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                for n6 in final_azs_for_trucks[6]["azs_ids"]:
+                                                    if n6 != n5 and n6 != n4 and n6 != n3 and n6 != n2 and n6 != n1:
+                                                        choice_azs_truck_dict = dict()
+                                                        choice_azs_truck_dict[n1] = {
+                                                            'truck_id': truck_id_number[1]['truck_id']}
+                                                        choice_azs_truck_dict[n2] = {
+                                                            'truck_id': truck_id_number[2]['truck_id']}
+                                                        choice_azs_truck_dict[n3] = {
+                                                            'truck_id': truck_id_number[3]['truck_id']}
+                                                        choice_azs_truck_dict[n4] = {
+                                                            'truck_id': truck_id_number[4]['truck_id']}
+                                                        choice_azs_truck_dict[n5] = {
+                                                            'truck_id': truck_id_number[5]['truck_id']}
+                                                        choice_azs_truck_dict[n6] = {
+                                                            'truck_id': truck_id_number[6]['truck_id']}
+
+                                                        number_variant = number_variant + 1
+                                                        number_of_success_loops = number_of_success_loops + 1
+                                                        good_choices_dict[number_of_success_loops] = {
+                                                            'variants': choice_azs_truck_dict}
+            # if number_variant == 0:
+            #     active_trucks = active_trucks - 1
+        if active_trucks == 5:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        for n5 in final_azs_for_trucks[5]["azs_ids"]:
+                                            if n5 != n4 and n5 != n3 and n5 != n2 and n5 != n1:
+                                                choice_azs_truck_dict = dict()
+                                                choice_azs_truck_dict[n1] = {
+                                                    'truck_id': truck_id_number[1][
+                                                        'truck_id']}
+                                                choice_azs_truck_dict[n2] = {
+                                                    'truck_id': truck_id_number[2][
+                                                        'truck_id']}
+                                                choice_azs_truck_dict[n3] = {
+                                                    'truck_id': truck_id_number[3][
+                                                        'truck_id']}
+                                                choice_azs_truck_dict[n4] = {
+                                                    'truck_id': truck_id_number[4][
+                                                        'truck_id']}
+                                                choice_azs_truck_dict[n5] = {
+                                                    'truck_id': truck_id_number[5][
+                                                        'truck_id']}
+
+                                                number_variant = number_variant + 1
+                                                number_of_success_loops = number_of_success_loops + 1
+                                                good_choices_dict[number_of_success_loops] = {
+                                                    'variants': choice_azs_truck_dict}
+
+        if active_trucks == 4:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                for n4 in final_azs_for_trucks[4]["azs_ids"]:
+                                    if n4 != n3 and n4 != n2 and n4 != n1:
+                                        choice_azs_truck_dict = dict()
+                                        choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
+                                        choice_azs_truck_dict[n2] = {'truck_id': truck_id_number[2]['truck_id']}
+                                        choice_azs_truck_dict[n3] = {'truck_id': truck_id_number[3]['truck_id']}
+                                        choice_azs_truck_dict[n4] = {'truck_id': truck_id_number[4]['truck_id']}
+                                        number_variant = number_variant + 1
+                                        number_of_success_loops = number_of_success_loops + 1
+                                        good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+        if active_trucks == 3:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        for n3 in final_azs_for_trucks[3]["azs_ids"]:
+                            if n3 != n2 and n3 != n1:
+                                choice_azs_truck_dict = dict()
+                                choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
+                                choice_azs_truck_dict[n2] = {'truck_id': truck_id_number[2]['truck_id']}
+                                choice_azs_truck_dict[n3] = {'truck_id': truck_id_number[3]['truck_id']}
+                                number_variant = number_variant + 1
+                                number_of_success_loops = number_of_success_loops + 1
+                                good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+
+        if active_trucks == 2:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                for n2 in final_azs_for_trucks[2]["azs_ids"]:
+                    if n2 != n1:
+                        choice_azs_truck_dict = dict()
+                        choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
+                        choice_azs_truck_dict[n2] = {'truck_id': truck_id_number[2]['truck_id']}
+                        number_variant = number_variant + 1
+                        number_of_success_loops = number_of_success_loops + 1
+                        good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+
+        if active_trucks == 1:
+            # поскольку при полном переборе нет нерабочих вариантов расстановки, то расстановка всегда успешна
+            choise_good = 1
+            number_of_success_loops = 0
+            number_variant = 0
+            for n1 in final_azs_for_trucks[1]["azs_ids"]:
+                choice_azs_truck_dict = dict()
+                choice_azs_truck_dict[n1] = {'truck_id': truck_id_number[1]['truck_id']}
+                number_variant = number_variant + 1
+                number_of_success_loops = number_of_success_loops + 1
+                good_choices_dict[number_of_success_loops] = {'variants': choice_azs_truck_dict}
+    print('CHOICE_GOOD',choise_good)
     if choise_good == 1:
         for choice in good_choices_dict:
             '''**************************************************************************************************'''
