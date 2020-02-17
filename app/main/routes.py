@@ -496,28 +496,24 @@ def page_azs(id):
     previous_month = datetime.today() - timedelta(days=30)
     select_last_month = RealisationStats.query.filter(RealisationStats.date <= datetime.today(), previous_month < RealisationStats.date).filter_by(azs_id=id).all()
     for row in select_last_month:
-
-        tank_id = row.tank_id
-        sum_92 = 0
-        sum_95 = 0
-        sum_50 = 0
         if row.fuel_type == 92:
-            if row.tank_id is tank_id:
-                sum_92 = sum_92 + row.realisation
             fuel_92.append(row.realisation)
             labels.append(datetime.strftime(row.date, "%d/%m"))
         elif row.fuel_type == 95:
             fuel_95.append(row.realisation)
-        elif row.fuel_type == 50:
+        elif row.fuel_type == 50 or row.fuel_type:
             fuel_50.append(row.realisation)
 
-    graph = pygal.StackedLine(fill=True, style=BlueStyle, height=500)
+    graph = pygal.Line(height=500)
     graph.title = 'Реализация топлива в течение месяца'
     graph.x_labels = labels
     graph.add('АИ-92', fuel_92)
     graph.add('АИ-95', fuel_95)
     graph.add('Дт', fuel_50)
     graph_data = graph.render_data_uri()
+    print(fuel_92)
+    print(fuel_95)
+    print(fuel_50)
     return render_template('page_azs.html', title='АЗС № ' + str(azs_list.number), page_azs_active=True,
                            online=online, realisation=realisation, azs_list=azs_list, tanks_list=tanks_list,
                            azs_list_active=True, check_if_exist=check_if_exist, graph_data=graph_data)
