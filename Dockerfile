@@ -4,7 +4,6 @@ RUN useradd -ms /bin/bash aob
 
 WORKDIR /home/aob
 
-COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN apt-get update && apt-get install -y \
 postgresql-server-dev*
