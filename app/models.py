@@ -93,7 +93,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
     role = db.Column(db.String(60))
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -141,12 +140,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
 
-    def followed_posts(self):
-        followed = Post.query.join(
-            followers, (followers.c.followed_id == Post.user_id)).filter(
-                followers.c.follower_id == self.id)
-        own = Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -195,7 +188,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
             'username': self.username,
             'last_seen': self.last_seen.isoformat() + 'Z',
             'about_me': self.about_me,
-            'post_count': self.posts.count(),
             'follower_count': self.followers.count(),
             'followed_count': self.followed.count(),
             '_links': {
@@ -239,18 +231,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-
-
-class Post(SearchableMixin, db.Model):
-    __searchable__ = ['body']
-    id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    language = db.Column(db.String(5))
-
-    def __repr__(self):
-        return '<Post {}>'.format(self.body)
 
 
 class Message(db.Model):
@@ -598,19 +578,6 @@ class UserLogs(db.Model):
     timestamp = db.Column(db.DateTime)
 
 
-class TripForToday(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))  # айдишник азс из таблицы azs_list
-    azs_number = db.Column(db.Integer)
-    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))  # айдишник бензовоза из таблицы trucks
-    truck_number = db.Column(db.String(60))
-    trip_number = db.Column(db.Integer)
-    variant_id = db.Column(db.Integer)
-    zapolnenie = db.Column(db.String(200))
-    timestamp = db.Column(db.DateTime)
-    complete = db.Column(db.Boolean)
-
-
 class Close1Tank1(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tank1 = db.Column(db.String(120))
@@ -783,6 +750,7 @@ class Trips(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     trip_number = db.Column(db.Integer)  # порядковый номер рейса
     date = db.Column(db.DateTime)
+    day = db.Column(db.Date)
     work_type_id = db.Column(db.Integer, db.ForeignKey('work_type.id'))
     variant_number = db.Column(db.Integer)  # номер предложеного варианта расстановки
     calculate_id = db.Column(db.Integer)

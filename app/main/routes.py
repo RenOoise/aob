@@ -3,15 +3,16 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from app import db
+from time import strftime
 from app.admin.forms import CellsForm, FuelForm
 from wtforms import FieldList, FormField
-from app.main.forms import EditProfileForm, PostForm, SearchForm, MessageForm, ManualInputForm
-from app.models import User, Post, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
-    PriorityList, ManualInfo, Trucks, TruckTanks, TruckFalse, Trip, WorkType, Errors, \
+from app.main.forms import EditProfileForm, SearchForm, MessageForm, ManualInputForm
+from app.models import User, Message, Notification, FuelResidue, AzsList, Tanks, FuelRealisation, Priority, \
+    PriorityList, ManualInfo, Trucks, TruckTanks, Trip, WorkType, Errors, \
     Trips, Result, TrucksForAzs, VariantSlivaForTrip, TruckTanksVariations
 from app.models import Close1Tank1, Close1Tank2, Close1Tank3, Close1Tank4, Close1Tank5, Close2Tank1, Close2Tank2, \
     Close2Tank3, Close2Tank4, Close2Tank5, Close3Tank1, Close3Tank2, Close3Tank3, Close3Tank4, Close3Tank5, Close4Tank1, \
-    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, TripForToday, TruckFalse, RealisationStats, \
+    Close4Tank2, Close4Tank3, Close4Tank4, Close4Tank5, TruckFalse, RealisationStats, \
     TempAzsTrucks3, TempAzsTrucks4, VariantNalivaForTrip, TempAzsTrucks, TempAzsTrucks2, UserLogs, GlobalSettings, \
     GlobalSettingsParams, TempAzsTrucks2SecondTrip, TempAzsTrucks3SecondTrip, TempAzsTrucks4SecondTrip
 
@@ -21,17 +22,16 @@ import pandas as pd
 from StyleFrame import StyleFrame, Styler, utils
 from datetime import datetime, timedelta, date
 import pygal
-from pygal.style import Style, BlueStyle
+from pygal.style import BlueStyle
 import time
 import random
 import json
 from sqlalchemy import desc
-
+import sqlalchemy as sa
 
 @bp.route('/stats', methods=['GET', 'POST'])
 @login_required
 def stats():
-
     # Graphs
     labels = []
     fuel_92 = list()
@@ -449,7 +449,7 @@ def online_json():
     online = FuelResidue.query.outerjoin(AzsList).outerjoin(Tanks).order_by(AzsList.number).all()
     for i in online:
         tank = Tanks.query.filter_by(id=i.tank_id).first()
-        if tank.deactive !=True:
+        if tank.deactive != True:
             azs_number = AzsList.query.filter_by(id=i.azs_id).first()
             if len(str(azs_number.number)) == 1:
                 azs_number = str(0) + str(azs_number.number)
@@ -3464,6 +3464,7 @@ def start_first_trip():
                 temp_azs_list = azs_for_trucks_dict[i]['azs_ids']
                 temp_priority = list()
                 for azs in temp_azs_list:
+                    # if azs in azs_queue_dict:
                     temp_priority.append(azs_queue_dict[azs]['queue'])
                 azs_for_trucks_with_priority[i] = {'azs_ids': azs_for_trucks_dict[i]['azs_ids'],
                                                    'priority': temp_priority}
@@ -3977,7 +3978,7 @@ def start_first_trip():
                     best_choices = sort_choices_dict[-1:]
                 # перебираем список из 10 лучших вариантов
                 for i in best_choices:
-                    trips = Trips(trip_number=1, date=datetime.today(), work_type_id=work_type.id,
+                    trips = Trips(trip_number=1, day=date.today(), date=datetime.today(), work_type_id=work_type.id,
                                   calculate_id=previous_variant_id + 1)
                     db.session.add(trips)
                     print(i, choices_dict_work_type_1[i]['points'], choices_dict_work_type_1[i]['days_stock_min1'],
@@ -4114,7 +4115,7 @@ def start_first_trip():
                 results = Result.query.all()
                 # перебираем список из 10 лучших вариантов
                 for i in best_choices:
-                    trips = Trips(trip_number=1, date=datetime.today(), work_type_id=work_type.id,
+                    trips = Trips(trip_number=1, day=date.today(), date=datetime.today(), work_type_id=work_type.id,
                                   calculate_id=previous_variant_id + 1)
 
                     for x in choices_dict_work_type_2[i]['variants']:
@@ -5909,7 +5910,7 @@ def start_second_trip():
                 best_choices = sort_choices_dict[-1:]
             # перебираем список из 10 лучших вариантов
             for i in best_choices:
-                trips = Trips(trip_number=2, date=datetime.today(), work_type_id=work_type.id,
+                trips = Trips(trip_number=2, day=date.today(), date=datetime.today(), work_type_id=work_type.id,
                               calculate_id=previous_variant_id)
                 db.session.add(trips)
                 print(i, choices_dict_work_type_1[i]['points'], choices_dict_work_type_1[i]['days_stock_min1'],
@@ -6193,6 +6194,18 @@ def trips_naliv_json(trip_number):
     result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
 
     for i in result:
+        naliv_cell_1 = "Отсек отсутствует"
+        naliv_cell_2 = "Отсек отсутствует"
+        naliv_cell_3 = "Отсек отсутствует"
+        naliv_cell_4 = "Отсек отсутствует"
+        naliv_cell_5 = "Отсек отсутствует"
+        naliv_cell_6 = "Отсек отсутствует"
+        sliv_cell_1 = "Отсек отсутствует"
+        sliv_cell_2 = "Отсек отсутствует"
+        sliv_cell_3 = "Отсек отсутствует"
+        sliv_cell_4 = "Отсек отсутствует"
+        sliv_cell_5 = "Отсек отсутствует"
+        sliv_cell_6 = "Отсек отсутствует"
         trip = Trip.query.filter_by(azs_id=i.azs_id).first()
         if trip.weigher == True:
             weighter_icon = ' <i alt="Весы" title="На пути к этой АЗС есть зона весового контроля" ' \
@@ -6321,9 +6334,11 @@ def test_form(id):
 @login_required
 def recreate_trip():
     last_trip = Trips.query.order_by(desc("calculate_id")).first()
-    last_trip.incorrect = True
-    db.session.commit()
-    return render_template('/recreate_trip.html')
+    last_trips = Trips.query.filter_by(calculate_id=last_trip.calculate_id).all()
+    for i in last_trips:
+        i.incorrect = True
+        db.session.commit()
+    return render_template('recreate_trip.html')
 
 
 @bp.route('/creation_failed', methods=['POST', 'GET'])
@@ -6331,3 +6346,19 @@ def recreate_trip():
 def creation_failed():
 
     return render_template('creation_failed.html', title="Расстановка не удалась")
+
+
+@bp.route('/trip_history', methods=['POST', 'GET'])
+@login_required
+def trip_history():
+    page = request.args.get('page', 1, type=int)
+    posts = Trips.query.filter_by(incorrect=None).order_by(desc("date")).group_by(sa.func.year(Trips.day),
+                  sa.func.month(Trips.day), sa.func.day(Trips.day)).paginate(page, 10, False)
+    next_url = url_for('main.trip_history', page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('main.trip_history', page=posts.prev_num) \
+        if posts.has_prev else None
+    results = Result.query.all()
+
+    return render_template('trip_history.html', title="История расстановок", posts=posts.items, next_url=next_url,
+                           prev_url=prev_url, result=results)

@@ -6,7 +6,7 @@ from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, Ed
     AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm, \
     WorkAlgorithmForm
 from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, FuelRealisation, FuelResidue, WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
+    PriorityList, WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
     GlobalSettingsParams
 from app.admin import bp
 

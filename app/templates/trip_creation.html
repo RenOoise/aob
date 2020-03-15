@@ -55,55 +55,68 @@
                 </div>
                 <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     {% if trips %}
-                        <table data-toggle="table" class="table-sm"
-                               id="variant_naliva_first_trip"
-                               data-url="/trip/1/trip_naliv.json"
-                               data-click-to-select="true"
-                               data-locale="ru-RU">
-                            <thead>
-                            <tr>
-                                <th data-field="check"  data-checkbox="true">#</th>
-                                <th data-field="azs_number">Номер АЗС</th>
-                                <th data-field="truck_number">Бензовоз</th>
-                                <th data-field="naliv_cell_1">Отсек №1</th>
-                                <th data-field="naliv_cell_2">Отсек №2</th>
-                                <th data-field="naliv_cell_3">Отсек №3</th>
-                                <th data-field="naliv_cell_4">Отсек №4</th>
-                                <th data-field="naliv_cell_5">Отсек №5</th>
-                                <th data-field="naliv_cell_6">Отсек №6</th>
-                            </tr>
-                            </thead>
-                        </table>
-                        <script>
-                            $(function() {
-                                $('#variant_naliva_first_trip').bootstrapTable()
-                            })
-                        </script>
-
-                        <table data-toggle="table" class="table-sm"
-                               id="variant_naliva_second_trip"
-                               data-url="/trip/2/trip_naliv.json"
-                               data-click-to-select="true"
-                               data-locale="ru-RU">
-                            <thead>
-                            <tr>
-                                <th data-field="check"  data-checkbox="true">#</th>
-                                <th data-field="azs_number">Номер АЗС</th>
-                                <th data-field="truck_number">Бензовоз</th>
-                                <th data-field="naliv_cell_1">Отсек №1</th>
-                                <th data-field="naliv_cell_2">Отсек №2</th>
-                                <th data-field="naliv_cell_3">Отсек №3</th>
-                                <th data-field="naliv_cell_4">Отсек №4</th>
-                                <th data-field="naliv_cell_5">Отсек №5</th>
-                                <th data-field="naliv_cell_6">Отсек №6</th>
-                            </tr>
-                            </thead>
-                        </table>
-                        <script>
-                            $(function() {
-                                $('#variant_naliva_first_trip').bootstrapTable()
-                            })
-                        </script>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class=" float-left">Первый рейс</h5>
+                            </div>
+                            <div class="card-body">
+                                <table data-toggle="table" class="table-sm"
+                                       id="variant_naliva_first_trip"
+                                       data-url="/trip/1/trip_naliv.json"
+                                       data-click-to-select="true"
+                                       data-locale="ru-RU">
+                                    <thead>
+                                    <tr>
+                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="azs_number">Номер АЗС</th>
+                                        <th data-field="truck_number">Бензовоз</th>
+                                        <th data-field="naliv_cell_1">Отсек №1</th>
+                                        <th data-field="naliv_cell_2">Отсек №2</th>
+                                        <th data-field="naliv_cell_3">Отсек №3</th>
+                                        <th data-field="naliv_cell_4">Отсек №4</th>
+                                       <!--   <th data-field="naliv_cell_5">Отсек №5</th>
+                                        <th data-field="naliv_cell_6">Отсек №6</th> -->
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#variant_naliva_first_trip').bootstrapTable()
+                                })
+                            </script>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class=" float-left">Второй рейс</h5>
+                            </div>
+                            <div class="card-body">
+                                <table data-toggle="table" class="table-sm"
+                                       id="variant_naliva_second_trip"
+                                       data-url="/trip/2/trip_naliv.json"
+                                       data-click-to-select="true"
+                                       data-locale="ru-RU">
+                                    <thead>
+                                    <tr>
+                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="azs_number">Номер АЗС</th>
+                                        <th data-field="truck_number">Бензовоз</th>
+                                        <th data-field="naliv_cell_1">Отсек №1</th>
+                                        <th data-field="naliv_cell_2">Отсек №2</th>
+                                        <th data-field="naliv_cell_3">Отсек №3</th>
+                                        <th data-field="naliv_cell_4">Отсек №4</th>
+                                      <!-- <th data-field="naliv_cell_5">Отсек №5</th>
+                                        <th data-field="naliv_cell_6">Отсек №6</th> -->
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#variant_naliva_first_trip').bootstrapTable()
+                                })
+                            </script>
+                        </div>
                     {% else %}
                         Расстановка бензовозов на сегодня не выполнена. <br />
                         Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"
@@ -113,55 +126,68 @@
                 </div>
                 <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
                     {% if trips %}
-                        <table data-toggle="table" class="table-sm"
-                               id="variant_naliva_first_trip"
-                               data-url="/trip/1/trip_naliv.json"
-                               data-click-to-select="true"
-                               data-locale="ru-RU">
-                            <thead>
-                            <tr>
-                                <th data-field="check"  data-checkbox="true">#</th>
-                                <th data-field="azs_number">Номер АЗС</th>
-                                <th data-field="truck_number">Бензовоз</th>
-                                <th data-field="sliv_cell_1">Отсек №1</th>
-                                <th data-field="sliv_cell_2">Отсек №2</th>
-                                <th data-field="sliv_cell_3">Отсек №3</th>
-                                <th data-field="sliv_cell_4">Отсек №4</th>
-                                <th data-field="sliv_cell_5">Отсек №5</th>
-                                <th data-field="sliv_cell_6">Отсек №6</th>
-                            </tr>
-                            </thead>
-                        </table>
-                        <script>
-                            $(function() {
-                                $('#variant_naliva_first_trip').bootstrapTable()
-                            })
-                        </script>
-
-                        <table data-toggle="table" class="table-sm"
-                               id="variant_naliva_second_trip"
-                               data-url="/trip/2/trip_naliv.json"
-                               data-click-to-select="true"
-                               data-locale="ru-RU">
-                            <thead>
-                            <tr>
-                                <th data-field="check"  data-checkbox="true">#</th>
-                                <th data-field="azs_number">Номер АЗС</th>
-                                <th data-field="truck_number">Бензовоз</th>
-                                <th data-field="sliv_cell_1">Отсек №1</th>
-                                <th data-field="sliv_cell_2">Отсек №2</th>
-                                <th data-field="sliv_cell_3">Отсек №3</th>
-                                <th data-field="sliv_cell_4">Отсек №4</th>
-                                <th data-field="sliv_cell_5">Отсек №5</th>
-                                <th data-field="sliv_cell_6">Отсек №6</th>
-                            </tr>
-                            </thead>
-                        </table>
-                        <script>
-                            $(function() {
-                                $('#variant_naliva_second_trip').bootstrapTable()
-                            })
-                        </script>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class=" float-left">Первый рейс</h5>
+                            </div>
+                            <div class="card-body">
+                                <table data-toggle="table" class="table-sm"
+                                       id="variant_naliva_first_trip"
+                                       data-url="/trip/1/trip_naliv.json"
+                                       data-click-to-select="true"
+                                       data-locale="ru-RU">
+                                    <thead>
+                                    <tr>
+                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="azs_number">Номер АЗС</th>
+                                        <th data-field="truck_number">Бензовоз</th>
+                                        <th data-field="sliv_cell_1">Отсек №1</th>
+                                        <th data-field="sliv_cell_2">Отсек №2</th>
+                                        <th data-field="sliv_cell_3">Отсек №3</th>
+                                        <th data-field="sliv_cell_4">Отсек №4</th>
+                                     <!--   <th data-field="sliv_cell_5">Отсек №5</th>
+                                        <th data-field="sliv_cell_6">Отсек №6</th>-->
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#variant_naliva_first_trip').bootstrapTable()
+                                })
+                            </script>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class=" float-left">Второй рейс</h5>
+                            </div>
+                            <div class="card-body">
+                                <table data-toggle="table" class="table-sm"
+                                       id="variant_naliva_second_trip"
+                                       data-url="/trip/2/trip_naliv.json"
+                                       data-click-to-select="true"
+                                       data-locale="ru-RU">
+                                    <thead>
+                                    <tr>
+                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="azs_number">Номер АЗС</th>
+                                        <th data-field="truck_number">Бензовоз</th>
+                                        <th data-field="sliv_cell_1">Отсек №1</th>
+                                        <th data-field="sliv_cell_2">Отсек №2</th>
+                                        <th data-field="sliv_cell_3">Отсек №3</th>
+                                        <th data-field="sliv_cell_4">Отсек №4</th>
+                                       <!--   <th data-field="sliv_cell_5">Отсек №5</th>
+                                        <th data-field="sliv_cell_6">Отсек №6</th> -->
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <script>
+                                $(function() {
+                                    $('#variant_naliva_second_trip').bootstrapTable()
+                                })
+                            </script>
+                        </div>
                     {% else %}
                         Расстановка бензовозов на сегодня не выполнена. <br />
                         Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"

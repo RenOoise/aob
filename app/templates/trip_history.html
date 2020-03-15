@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="container">
+        <div class="row py-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class=" float-left">Журнал расстановок бензовозов</h5>
+                    </div>
+                    <div class="card-body">
+
+                        <div id="accordion">
+                            {% for post in posts %}
+                                <div class="card">
+                                    <div class="card-header" id="heading{{post.day}}">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{post.day}}" aria-expanded="false" aria-controls="collapse{{post.day}}">
+                                                {{post.day}}
+                                            </button>
+                                        </h5>
+                                    </div>
+
+                                    <div id="collapse{{post.day}}" class="collapse" aria-labelledby="heading{{post.day}}" data-parent="#accordion">
+                                        <div class="card-body">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class=" float-left">Первый рейс</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <table class="table">
+                                                        <thead>
+                                                        <tr>
+                                                            <th scope="col">#</th>
+                                                            <th scope="col">АЗС</th>
+                                                            <th scope="col">Бензовоз</th>
+                                                            <th scope="col">92</th>
+                                                            <th scope="col">95</th>
+                                                            <th scope="col">50</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {% for i in result %}
+                                                            {% if i.calculate_id == post.calculate_id %}
+                                                                {% if i.trip_number == 1 %}
+                                                                    <tr>
+                                                                        <th>{{ i.id }}</th>
+                                                                        <td>{{ i.azs_id }}</td>
+                                                                        <td>{{ i.truck_id }}</td>
+                                                                        <td>{{ i.volume_92 }}</td>
+                                                                        <td>{{ i.volume_95 }}</td>
+                                                                        <td>{{ i.volume_50 }}</td>
+                                                                    </tr>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class=" float-left">Второй рейс</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <table class="table">
+                                                        <thead>
+                                                        <tr>
+                                                            <th scope="col">#</th>
+                                                            <th scope="col">АЗС</th>
+                                                            <th scope="col">Бензовоз</th>
+                                                            <th scope="col">92</th>
+                                                            <th scope="col">95</th>
+                                                            <th scope="col">50</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {% for i in result %}
+                                                            {% if i.calculate_id == post.calculate_id %}
+                                                                {% if i.trip_number == 2 %}
+                                                                    <tr>
+                                                                        <th>{{ i.id }}</th>
+                                                                        <td>{{ i.azs_id }}</td>
+                                                                        <td>{{ i.truck_id }}</td>
+                                                                        <td>{{ i.volume_92 }}</td>
+                                                                        <td>{{ i.volume_95 }}</td>
+                                                                        <td>{{ i.volume_50 }}</td>
+                                                                    </tr>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row py-4">
+                    {% if prev_url %}
+                        <a href="{{ prev_url }}">К новым</a>
+                    {% endif %}
+                    {% if next_url %}
+                        <a href="{{ next_url }}">К старым</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
