@@ -890,16 +890,6 @@ class QueryFromDb(object):
         return connection
 
 
-def sum_time(first, second):
-    sum = timedelta()
-    timeList = [str(first), str(second)]
-    for time in timeList:
-        (h, m, s) = time.split(':')
-        d = timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-        sum += d
-    return sum
-
-
 def priority_sort(sorted_list):
     counterX = 0
     priority_list = PriorityList.query.order_by('priority').all()
@@ -911,8 +901,8 @@ def priority_sort(sorted_list):
             if tbl_pr['table_priority'] == pl.id:
                 trip = Trip.query.filter_by(azs_id=int(tbl_pr['azs_id'])).first_or_404()
                 tbl_pr['distance'] = trip.distance
-                tbl_pr['time_before'] = sum_time(trip.time_to_before_lunch, trip.time_from_before_lunch)
-                tbl_pr['time_after'] = sum_time(trip.time_to, trip.time_from)
+                tbl_pr['time_before'] = sum(trip.time_to_before_lunch, trip.time_from_before_lunch)
+                tbl_pr['time_after'] = sum(trip.time_to, trip.time_from)
                 temp_list.append(tbl_pr)
         try:
             if temp_list:
