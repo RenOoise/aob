@@ -7,7 +7,8 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class=" float-left">Реализация топлива на АЗС по резервуарам</h5>
-                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.realisation_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
+                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"
+                       href="{{ url_for('main.realisation_xlsx', datetime=datetime) }}">Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -24,19 +25,24 @@
                                 <th data-field="azs_number" data-sortable="true">Номер АЗС</th>
                                 <th data-field="tank_number" data-sortable="true">Номер резервуара</th>
                                 <th data-field="product_code" data-sortable="true">Вид топлива</th>
-                                <th data-field="fuel_realisation_10_days" data-sortable="true">Сред. за 10 дней (л.)</th>
+                                <th data-field="fuel_realisation_10_days" data-sortable="true">Сред. за 10 дней (л.)
+                                </th>
                                 <th data-field="fuel_realisation_7_days" data-sortable="true">Сред. за 7 дней (л.)</th>
                                 <th data-field="fuel_realisation_3_days" data-sortable="true">Сред. за 3 дня (л.)</th>
-                                <th data-field="fuel_realisation_1_days" data-sortable="true">Реализ. за 1 день (л.)</th>
-                                <th data-field="fuel_realisation_week_ago" data-sortable="true">Реализ. за 1 день неделю назад (л.)</th>
-                                <th data-field="fuel_realisation_hour" data-sortable="true">Реализ. за последний час</th>
+                                <th data-field="fuel_realisation_1_days" data-sortable="true">Реализ. за 1 день (л.)
+                                </th>
+                                <th data-field="fuel_realisation_week_ago" data-sortable="true">Реализ. за 1 день неделю
+                                    назад (л.)
+                                </th>
+                                <th data-field="fuel_realisation_hour" data-sortable="true">Реализ. за последний час
+                                </th>
                                 <th data-field="days_stock_min" data-sortable="true">Мин. запас суток</th>
                                 <th data-field="download_time" data-sortable="true">Время выгрузки</th>
                             </tr>
                             </thead>
                         </table>
                         <script>
-                            $(function() {
+                            $(function () {
                                 $('#table').bootstrapTable()
                             })
                         </script>

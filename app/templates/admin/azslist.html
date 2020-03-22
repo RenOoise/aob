@@ -2,50 +2,53 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<div class="row py-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class=" float-left">Зарегистрированные АЗС</h5>
-                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/addazs" >Добавить АЗС</a>
-            </div>
-            <div class="card-body">
+    <div class="row py-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class=" float-left">Зарегистрированные АЗС</h5>
+                    <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/addazs">Добавить
+                        АЗС</a>
+                </div>
+                <div class="card-body">
 
-                <div class="col-md-12">
-                    <div class="row">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                            <tr>
-                                <th>Номер АЗС</th>
-                                <th>Адрес</th>
-                                <th>Телефон</th>
-                                <th>E-mail</th>
-                                <th>Активна?</th>
-                                <th>Редактировать</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for i in azs_list %}
-                            <tr>
-                                <td><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number}}</a></td>
-                                <td>{{ i.address }}</td>
-                                <td>{{ i.phone }}</td>
-                                <td>{{ i.email }}</td>
-                                <td>{% if i.active == True %}
-                                    Да
-                                    {% else %}
-                                    Нет
-                                    {% endif %}
-                                </td>
-                                <td><a href="{{ url_for('admin.edit_azs', azs_id=i.id) }}">Редактировать</a></td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Номер АЗС</th>
+                                    <th>Адрес</th>
+                                    <th>Телефон</th>
+                                    <th>E-mail</th>
+                                    <th>Активна?</th>
+                                    <th>Редактировать</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for i in azs_list %}
+                                    <tr>
+                                        <td><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number }}</a>
+                                        </td>
+                                        <td>{{ i.address }}</td>
+                                        <td>{{ i.phone }}</td>
+                                        <td>{{ i.email }}</td>
+                                        <td>{% if i.active == True %}
+                                            Да
+                                        {% else %}
+                                            Нет
+                                        {% endif %}
+                                        </td>
+                                        <td><a href="{{ url_for('admin.edit_azs', azs_id=i.id) }}">Редактировать</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

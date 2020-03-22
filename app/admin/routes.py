@@ -1,14 +1,15 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
+
 from app import db
-from app.main.forms import EditProfileForm
+from app.admin import bp
 from app.admin.forms import AddUserForm, AddTankForm, AddAzsForm, AddCfgForm, EditCfgForm, EditTankForm, EditAzsForm, \
     AddTruckForm, AddTruckTankForm, EditTruckForm, EditPriorityListForm, AddTripForm, WorkTypeForm, TruckFalseForm, \
     WorkAlgorithmForm
-from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, Priority, \
-    PriorityList, WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
+from app.main.forms import EditProfileForm
+from app.models import User, AzsList, Tanks, CfgDbConnection, AzsSystems, Trucks, TruckTanks, Trip, PriorityList, \
+    WorkType, TruckFalse, TruckTanksVariations, GlobalSettings, \
     GlobalSettingsParams
-from app.admin import bp
 
 
 @bp.route('/admin/users', methods=['POST', 'GET'])
@@ -50,7 +51,8 @@ def global_settings_users():
 @login_required
 def global_settings_algorithm():
     form = WorkAlgorithmForm()
-    algorithm_1 = [(c.id, c.description) for c in GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
+    algorithm_1 = [(c.id, c.description) for c in
+                   GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
     algorithm_2 = [(c.id, c.description) for c in
                    GlobalSettingsParams.query.filter_by(setting_id=1).order_by("id").all()]
     form.algorithm_1.choices = algorithm_1
@@ -166,7 +168,7 @@ def addtank():
 
             tank = Tanks(azs_id=form.azs_id.data, tank_number=form.tank.data, fuel_type=form.fuel_type.data,
                          nominal_capacity=form.nominal_capacity.data, real_capacity=form.real_capacity.data,
-                         corrected_capacity=(form.real_capacity.data/100)*95, drain_time=form.drain_time.data,
+                         corrected_capacity=(form.real_capacity.data / 100) * 95, drain_time=form.drain_time.data,
                          after_drain_time=form.after_drain_time.data, mixing=form.mixing.data, active=form.active.data,
                          ams=form.ams.data, dead_capacity=form.dead_capacity.data)
             db.session.add(tank)
@@ -442,7 +444,7 @@ def truck_edit(id):
         form.active.data = truck.active
         form.weight_limit.data = truck.weight_limit
 
-    return render_template('admin/editor.html', title='Редактирование бензовоза '+str(truck.reg_number),
+    return render_template('admin/editor.html', title='Редактирование бензовоза ' + str(truck.reg_number),
                            truck_edit=True, settings_active=True, truck=truck, form=form)
 
 
@@ -472,52 +474,52 @@ def truck(id):
                 number = x.number
         if number == 1:
             truck_cells[i.variant_good] = {'1': i.diesel,
-                                               '2': truck_cells[i.variant_good]['2'],
-                                               '3': truck_cells[i.variant_good]['3'],
-                                               '4': truck_cells[i.variant_good]['4'],
-                                               '5': truck_cells[i.variant_good]['5'],
-                                               '6': truck_cells[i.variant_good]['6']
-                                               }
+                                           '2': truck_cells[i.variant_good]['2'],
+                                           '3': truck_cells[i.variant_good]['3'],
+                                           '4': truck_cells[i.variant_good]['4'],
+                                           '5': truck_cells[i.variant_good]['5'],
+                                           '6': truck_cells[i.variant_good]['6']
+                                           }
         if number == 2:
             truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
-                                               '2': i.diesel,
-                                               '3': truck_cells[i.variant_good]['3'],
-                                               '4': truck_cells[i.variant_good]['4'],
-                                               '5': truck_cells[i.variant_good]['5'],
-                                               '6': truck_cells[i.variant_good]['6']
-                                               }
+                                           '2': i.diesel,
+                                           '3': truck_cells[i.variant_good]['3'],
+                                           '4': truck_cells[i.variant_good]['4'],
+                                           '5': truck_cells[i.variant_good]['5'],
+                                           '6': truck_cells[i.variant_good]['6']
+                                           }
         if number == 3:
             truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
-                                               '2': truck_cells[i.variant_good]['2'],
-                                               '3': i.diesel,
-                                               '4': truck_cells[i.variant_good]['4'],
-                                               '5': truck_cells[i.variant_good]['5'],
-                                               '6': truck_cells[i.variant_good]['6']
-                                               }
+                                           '2': truck_cells[i.variant_good]['2'],
+                                           '3': i.diesel,
+                                           '4': truck_cells[i.variant_good]['4'],
+                                           '5': truck_cells[i.variant_good]['5'],
+                                           '6': truck_cells[i.variant_good]['6']
+                                           }
         if number == 4:
             truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
-                                               '2': truck_cells[i.variant_good]['2'],
-                                               '3': truck_cells[i.variant_good]['3'],
-                                               '4': i.diesel,
-                                               '5': truck_cells[i.variant_good]['5'],
-                                               '6': truck_cells[i.variant_good]['6']
-                                               }
+                                           '2': truck_cells[i.variant_good]['2'],
+                                           '3': truck_cells[i.variant_good]['3'],
+                                           '4': i.diesel,
+                                           '5': truck_cells[i.variant_good]['5'],
+                                           '6': truck_cells[i.variant_good]['6']
+                                           }
         if number == 5:
             truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
-                                               '2': truck_cells[i.variant_good]['2'],
-                                               '3': truck_cells[i.variant_good]['3'],
-                                               '4': truck_cells[i.variant_good]['4'],
-                                               '5': i.diesel,
-                                               '6': truck_cells[i.variant_good]['6']
-                                               }
+                                           '2': truck_cells[i.variant_good]['2'],
+                                           '3': truck_cells[i.variant_good]['3'],
+                                           '4': truck_cells[i.variant_good]['4'],
+                                           '5': i.diesel,
+                                           '6': truck_cells[i.variant_good]['6']
+                                           }
         if number == 6:
             truck_cells[i.variant_good] = {'1': truck_cells[i.variant_good]['1'],
-                                               '2': truck_cells[i.variant_good]['2'],
-                                               '3': truck_cells[i.variant_good]['3'],
-                                               '4': truck_cells[i.variant_good]['4'],
-                                               '5': truck_cells[i.variant_good]['5'],
-                                               '6': i.diesel
-                                               }
+                                           '2': truck_cells[i.variant_good]['2'],
+                                           '3': truck_cells[i.variant_good]['3'],
+                                           '4': truck_cells[i.variant_good]['4'],
+                                           '5': truck_cells[i.variant_good]['5'],
+                                           '6': i.diesel
+                                           }
     for var in truck_cells:
         print(truck_cells[var])
     return render_template('admin/truck.html', title='Бензовоз ' + truck.reg_number, truck_active=True,
@@ -610,7 +612,6 @@ def add_trip():
     categories = [(c.id, c.number) for c in AzsList.query.order_by("number").all()]
     form.azs_id.choices = categories
     if form.validate_on_submit():
-
         trip = Trip(distance=form.distance.data,
                     time_from_before_lunch=form.time_from_before_lunch.data,
                     time_to_before_lunch=form.time_to_before_lunch.data,
@@ -723,4 +724,3 @@ def truck_tanks_delete(id, truck_id):
     db.session.commit()
     flash('Данные удалены')
     return redirect(url_for('admin.truck', id=truck_id))
-

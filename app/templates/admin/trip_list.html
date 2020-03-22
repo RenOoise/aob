@@ -8,7 +8,8 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class=" float-left">Параметры времени и пути</h5>
-                    <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/trip/add" >Добавить новый</a>
+                    <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/trip/add">Добавить
+                        новый</a>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -52,12 +53,13 @@
                                             <td>{{ i.time_from }}</td>
                                             {% if i.weigher == 1 %}
                                                 <td>Есть</td>
-                                            {% elif i.weigher == 0%}
+                                            {% elif i.weigher == 0 %}
                                                 <td>Нет</td>
                                             {% else %}
                                                 <td>Не задано</td>
                                             {% endif %}
-                                            <td><a href="{{ url_for('admin.edit_trip', id=i.id) }}">Редактировать</a></td>
+                                            <td><a href="{{ url_for('admin.edit_trip', id=i.id) }}">Редактировать</a>
+                                            </td>
 
                                         </tr>
                                     {% endfor %}

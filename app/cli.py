@@ -1,5 +1,5 @@
-import os
 import click
+import os
 
 
 def register(app):

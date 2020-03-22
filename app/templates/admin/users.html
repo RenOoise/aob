@@ -10,7 +10,8 @@
                     <div class="card">
                         <div class="card-header">
                             <h5 class="float-left">Зарегистрированые пользователи</h5>
-                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="{{ url_for('admin.adduser') }}" >Добавить пользователя</a>
+                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"
+                               href="{{ url_for('admin.adduser') }}">Добавить пользователя</a>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -35,7 +36,9 @@
                                                     <td>{{ i.email }}</td>
                                                     <td>{{ i.last_seen }}</td>
                                                     <td>{{ i.role }}</td>
-                                                    <td> <a href="{{url_for('main.user', username=i.username)}}" class="btn btn-sm btn-outline-primary my-2 my-sm-0">Перейти</a></td>
+                                                    <td><a href="{{ url_for('main.user', username=i.username) }}"
+                                                           class="btn btn-sm btn-outline-primary my-2 my-sm-0">Перейти</a>
+                                                    </td>
                                                 </tr>
                                             {% endfor %}
                                             </tbody>

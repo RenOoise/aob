@@ -4,15 +4,18 @@
 {% block app_content %}
     <div class="card text-center">
         <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist" >
+            <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Расстановка рейсов</a>
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                       aria-controls="home" aria-selected="true">Расстановка рейсов</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Схема налива бензовозов</a>
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                       aria-controls="profile" aria-selected="false">Схема налива бензовозов</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Схема слива бензовозов</a>
+                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                       aria-controls="contact" aria-selected="false">Схема слива бензовозов</a>
                 </li>
             </ul>
         </div>
@@ -27,8 +30,8 @@
                                data-locale="ru-RU">
                             <thead>
                             <tr>
-                                <th data-field="check"  data-checkbox="true">#</th>
-                                <th data-field="priority" >#</th>
+                                <th data-field="check" data-checkbox="true">#</th>
+                                <th data-field="priority">#</th>
                                 <th data-field="azs_number">Номер АЗС</th>
                                 <th data-field="tank_number">Номер резервуара</th>
                                 <th data-field="day_stock">Запас суток</th>
@@ -42,15 +45,16 @@
                             </thead>
                         </table>
                         <script>
-                            $(function() {
+                            $(function () {
                                 $('#table').bootstrapTable()
                             })
                         </script>
                     {% else %}
-                        Расстановка бензовозов на сегодня не выполнена. <br />
+                        Расстановка бензовозов на сегодня не выполнена. <br/>
                         Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"
                         <hr>
-                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать
+                            расстановку</a>
                     {% endif %}
                 </div>
                 <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
@@ -67,21 +71,21 @@
                                        data-locale="ru-RU">
                                     <thead>
                                     <tr>
-                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="check" data-checkbox="true">#</th>
                                         <th data-field="azs_number">Номер АЗС</th>
                                         <th data-field="truck_number">Бензовоз</th>
                                         <th data-field="naliv_cell_1">Отсек №1</th>
                                         <th data-field="naliv_cell_2">Отсек №2</th>
                                         <th data-field="naliv_cell_3">Отсек №3</th>
                                         <th data-field="naliv_cell_4">Отсек №4</th>
-                                       <!--   <th data-field="naliv_cell_5">Отсек №5</th>
-                                        <th data-field="naliv_cell_6">Отсек №6</th> -->
+                                        <!--   <th data-field="naliv_cell_5">Отсек №5</th>
+                                         <th data-field="naliv_cell_6">Отсек №6</th> -->
                                     </tr>
                                     </thead>
                                 </table>
                             </div>
                             <script>
-                                $(function() {
+                                $(function () {
                                     $('#variant_naliva_first_trip').bootstrapTable()
                                 })
                             </script>
@@ -98,30 +102,31 @@
                                        data-locale="ru-RU">
                                     <thead>
                                     <tr>
-                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="check" data-checkbox="true">#</th>
                                         <th data-field="azs_number">Номер АЗС</th>
                                         <th data-field="truck_number">Бензовоз</th>
                                         <th data-field="naliv_cell_1">Отсек №1</th>
                                         <th data-field="naliv_cell_2">Отсек №2</th>
                                         <th data-field="naliv_cell_3">Отсек №3</th>
                                         <th data-field="naliv_cell_4">Отсек №4</th>
-                                      <!-- <th data-field="naliv_cell_5">Отсек №5</th>
-                                        <th data-field="naliv_cell_6">Отсек №6</th> -->
+                                        <!-- <th data-field="naliv_cell_5">Отсек №5</th>
+                                          <th data-field="naliv_cell_6">Отсек №6</th> -->
                                     </tr>
                                     </thead>
                                 </table>
                             </div>
                             <script>
-                                $(function() {
+                                $(function () {
                                     $('#variant_naliva_first_trip').bootstrapTable()
                                 })
                             </script>
                         </div>
                     {% else %}
-                        Расстановка бензовозов на сегодня не выполнена. <br />
+                        Расстановка бензовозов на сегодня не выполнена. <br/>
                         Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"
                         <hr>
-                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать
+                            расстановку</a>
                     {% endif %}
                 </div>
                 <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
@@ -138,21 +143,21 @@
                                        data-locale="ru-RU">
                                     <thead>
                                     <tr>
-                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="check" data-checkbox="true">#</th>
                                         <th data-field="azs_number">Номер АЗС</th>
                                         <th data-field="truck_number">Бензовоз</th>
                                         <th data-field="sliv_cell_1">Отсек №1</th>
                                         <th data-field="sliv_cell_2">Отсек №2</th>
                                         <th data-field="sliv_cell_3">Отсек №3</th>
                                         <th data-field="sliv_cell_4">Отсек №4</th>
-                                     <!--   <th data-field="sliv_cell_5">Отсек №5</th>
-                                        <th data-field="sliv_cell_6">Отсек №6</th>-->
+                                        <!--   <th data-field="sliv_cell_5">Отсек №5</th>
+                                           <th data-field="sliv_cell_6">Отсек №6</th>-->
                                     </tr>
                                     </thead>
                                 </table>
                             </div>
                             <script>
-                                $(function() {
+                                $(function () {
                                     $('#variant_naliva_first_trip').bootstrapTable()
                                 })
                             </script>
@@ -169,30 +174,31 @@
                                        data-locale="ru-RU">
                                     <thead>
                                     <tr>
-                                        <th data-field="check"  data-checkbox="true">#</th>
+                                        <th data-field="check" data-checkbox="true">#</th>
                                         <th data-field="azs_number">Номер АЗС</th>
                                         <th data-field="truck_number">Бензовоз</th>
                                         <th data-field="sliv_cell_1">Отсек №1</th>
                                         <th data-field="sliv_cell_2">Отсек №2</th>
                                         <th data-field="sliv_cell_3">Отсек №3</th>
                                         <th data-field="sliv_cell_4">Отсек №4</th>
-                                       <!--   <th data-field="sliv_cell_5">Отсек №5</th>
-                                        <th data-field="sliv_cell_6">Отсек №6</th> -->
+                                        <!--   <th data-field="sliv_cell_5">Отсек №5</th>
+                                         <th data-field="sliv_cell_6">Отсек №6</th> -->
                                     </tr>
                                     </thead>
                                 </table>
                             </div>
                             <script>
-                                $(function() {
+                                $(function () {
                                     $('#variant_naliva_second_trip').bootstrapTable()
                                 })
                             </script>
                         </div>
                     {% else %}
-                        Расстановка бензовозов на сегодня не выполнена. <br />
+                        Расстановка бензовозов на сегодня не выполнена. <br/>
                         Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"
                         <hr>
-                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать
+                            расстановку</a>
                     {% endif %}
                 </div>
             </div>

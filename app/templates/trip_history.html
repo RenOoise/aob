@@ -14,15 +14,18 @@
                         <div id="accordion">
                             {% for post in posts %}
                                 <div class="card">
-                                    <div class="card-header" id="heading{{post.day}}">
+                                    <div class="card-header" id="heading{{ post.day }}">
                                         <h5 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{post.day}}" aria-expanded="false" aria-controls="collapse{{post.day}}">
-                                                {{post.day}}
+                                            <button class="btn btn-link" data-toggle="collapse"
+                                                    data-target="#collapse{{ post.day }}" aria-expanded="false"
+                                                    aria-controls="collapse{{ post.day }}">
+                                                {{ post.day }}
                                             </button>
                                         </h5>
                                     </div>
 
-                                    <div id="collapse{{post.day}}" class="collapse" aria-labelledby="heading{{post.day}}" data-parent="#accordion">
+                                    <div id="collapse{{ post.day }}" class="collapse"
+                                         aria-labelledby="heading{{ post.day }}" data-parent="#accordion">
                                         <div class="card-body">
                                             <div class="card">
                                                 <div class="card-header">

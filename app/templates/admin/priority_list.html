@@ -11,7 +11,8 @@
                     <div class="card">
                         <div class="card-header">
                             <h5 class=" float-left">Список приоритетов</h5>
-                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/priority/add" >Добавить приоритет</a>
+                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"
+                               href="/admin/priority/add">Добавить приоритет</a>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -37,8 +38,10 @@
                                                     <td> {{ i.day_stock_to }}</td>
                                                     <td>{{ i.priority }}</td>
                                                     <td>{{ i.sort_method }}</td>
-                                                    <td><a href="{{ url_for('admin.edit_priority', id=i.id) }}">Редактировать</a></td>
-                                                    <td><a href="{{ url_for('admin.delete_priority', id=i.id) }}">Удалить</a></td>
+                                                    <td><a href="{{ url_for('admin.edit_priority', id=i.id) }}">Редактировать</a>
+                                                    </td>
+                                                    <td><a href="{{ url_for('admin.delete_priority', id=i.id) }}">Удалить</a>
+                                                    </td>
                                                 </tr>
 
                                             {% endfor %}

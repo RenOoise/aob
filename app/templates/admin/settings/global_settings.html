@@ -16,7 +16,7 @@
                         <h5>Режим работы приложения</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">{{work_type}}</p>
+                        <p class="card-text">{{ work_type }}</p>
 
                     </div>
                     <div class="card-footer text-muted">
@@ -43,7 +43,8 @@
                         <h5>Количество активных АЗС</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text"><h2>{{ active_azs }}</h2></p>
+                        <p class="card-text">
+                        <h2>{{ active_azs }}</h2></p>
                     </div>
                     <div class="card-footer text-muted">
                         <a href="{{ url_for('admin.azslist') }}">Изменить</a>
@@ -57,7 +58,8 @@
                         <h5>Количество активных бензовозов</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text"><h2>{{ active_trucks }}</h2></p>
+                        <p class="card-text">
+                        <h2>{{ active_trucks }}</h2></p>
 
                     </div>
                     <div class="card-footer text-muted">
@@ -69,7 +71,8 @@
                         <h5>Количество активных резервуаров</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text"><h2>{{ active_tanks }}</h2></p>
+                        <p class="card-text">
+                        <h2>{{ active_tanks }}</h2></p>
 
                     </div>
                     <div class="card-footer text-muted">

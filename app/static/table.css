@@ -2,7 +2,9 @@ table {
     width: 100%;
 }
 
-thead, tbody, tr, td, th { display: block; }
+thead, tbody, tr, td, th {
+    display: block;
+}
 
 tr:after {
     content: ' ';

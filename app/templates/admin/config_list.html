@@ -9,7 +9,8 @@
                 <div class="card">
                     <div class="card-header">
                         <h5 class=" float-left">Конфиги для подключения к БД</h5>
-                        <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="/admin/add_db_config" >Добавить конфиг</a>
+                        <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/add_db_config">Добавить
+                            конфиг</a>
                     </div>
                     <div class="card-body">
                         <table class="table table-striped">
@@ -41,7 +42,9 @@
                                     <td>{{ i.port }}</td>
                                     <td>{{ i.username }}</td>
                                     <td>{{ i.password }}</td>
-                                    <td><a href="{{ url_for('admin.edit_db_config', azs_id=i.azs_id) }}">Редактировать</a></td>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_db_config', azs_id=i.azs_id) }}">Редактировать</a>
+                                    </td>
                                 </tr>
                             {% endfor %}
                             </tbody>

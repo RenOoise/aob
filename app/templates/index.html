@@ -4,7 +4,8 @@
 {% block app_content %}
     <div class="container">
         <!-- Modal -->
-        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+             aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -29,14 +30,17 @@
                     <h5 class="card-header">Расстановка бензовозов</h5>
                     <div class="card-body">
                         {% if trips %}
-                            <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModalCenter">
+                            <button type="button" class="btn btn-outline-success" data-toggle="modal"
+                                    data-target="#exampleModalCenter">
                                 Начать расстановку
                             </button>
                         {% else %}
-                            <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-success my-2 my-sm-0">Начать расстановку</a>
+                            <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-success my-2 my-sm-0">Начать
+                                расстановку</a>
                         {% endif %}
 
-                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-primary my-2 my-sm-0">Просмотреть расстановку</a>
+                        <a href="{{ url_for('main.trip_creation') }}" class="btn btn-outline-primary my-2 my-sm-0">Просмотреть
+                            расстановку</a>
                     </div>
                 </div>
             </div>
@@ -49,11 +53,15 @@
                                 {% for i in azs_list %}
                                     {% if i['day_stock'] < 1 %}
                                         <tr class="table-danger">
-                                            <td>Запас суток резервуара №{{ i['tank'] }} на <a href="{{ url_for('main.page_azs', id=i['azs_id']) }}"> АЗС №{{ i['number'] }}</a> меньше {{ i['day_stock'] }}</td>
+                                            <td>Запас суток резервуара №{{ i['tank'] }} на <a
+                                                    href="{{ url_for('main.page_azs', id=i['azs_id']) }}"> АЗС
+                                                №{{ i['number'] }}</a> меньше {{ i['day_stock'] }}</td>
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td>Запас суток резервуара №{{ i['tank'] }} на <a href="{{ url_for('main.page_azs', id=i['azs_id']) }}"> АЗС №{{ i['number'] }}</a> меньше {{ i['day_stock'] }}</td>
+                                            <td>Запас суток резервуара №{{ i['tank'] }} на <a
+                                                    href="{{ url_for('main.page_azs', id=i['azs_id']) }}"> АЗС
+                                                №{{ i['number'] }}</a> меньше {{ i['day_stock'] }}</td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
