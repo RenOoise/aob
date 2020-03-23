@@ -2,16 +2,19 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-        <div class="card text-center">
-            <div class="card-body">
-                <h4>Расстановка бензовозов не удалась!</h4>
-                <br />
+    <div class="card text-center">
+        <div class="card-body">
+            <h4>Расстановка бензовозов не удалась!</h4>
+            <br/>
 
-                Попробуйте <a href="{{ url_for('admin.global_settings_algorithm') }}">изменить алгоритм расстановки</a> или уменьшить количество <a href="{{ url_for('admin.trucks_list') }}">активных бензовозов</a> и запустить расстановку заново.
-            <br />
-                <hr>
-                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary my-2 my-sm-0">Вернуться на главную</a>
-            </div>
+            Попробуйте <a href="{{ url_for('admin.global_settings_algorithm') }}">изменить алгоритм расстановки</a> или
+            уменьшить количество <a href="{{ url_for('admin.trucks_list') }}">активных бензовозов</a> и запустить
+            расстановку заново.
+            <br/>
+            <hr>
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary my-2 my-sm-0">Вернуться на
+                главную</a>
         </div>
+    </div>
 
 {% endblock %}

@@ -6,8 +6,9 @@
 
 {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand"  href="{{ url_for('main.index') }}">АОБ</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">АОБ</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -19,7 +20,8 @@
                         <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('Главная') }}</a>
                     </li>
                     <li class="nav-item {% if trip_creation %}active{% endif %}">
-                        <a class="nav-link" href="{{ url_for('main.trip_creation') }}">{{ 'Расстановка бензовозов' }}</a>
+                        <a class="nav-link"
+                           href="{{ url_for('main.trip_creation') }}">{{ 'Расстановка бензовозов' }}</a>
                     </li>
                     <li class="nav-item {% if online_active %}active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.online') }}">{{ 'Online остатки' }}</a>
@@ -32,7 +34,7 @@
                     </li>
 
                     <li class="nav-item {% if azs_list_active %} active{% endif %}">
-                        <a class="nav-link" href="{{url_for('main.azs')}}">Список АЗС</a>
+                        <a class="nav-link" href="{{ url_for('main.azs') }}">Список АЗС</a>
                     </li>
                 {% endif %}
 
@@ -40,17 +42,20 @@
             <ul class="navbar-nav">
                 {% if current_user.is_anonymous %}
                     <li class="nav-item">
-                        <a class="btn btn-sm btn-outline-primary my-2 my-sm-0" href="{{ url_for('auth.login') }}">{{ _('Вход') }}</a>
+                        <a class="btn btn-sm btn-outline-primary my-2 my-sm-0"
+                           href="{{ url_for('auth.login') }}">{{ _('Вход') }}</a>
                     </li>
                 {% else %}
 
                     {% if current_user.role == "admin" %}
                         <li class="nav-item {% if settings_active %}active{% endif %} dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Админ панель
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a href="{{ url_for('admin.global_settings') }}" class="dropdown-item">Глобальные настройки</a>
+                                <a href="{{ url_for('admin.global_settings') }}" class="dropdown-item">Глобальные
+                                    настройки</a>
                                 <div class="dropdown-divider"></div>
                                 <a href="/admin/azslist" class="dropdown-item">Список АЗС</a>
                                 <a href="/admin/tanks" class="dropdown-item">Список резервуаров</a>
@@ -58,11 +63,12 @@
                                 <div class="dropdown-divider"></div>
                                 <a href="/admin/trucks_list" class="dropdown-item">Бензовозы</a>
                                 <a href="/admin/trip" class="dropdown-item">Расстояния до АЗС</a>
-                                <a href="{{ url_for('admin.trucks_false') }}" class="dropdown-item">Исключения для бензовозов</a>
+                                <a href="{{ url_for('admin.trucks_false') }}" class="dropdown-item">Исключения для
+                                    бензовозов</a>
                                 <a href="/admin/users" class="dropdown-item">Пользователи</a>
                             </div>
                         </li>
-                    {% endif%}
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.messages') }}">{{ _('Уведомления') }}
                             {% set new_messages = current_user.new_messages() %}
@@ -74,7 +80,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-sm btn-outline-danger my-2 my-sm-0" href="{{ url_for('auth.logout') }}">Выход</a>
+                        <a class="nav-link btn btn-sm btn-outline-danger my-2 my-sm-0"
+                           href="{{ url_for('auth.logout') }}">Выход</a>
                     </li>
                 {% endif %}
 
@@ -92,7 +99,8 @@
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ task.description }}
 
-                            <span id="{{ task.id }}-progress"><b>{{ task.get_progress() }} </b></span><b>% завершено.</b>
+                            <span id="{{ task.id }}-progress"><b>{{ task.get_progress() }} </b></span><b>%
+                            завершено.</b>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -118,8 +126,9 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='fueltank_gray.png') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='bootstrap-table/bootstrap-table.min.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='bootstrap-table/extensions/sticky-header/bootstrap-table-sticky-header.min.css') }}">
-    {{super()}}
+    <link rel="shortcut icon"
+          href="{{ url_for('static', filename='bootstrap-table/extensions/sticky-header/bootstrap-table-sticky-header.min.css') }}">
+    {{ super() }}
 
 {% endblock %}
 {% block scripts %}
@@ -142,24 +151,25 @@
                 text: $(sourceElem).text(),
                 source_language: sourceLang,
                 dest_language: destLang
-            }).done(function(response) {
+            }).done(function (response) {
                 $(destElem).text(response['text'])
-            }).fail(function() {
+            }).fail(function () {
                 $(destElem).text("{{ _('Ошибка: Невозможно подключиться к серверу.') }}");
             });
         }
+
         $(function () {
             var timer = null;
             var xhr = null;
             $('.user_popup').hover(
-                function(event) {
+                function (event) {
                     // mouse in event handler
                     var elem = $(event.currentTarget);
-                    timer = setTimeout(function() {
+                    timer = setTimeout(function () {
                         timer = null;
                         xhr = $.ajax(
                             '/user/' + elem.first().text().trim() + '/popup').done(
-                            function(data) {
+                            function (data) {
                                 xhr = null;
                                 elem.popover({
                                     trigger: 'manual',
@@ -173,36 +183,36 @@
                         );
                     }, 1000);
                 },
-                function(event) {
+                function (event) {
                     // mouse out event handler
                     var elem = $(event.currentTarget);
                     if (timer) {
                         clearTimeout(timer);
                         timer = null;
-                    }
-                    else if (xhr) {
+                    } else if (xhr) {
                         xhr.abort();
                         xhr = null;
-                    }
-                    else {
+                    } else {
                         elem.popover('destroy');
                     }
                 }
             );
         });
+
         function set_message_count(n) {
             $('#message_count').text(n);
             $('#message_count').css('visibility', n ? 'visible' : 'hidden');
         }
+
         function set_task_progress(task_id, progress) {
             $('#' + task_id + '-progress').text(progress);
         }
         {% if current_user.is_authenticated %}
-            $(function() {
+            $(function () {
                 var since = 0;
-                setInterval(function() {
+                setInterval(function () {
                     $.ajax('{{ url_for('main.notifications') }}?since=' + since).done(
-                        function(notifications) {
+                        function (notifications) {
                             for (var i = 0; i < notifications.length; i++) {
                                 switch (notifications[i].name) {
                                     case 'unread_message_count':

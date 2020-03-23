@@ -2,16 +2,16 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<div class="container">
-    <div class="row py-4">
-        <div class="card mx-auto">
-            <div class="card-header">
-                <h5 class=" float-left">Список АЗС</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <table class="table table-sm table-hover">
-                        <thead>
+    <div class="container">
+        <div class="row py-4">
+            <div class="card mx-auto">
+                <div class="card-header">
+                    <h5 class=" float-left">Список АЗС</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <table class="table table-sm table-hover">
+                            <thead>
                             <tr>
                                 <th>Номер АЗС</th>
                                 <th>Адрес</th>
@@ -21,25 +21,25 @@
                             </tr>
                             </thead>
                             <tbody>
-                        {% for i in azs_list %}
-                        <tr>
-                            <td><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number}}</a></td>
-                            <td>{{ i.address }}</td>
-                            <td>{{ i.phone }}</td>
-                            <td>{{ i.email }}</td>
-                            <td>{% if i.active == True %}
-                                Да
-                                {% else %}
-                                Нет
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            {% for i in azs_list %}
+                                <tr>
+                                    <td><a href="{{ url_for('main.page_azs', id=i.id) }}">АЗС № {{ i.number }}</a></td>
+                                    <td>{{ i.address }}</td>
+                                    <td>{{ i.phone }}</td>
+                                    <td>{{ i.email }}</td>
+                                    <td>{% if i.active == True %}
+                                        Да
+                                    {% else %}
+                                        Нет
+                                    {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

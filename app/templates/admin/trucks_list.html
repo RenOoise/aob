@@ -6,7 +6,8 @@
         <div class="card">
             <div class="card-header">
                 <h5 class=" float-left">Транспортные средства</h5>
-                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/truck/add" >Добавить ТС</a>
+                <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right" href="/admin/truck/add">Добавить
+                    ТС</a>
             </div>
             <div class="card-body">
                 <table class="table table-sm table-hover">
@@ -26,9 +27,9 @@
                     <tbody>
                     {% for i in trucks_list %}
                         <tr>
-                            <th scope="row"><a href="{{ url_for('admin.truck', id=i.id) }}">{{ i.reg_number}}</a> </th>
+                            <th scope="row"><a href="{{ url_for('admin.truck', id=i.id) }}">{{ i.reg_number }}</a></th>
                             <td>{{ i.trailer_reg_number }}</td>
-                            <td>{{ i.seals}}</td>
+                            <td>{{ i.seals }}</td>
                             <td>{{ i.weight }}</td>
                             <td>{{ i.weight_limit }}</td>
                             <td> {{ i.driver }}</td>

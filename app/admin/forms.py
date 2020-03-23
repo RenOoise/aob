@@ -1,9 +1,10 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, SelectField, PasswordField, IntegerField, FloatField, \
-    BooleanField, FieldList, RadioField, FormField, HiddenField, Label
-from wtforms_components import TimeField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
 from flask_babel import _, lazy_gettext as _l
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, SelectField, PasswordField, IntegerField, FloatField, \
+    BooleanField, FieldList, RadioField, FormField, Label
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, IPAddress
+from wtforms_components import TimeField
+
 from app.models import User
 
 
@@ -206,4 +207,3 @@ class AlgorithmForm(FlaskForm):
     azs = SelectField('АЗС', choices=[], coerce=int)
     reason = StringField('Причина')
     submit = SubmitField('Сохранить')
-

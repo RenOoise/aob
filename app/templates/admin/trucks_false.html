@@ -2,41 +2,44 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-            <div class="row py-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                                <h5 class="float-left">Исключения для бензовозов (АЗС на которые не возможно заехать определенному бензовозу)</h5>
-                            <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"  href="{{ url_for('admin.trucks_false_add') }}" >Добавить исключение</a>
+    <div class="row py-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="float-left">Исключения для бензовозов (АЗС на которые не возможно заехать определенному
+                        бензовозу)</h5>
+                    <a class="btn btn-sm btn-outline-success my-2 my-sm-0 float-right"
+                       href="{{ url_for('admin.trucks_false_add') }}">Добавить исключение</a>
+                </div>
+                <div class="card-body">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Номер АЗС</th>
+                                    <th>Нормер бензовоза</th>
+                                    <th>Причина</th>
+                                    <th>Удалить</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for i in trucks %}
+                                    <tr>
+                                        <td>АЗС № {{ i['azs_number'] }}</td>
+                                        <td>{{ i['truck_number'] }}</td>
+                                        <td>{{ i['reason'] }}</td>
+                                        <td><a href="{{ url_for('admin.trucks_false_delete', id=i.id) }}">Удалить</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="card-body">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <table class="table table-sm table-hover">
-                                        <thead>
-                                        <tr>
-                                            <th>Номер АЗС</th>
-                                            <th>Нормер бензовоза</th>
-                                            <th>Причина</th>
-                                            <th>Удалить</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for i in trucks %}
-                                            <tr>
-                                                <td>АЗС № {{ i['azs_number'] }}</td>
-                                                <td>{{ i['truck_number'] }}</td>
-                                                <td>{{ i['reason'] }}</td>
-                                                <td><a href="{{ url_for('admin.trucks_false_delete', id=i.id) }}">Удалить</a></td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
             </div>
+        </div>
+    </div>
 {% endblock %}

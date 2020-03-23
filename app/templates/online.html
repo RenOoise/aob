@@ -7,7 +7,8 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class=" float-left">Online остатки топлива</h5>
-                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"  href="{{ url_for('main.residue_xlsx', datetime=datetime) }}" >Экспорт в Excel</a>
+                    <a class="btn btn-sm btn-outline-primary my-2 my-sm-0 float-right"
+                       href="{{ url_for('main.residue_xlsx', datetime=datetime) }}">Экспорт в Excel</a>
                 </div>
                 <div class="card-body">
                     <table data-toggle="table"
@@ -35,7 +36,7 @@
                         </thead>
                     </table>
                     <script>
-                        $(function() {
+                        $(function () {
                             $('#table').bootstrapTable()
                         })
                     </script>

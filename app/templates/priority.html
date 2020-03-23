@@ -28,7 +28,8 @@
                                             <th scope="row">
                                                 {% for x in azs_list %}
                                                     {% if x.id == i.azs_id %}
-                                                        <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС № {{ x.number}}</a>
+                                                        <a href="{{ url_for('main.page_azs', id=x.id) }}">АЗС
+                                                            № {{ x.number }}</a>
                                                     {% endif %}
                                                 {% endfor %}
                                             <td>
@@ -39,7 +40,7 @@
                                                 {% endfor %}
                                             </td>
                                             <td>{{ i.day_stock }}</td>
-                                            <td>{{i.average_for_azs}}</td>
+                                            <td>{{ i.average_for_azs }}</td>
                                             <td>{% for z in priority_list %}
                                                 {% if z.id == i.table_priority %}
                                                     {{ z.priority }}

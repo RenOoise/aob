@@ -1,15 +1,17 @@
-import base64
-from datetime import datetime, timedelta
-from hashlib import md5
 import json
-import os
+from datetime import datetime, timedelta
 from time import time
-from flask import current_app, url_for
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+
+import base64
 import jwt
+import os
 import redis
 import rq
+from flask import current_app, url_for
+from flask_login import UserMixin
+from hashlib import md5
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from app import db, login
 from app.search import add_to_index, remove_from_index, query_index
 
@@ -139,7 +141,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     def is_following(self, user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
-
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -344,7 +345,7 @@ class FuelRealisation(db.Model):
     product_code = db.Column(db.Integer)  # код топлива
     average_1_days = db.Column(db.Float)  # среднее значение реализации за сутки
     average_3_days = db.Column(db.Float)  # среднее значение реализации за 3 сутон
-    average_7_days = db.Column(db.Float)   # среднее значение реализации за 7 суток
+    average_7_days = db.Column(db.Float)  # среднее значение реализации за 7 суток
     average_10_days = db.Column(db.Float)  # среднее значение реализации за 10 суток
     average_week_ago = db.Column(db.Float)  # среднее значение реализации за сутки неделю назад
     fuel_realisation_1_days = db.Column(db.Float)  # реализация за 1 сутки

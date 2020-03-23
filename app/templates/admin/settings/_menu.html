@@ -1,15 +1,19 @@
 <ul class="nav flex-column">
     <li class="nav-pills">
-        <a class="nav-link {% if global_settings_main %} active {% endif %}" href="{{ url_for('admin.global_settings') }}">Основные</a>
+        <a class="nav-link {% if global_settings_main %} active {% endif %}"
+           href="{{ url_for('admin.global_settings') }}">Основные</a>
     </li>
     <li class="nav-pills">
-        <a class="nav-link  {% if global_settings_work_type %} active {% endif %}" href="{{ url_for('admin.global_settings_work_type') }}">Режим работы</a>
+        <a class="nav-link  {% if global_settings_work_type %} active {% endif %}"
+           href="{{ url_for('admin.global_settings_work_type') }}">Режим работы</a>
     </li>
     <li class="nav-pills">
-        <a class="nav-link  {% if global_settings_algorithm %} active {% endif %}" href="{{ url_for('admin.global_settings_algorithm') }}">Алгоритм</a>
+        <a class="nav-link  {% if global_settings_algorithm %} active {% endif %}"
+           href="{{ url_for('admin.global_settings_algorithm') }}">Алгоритм</a>
     </li>
     <li class="nav-pills">
-        <a class="nav-link  {% if global_settings_users %} active {% endif %}" href="{{ url_for('admin.global_settings_users') }}">Пользователи</a>
+        <a class="nav-link  {% if global_settings_users %} active {% endif %}"
+           href="{{ url_for('admin.global_settings_users') }}">Пользователи</a>
 
     </li>
 </ul>

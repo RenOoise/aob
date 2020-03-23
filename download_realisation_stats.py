@@ -1,10 +1,13 @@
 # фоновая загрузка данных о реализации за 1 сутки
 import sys
-from app import create_app, db
-from app.models import CfgDbConnection, FuelRealisation, AzsList, Tanks, RealisationStats
-import psycopg2
 from datetime import datetime
+
 import fdb
+import psycopg2
+
+from app import create_app, db
+from app.models import CfgDbConnection, AzsList, RealisationStats
+
 date = datetime.today()
 app = create_app()
 app.app_context().push()
@@ -158,4 +161,3 @@ def download_realisation_info():
 
 
 download_realisation_info()
-
