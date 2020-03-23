@@ -6209,7 +6209,7 @@ def trips_naliv_json(trip_number):
         trip = Trip.query.filter_by(azs_id=i.azs_id).first()
         if trip.weigher == True:
             weighter_icon = ' <i alt="Весы" title="На пути к этой АЗС есть зона весового контроля" ' \
-                            'class="fas fa-weight"></i>'
+                            'class="fas fa-weight text-info"></i>'
         else:
             weighter_icon = ''
         azs = AzsList.query.filter_by(id=i.azs_id).first()
@@ -6362,3 +6362,44 @@ def trip_history():
 
     return render_template('trip_history.html', title="История расстановок", posts=posts.items, next_url=next_url,
                            prev_url=prev_url, result=results)
+
+
+@bp.route('/trip_xlsx', methods=['POST', 'GET'])
+@login_required
+def trip_xlsx_maker():
+    trips = Trips.query.order_by(desc("calculate_id")).first()
+    result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
+    zadanie_first = dict()
+    zadanie_second = dict()
+    for truck in result:
+        if result.trip_number == 1:
+            zadanie_first[truck.truck_id] = {'id': 0,
+                                   'reg_number': 0,
+                                   }
+        elif result.trip_number == 2:
+            zadanie_second[truck.truck_id] = {'id': 0,
+                                             'reg_number': 0,
+                                             }
+    if result:
+        for i in result:
+            if result.trip_number == 1:
+                azs = AzsList.query.filter_by(id=i.azs_id).first()
+                truck = Trucks.query.filyer_by(id=i.truck_id).first
+
+                zadanie_first[truck.id] = {'id': i.id,
+                                           'reg_number': truck.reg_number,
+                                           'azs_number': azs.number,
+                                           'day': trips.day
+                                           }
+
+            elif result.trip_number == 2:
+                azs = AzsList.query.filter_by(id=i.azs_id).first()
+                truck = Trucks.query.filyer_by(id=i.truck_id).first
+                reg_number_first = truck.reg_number
+                new_day_stock_first = result.min_rez1
+
+                zadanie_second[truck.id] = {'id': i.id,
+                                           'reg_number': truck.reg_number,
+                                           'azs_number': azs.number,
+                                           'day': trips.day
+                                           }

@@ -833,3 +833,24 @@ class GlobalSettingsParams(db.Model):
     value = db.Column(db.Integer)
     description = db.Column(db.String(120))
     active = db.Column(db.Boolean)
+
+
+#  результат расстановки бензовозов
+class TripResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
+    truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
+    variant = db.Column(db.Integer)  # вариант налива бензовоза
+    variant_sliv_92 = db.Column(db.Integer)  # вариант слива бензовоза для 92 топлива
+    variant_sliv_95 = db.Column(db.Integer)  # вариант слива бензовоза для 95 топлива
+    variant_sliv_50 = db.Column(db.Integer)  # вариант слива бензовоза для 50 топлива
+    min_rez1 = db.Column(db.Float)  # новый минимальный запас суток среди всех резервуаров азс
+    min_rez2 = db.Column(db.Float)
+    min_rez3 = db.Column(db.Float)
+    volume_92 = db.Column(db.Integer)  # сколько 92 топлива будет слито
+    volume_95 = db.Column(db.Integer)  # сколько 95 топлива будет слито
+    volume_50 = db.Column(db.Integer)  # сколько 50 топлива будет слито
+    time_to_return = db.Column(db.Integer)  # сколько времени бензовоз был в пути
+    calculate_id = db.Column(db.Integer)  # порядковый номер расстановки
+    trip_number = db.Column(db.Integer)  # порядковый номер рейса
+    trip_end_time = db.Column(db.Time)  # время возвращения на нефтебазу
