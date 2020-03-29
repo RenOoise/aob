@@ -5,8 +5,9 @@ Revises: 13dbc7779f9e
 Create Date: 2019-08-11 16:36:44.365537
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
 revision = 'ca02989b3506'
