@@ -1,7 +1,7 @@
 import json
 import time
 from datetime import datetime, timedelta, date
-
+import pathlib
 import pandas as pd
 import pygal
 import random
@@ -27,6 +27,7 @@ from app.models import User, Message, Notification, FuelResidue, AzsList, Tanks,
     PriorityList, ManualInfo, Trucks, TruckTanks, Trip, WorkType, Errors, \
     Trips, Result, TrucksForAzs, VariantSlivaForTrip, TruckTanksVariations
 from app.translate import translate
+from openpyxl import load_workbook
 
 
 @bp.route('/stats', methods=['GET', 'POST'])
@@ -7137,19 +7138,19 @@ def trip_xlsx_maker():
     zadanie_first = dict()
     zadanie_second = dict()
     for truck in result:
-        if result.trip_number == 1:
+        if truck.trip_number == 1:
             zadanie_first[truck.truck_id] = {'id': 0,
                                    'reg_number': 0,
                                    }
-        elif result.trip_number == 2:
+        elif truck.trip_number == 2:
             zadanie_second[truck.truck_id] = {'id': 0,
                                              'reg_number': 0,
                                              }
     if result:
         for i in result:
-            if result.trip_number == 1:
+            if i.trip_number == 1:
                 azs = AzsList.query.filter_by(id=i.azs_id).first()
-                truck = Trucks.query.filyer_by(id=i.truck_id).first
+                truck = Trucks.query.filter_by(id=i.truck_id).first()
 
                 zadanie_first[truck.id] = {'id': i.id,
                                            'reg_number': truck.reg_number,
@@ -7157,14 +7158,23 @@ def trip_xlsx_maker():
                                            'day': trips.day
                                            }
 
-            elif result.trip_number == 2:
+            elif i.trip_number == 2:
                 azs = AzsList.query.filter_by(id=i.azs_id).first()
-                truck = Trucks.query.filyer_by(id=i.truck_id).first
+                truck = Trucks.query.filter_by(id=i.truck_id).first()
                 reg_number_first = truck.reg_number
-                new_day_stock_first = result.min_rez1
+                new_day_stock_first = i.min_rez1
 
                 zadanie_second[truck.id] = {'id': i.id,
                                            'reg_number': truck.reg_number,
                                            'azs_number': azs.number,
                                            'day': trips.day
                                            }
+    path = pathlib.Path().absolute()
+    file_path = '/app/static/xls/zadanie.xlsx'
+    wb = load_workbook(str(path) + file_path)
+    for i in zadanie_first:
+        ws = wb.create_sheet(zadanie_first[i]['reg_number'])
+        sheet = wb.active
+    wb.save(filename=str(path) + '/app/static/xls/test.xlsx')
+
+    wb = load_workbook(str(path) + '/app/static/xls/test.xlsx')
