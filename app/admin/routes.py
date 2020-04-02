@@ -411,9 +411,9 @@ def truck_tanks_edit(tank_id):
                            form=form)
 
 
-@bp.route('/admin/truck/edit/id<id>', methods=['POST', 'GET'])
+@bp.route('/admin/truck/edit/id<id>?from=<page>', methods=['POST', 'GET'])
 @login_required
-def truck_edit(id):
+def truck_edit(id, page):
     form = EditTruckForm()
     truck = Trucks.query.filter_by(id=id).first_or_404()
 
@@ -429,7 +429,12 @@ def truck_edit(id):
         truck.weight_limit = form.weight_limit.data
         db.session.commit()
         flash('ТС отредактированно')
-        return redirect(url_for('admin.truck', id=id))
+        if page == "trucks_list":
+            return redirect(url_for('admin.trucks_list'))
+        elif page == "truck":
+            return redirect(url_for('admin.truck', id=id))
+        else:
+            return redirect(url_for('admin.trucks_list'))
 
     elif request.method == 'GET':
         form.reg_number.data = truck.reg_number

@@ -39,7 +39,7 @@
                                 Нет
                             {% endif %}
                             </td>
-                            <td><a href="{{ url_for('admin.truck_edit', id=i.id) }}">Редактировать</a></td>
+                            <td><a href="{{ url_for('admin.truck_edit', id=i.id, page="trucks_list") }}">Редактировать</a></td>
 
                             <td><a href="{{ url_for('admin.truck_delete', id=i.id) }}">Удалить</a></td>
                         </tr>
