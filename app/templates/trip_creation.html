@@ -17,6 +17,10 @@
                     <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
                        aria-controls="contact" aria-selected="false">Схема слива бензовозов</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="files-tab" data-toggle="tab" href="#files" role="tab"
+                       aria-controls="contact" aria-selected="false">Файлы для скачивания</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -190,6 +194,34 @@
                             <script>
                                 $(function () {
                                     $('#variant_naliva_second_trip').bootstrapTable()
+                                })
+                            </script>
+                        </div>
+                    {% else %}
+                        Расстановка бензовозов на сегодня не выполнена. <br/>
+                        Для выполнения расстановки бензовозов нажмите на кнопку "Начать расстановку"
+                        <hr>
+                        <a href="{{ url_for('main.start') }}" class="btn btn-outline-success my-2 my-sm-0">Начать
+                            расстановку</a>
+                    {% endif %}
+                </div>
+                <div class="tab-pane fade" id="files" role="tabpanel" aria-labelledby="files-tab">
+                    {% if trips %}
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class=" float-left">Файлы</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    {% for trip in for_files %}
+
+                                        <li class="list-group-item"><a href="{{ url_for('static', filename='xls/'+trip.file_name) }}"> Задание для водителей. {{ trip.trip_number }} рейс</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <script>
+                                $(function () {
+                                    $('#variant_naliva_first_trip').bootstrapTable()
                                 })
                             </script>
                         </div>
