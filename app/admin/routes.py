@@ -121,7 +121,6 @@ def edit_profile():
     form = EditProfileForm(current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data
-        current_user.nickname = form.nickname.data
         current_user.first_name = form.first_name.data
         current_user.last_name = form.last_name.data
         current_user.about_me = form.about_me.data
@@ -130,11 +129,10 @@ def edit_profile():
         return redirect(url_for('main.user', username=current_user.username))
     elif request.method == 'GET':
         form.username.data = current_user.username
-        form.nickname.data = current_user.nickname
         form.first_name.data = current_user.first_name
         form.last_name.data = current_user.last_name
         form.about_me.data = current_user.about_me
-    return render_template('settings/editor.html', title='Редактирование профиля', edit_profile=True,
+    return render_template('admin/editor.html', title='Редактирование профиля', edit_profile=True,
                            settings_active=True, form=form)
 
 
