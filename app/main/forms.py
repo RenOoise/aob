@@ -9,6 +9,8 @@ from app.models import User
 
 class EditProfileForm(FlaskForm):
     username = StringField(_l('Имя пользователя'), validators=[DataRequired()])
+    first_name = StringField('Имя')
+    last_name = StringField('Фамилия')
     about_me = TextAreaField(_l('Обо мне'),
                              validators=[Length(min=0, max=140)])
     submit = SubmitField(_l('Сохранить'))
