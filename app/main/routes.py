@@ -1,4 +1,4 @@
-import json
+import json, os
 import time
 from datetime import datetime, timedelta, date
 import pathlib
@@ -8,7 +8,7 @@ import random
 import sqlalchemy as sa
 from StyleFrame import StyleFrame, Styler, utils
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app, send_file, Response
+    jsonify, current_app, send_file, Response, send_from_directory
 from flask_babel import _, get_locale
 from flask_login import current_user, login_required
 from pygal.style import BlueStyle
@@ -150,22 +150,16 @@ def index():
     errors_num, errors = check()
     for error in errors:
         error_list.append(error)
-    return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True)
+    return render_template('index.html', title='Главная', azs_list=azs_list, error_list=error_list, index=True,
+                           trips_today=trips_today)
 
 
 @bp.route('/user/<username>')
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    page = request.args.get('page', 1, type=int)
-    posts = user.posts.order_by(Post.timestamp.desc()).paginate(
-        page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.user', username=user.username,
-                       page=posts.next_num) if posts.has_next else None
-    prev_url = url_for('main.user', username=user.username,
-                       page=posts.prev_num) if posts.has_prev else None
-    return render_template('user.html', user=user, posts=posts.items,
-                           next_url=next_url, prev_url=prev_url)
+
+    return render_template('user.html', user=user)
 
 
 @bp.route('/user/<username>/popup')
@@ -6816,7 +6810,7 @@ def start_second_trip():
 
     time_to_return_second()
 
-    return redirect(url_for('main.trip_creation'))
+    return redirect(url_for('main.trip_xlsx_maker'))
 
 
 @bp.route('/start_trip', methods=['POST', 'GET'])
@@ -6847,13 +6841,17 @@ def restart_trip():
 @bp.route('/trip_creation', methods=['POST', 'GET'])
 @login_required
 def trip_creation():
-    print("STOP AT" + str(datetime.now()))
+
     trips = Trips.query.order_by(desc("calculate_id")).first()
+    for_files = Trips.query.filter_by(calculate_id=trips.calculate_id).all()
     if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y") and trips.incorrect != True:
         trips = True
     else:
         trips = False
-    return render_template('trip_creation.html', title='Отправка бензовозов', trip_creation=True, trips=trips)
+    return render_template('trip_creation.html', title='Отправка бензовозов',
+                           trip_creation=True,
+                           trips=trips,
+                           for_files=for_files)
 
 
 @bp.route('/load', methods=['POST', 'GET'])
@@ -7137,44 +7135,169 @@ def trip_xlsx_maker():
     result = Result.query.filter_by(calculate_id=trips.calculate_id).all()
     zadanie_first = dict()
     zadanie_second = dict()
-    for truck in result:
-        if truck.trip_number == 1:
-            zadanie_first[truck.truck_id] = {'id': 0,
-                                   'reg_number': 0,
-                                   }
-        elif truck.trip_number == 2:
-            zadanie_second[truck.truck_id] = {'id': 0,
-                                             'reg_number': 0,
-                                             }
+
+    for i in result:
+        if i.trip_number == 1:
+            zadanie_first[i.truck_id] = {'reg_number':0,
+                                           'azs_number':0,
+                                           'litres1':0,
+                                           'litres2': 0,
+                                           'litres3': 0,
+                                           'litres4': 0,
+                                           'fuel_type1': 0,
+                                           'fuel_type2': 0,
+                                           'fuel_type3': 0,
+                                           'fuel_type4': 0,
+                                           'date': 0,
+                                           'driver_name': 0
+
+                                           }
+        elif i.trip_number == 2:
+            zadanie_second[i.truck_id] = {'reg_number': 0,
+                                           'azs_number': 0,
+                                           'litres1': 0,
+                                           'litres2': 0,
+                                           'litres3': 0,
+                                           'litres4': 0,
+                                           'fuel_type1': 0,
+                                           'fuel_type2': 0,
+                                           'fuel_type3': 0,
+                                           'fuel_type4': 0,
+                                           'date': 0,
+                                           'driver_name': 0
+
+                                           }
     if result:
         for i in result:
             if i.trip_number == 1:
+                litres = list()
+                fuel_type = list()
                 azs = AzsList.query.filter_by(id=i.azs_id).first()
                 truck = Trucks.query.filter_by(id=i.truck_id).first()
+                naliv = VariantNalivaForTrip.query.filter_by(truck_id=truck.id,
+                                                             calculate_id=trips.calculate_id,
+                                                             azs_id=azs.id, trip_number=i.trip_number).all()
+                for cell in naliv:
+                    if cell.fuel_type == 50 or cell.fuel_type == 51:
+                        fuel_type.append('ДТ')
+                    else:
+                        fuel_type.append('Аи ' + str(cell.fuel_type))
+                    litres.append(cell.capacity)
+                if len(litres) == 3:
+                    litres.append(0)
+                if len(fuel_type) == 3:
+                    fuel_type.append(0)
+                zadanie_first[truck.id] = {'reg_number': truck.reg_number,
+                                           'azs_number': '№' + str(azs.number),
+                                           'litres1': litres[0],
+                                           'litres2': litres[1],
+                                           'litres3': litres[2],
+                                           'litres4': litres[3],
+                                           'fuel_type1': fuel_type[0],
+                                           'fuel_type2': fuel_type[1],
+                                           'fuel_type3': fuel_type[2],
+                                           'fuel_type4': fuel_type[3],
+                                           'date': trips.day,
+                                           'driver_name': truck.driver
 
-                zadanie_first[truck.id] = {'id': i.id,
-                                           'reg_number': truck.reg_number,
-                                           'azs_number': azs.number,
-                                           'day': trips.day
                                            }
 
             elif i.trip_number == 2:
+                litres = list()
+                fuel_type = list()
                 azs = AzsList.query.filter_by(id=i.azs_id).first()
                 truck = Trucks.query.filter_by(id=i.truck_id).first()
-                reg_number_first = truck.reg_number
-                new_day_stock_first = i.min_rez1
 
-                zadanie_second[truck.id] = {'id': i.id,
-                                           'reg_number': truck.reg_number,
-                                           'azs_number': azs.number,
-                                           'day': trips.day
+                naliv = VariantNalivaForTrip.query.filter_by(truck_id=truck.id,
+                                                             calculate_id=trips.calculate_id,
+                                                             azs_id=azs.id, trip_number=i.trip_number).all()
+                for cell in naliv:
+                    if cell.fuel_type == 50 or cell.fuel_type == 51:
+                        fuel_type.append('ДТ')
+                    else:
+                        fuel_type.append('Аи ' + str(cell.fuel_type))
+                    litres.append(cell.capacity)
+                if len(litres) == 3:
+                    litres.append(0)
+                if len(fuel_type) == 3:
+                    fuel_type.append(0)
+                zadanie_second[truck.id] = {'reg_number': truck.reg_number,
+                                           'azs_number': 'АЗС №' + str(azs.number),
+                                           'litres1': litres[0],
+                                           'litres2': litres[1],
+                                           'litres3': litres[2],
+                                           'litres4': litres[3],
+                                           'fuel_type1': fuel_type[0],
+                                           'fuel_type2': fuel_type[1],
+                                           'fuel_type3': fuel_type[2],
+                                           'fuel_type4': fuel_type[3],
+                                           'date': trips.day,
+                                           'driver_name': truck.driver
+
                                            }
     path = pathlib.Path().absolute()
     file_path = '/app/static/xls/zadanie.xlsx'
     wb = load_workbook(str(path) + file_path)
     for i in zadanie_first:
-        ws = wb.create_sheet(zadanie_first[i]['reg_number'])
-        sheet = wb.active
-    wb.save(filename=str(path) + '/app/static/xls/test.xlsx')
+        source = wb.active
+        sheet = wb.copy_worksheet(source)
+        sheet.title = zadanie_first[i]['reg_number']
+        sheet['D2'] = zadanie_first[i]['date']
+        sheet['D4'] = zadanie_first[i]['driver_name']
+        sheet['D6'] = zadanie_first[i]['reg_number']
+        sheet['D8'] = zadanie_first[i]['azs_number']
+        sheet['C12'] = zadanie_first[i]['fuel_type1']
+        sheet['C13'] = zadanie_first[i]['fuel_type2']
+        sheet['C14'] = zadanie_first[i]['fuel_type3']
+        sheet['C15'] = zadanie_first[i]['fuel_type4']
 
-    wb = load_workbook(str(path) + '/app/static/xls/test.xlsx')
+        sheet['D12'] = zadanie_first[i]['litres1']
+        sheet['D13'] = zadanie_first[i]['litres2']
+        sheet['D14'] = zadanie_first[i]['litres3']
+        sheet['D15'] = zadanie_first[i]['litres4']
+        sheet['E19'] = 'М.А. Болдина'
+        sheet['d12'] = zadanie_first[i]['litres1']
+    std = wb.get_sheet_by_name('sheet1')
+    wb.remove_sheet(std)
+
+    wb.save(filename=str(path) + '/app/static/xls/' + str(zadanie_first[i]['date'].strftime("%d-%m-%Y")) + '-1_рейс.xlsx')
+    trip = Trips.query.filter_by(day=zadanie_first[i]['date'], trip_number=1, calculate_id=trips.calculate_id).first()
+    trip.file_name = zadanie_first[i]['date'].strftime("%d-%m-%Y") + '-1_рейс.xlsx'
+    wb.close()
+
+    wb = load_workbook(str(path) + file_path)
+    for i in zadanie_second:
+        source = wb.active
+        sheet = wb.copy_worksheet(source)
+        sheet.title = zadanie_second[i]['reg_number']
+        sheet['D2'] = zadanie_second[i]['date']
+        sheet['D4'] = zadanie_second[i]['driver_name']
+        sheet['D6'] = zadanie_second[i]['reg_number']
+        sheet['D8'] = zadanie_second[i]['azs_number']
+        sheet['C12'] = zadanie_second[i]['fuel_type1']
+        sheet['C13'] = zadanie_second[i]['fuel_type2']
+        sheet['C14'] = zadanie_second[i]['fuel_type3']
+        sheet['C15'] = zadanie_second[i]['fuel_type4']
+
+        sheet['D12'] = zadanie_second[i]['litres1']
+        sheet['D13'] = zadanie_second[i]['litres2']
+        sheet['D14'] = zadanie_second[i]['litres3']
+        sheet['D15'] = zadanie_second[i]['litres4']
+        sheet['E19'] = 'М.А. Болдина'
+        sheet['d12'] = zadanie_second[i]['litres1']
+    std = wb.get_sheet_by_name('sheet1')
+    wb.remove_sheet(std)
+    wb.save(filename=str(path) + '/app/static/xls/' + str(zadanie_first[i]['date'].strftime("%d-%m-%Y")) + '-2_рейс.xlsx')
+    trip = Trips.query.filter_by(day=zadanie_first[i]['date'], trip_number=2, calculate_id=trips.calculate_id).first()
+    trip.file_name = zadanie_first[i]['date'].strftime("%d-%m-%Y") + '-2_рейс.xlsx'
+    db.session.commit()
+    return redirect(url_for('main.trip_creation'))
+
+
+@bp.route('/download_trip_xlsx/<filename>', methods=['POST', 'GET'])
+@login_required
+def download_trip_xlsx(filename):
+    path = pathlib.Path().absolute()
+    uploads = os.path.join(path, 'static/xls')
+    print(uploads, filename)
+    return send_from_directory(directory=uploads, filename=filename)
