@@ -93,6 +93,8 @@ followers = db.Table(
 class User(UserMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
+    first_name = db.Column(db.String(64), index=True)
+    last_name = db.Column(db.String(64), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(60))
@@ -756,6 +758,7 @@ class Trips(db.Model):
     variant_number = db.Column(db.Integer)  # номер предложеного варианта расстановки
     calculate_id = db.Column(db.Integer)
     incorrect = db.Column(db.Boolean)  # на случай создания новой расстановки, отмечаем старую неактивной
+    file_name = db.Column(db.String(600))  # xlsx файл для распечатки
 
 
 #  результат расстановки бензовозов
@@ -839,6 +842,15 @@ class GlobalSettingsParams(db.Model):
 #  результат расстановки бензовозов
 class TripResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    azs_number = db.Column(db.String(20))
+    truck_reg_number = db.Column(db.String(20))
+    fuel_types = db.Column(db.String(120))
+    fuel_capacities = db.Column(db.String(120))
+    sliv_tanks = db.Column(db.String(120))
+    disp_name = db.Column(db.String(120))
+    driver_name = db.Column(db.String(120))
+    date = db.Column(db.String(120))
+
     azs_id = db.Column(db.Integer, db.ForeignKey('azs_list.id'))
     truck_id = db.Column(db.Integer, db.ForeignKey('trucks.id'))
     variant = db.Column(db.Integer)  # вариант налива бензовоза
