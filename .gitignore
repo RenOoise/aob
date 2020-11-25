@@ -18,7 +18,6 @@ develop-eggs
 lib
 lib64
 __pycache__
-db_old
 .idea
 *.sql
 *.log
@@ -39,9 +38,7 @@ nosetests.xml
 .pydevproject
 
 venv
-app.db
 microblog.log*
-/.idea/
 /.idea/
 /mydatabase.db
 /db_old/
