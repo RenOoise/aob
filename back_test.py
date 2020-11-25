@@ -1,15 +1,15 @@
 # фоновая загрузка данных
 import sys
-from datetime import datetime
-from datetime import timedelta
-from time import sleep
-
-import fdb
-import pandas as pd
-import psycopg2
-
 from app import create_app, db
-from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
+from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip, \
+    Errors
+import psycopg2
+from datetime import datetime
+import fdb
+from time import sleep
+import pandas as pd
+from datetime import timedelta
+
 
 app = create_app()
 app.app_context().push()
@@ -163,18 +163,15 @@ def download_realisation_info():
                                     for fr_3_d in query_3:
                                         if fr_3_d[2] is row[2]:
                                             collected_data['fuel_realisation_3_days'] = fr_3_d[3]
-                                            collected_data['average_3_days'] = collected_data[
-                                                                                   'fuel_realisation_3_days'] / 3
+                                            collected_data['average_3_days'] = collected_data['fuel_realisation_3_days'] / 3
                                     for fr_7_d in query_7:
                                         if fr_7_d[2] is row[2]:
                                             collected_data['fuel_realisation_7_days'] = fr_7_d[3]
-                                            collected_data['average_7_days'] = collected_data[
-                                                                                   'fuel_realisation_7_days'] / 7
+                                            collected_data['average_7_days'] = collected_data['fuel_realisation_7_days'] / 7
                                     for fr_10_d in query_10:
                                         if fr_10_d[2] is row[2]:
                                             collected_data['fuel_realisation_10_days'] = fr_10_d[3]
-                                            collected_data['average_10_days'] = collected_data[
-                                                                                    'fuel_realisation_10_days'] / 10
+                                            collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
                                     for fr_week_ago in query_week_ago:
                                         if fr_week_ago[2] is row[2]:
                                             if fr_week_ago[2] <= 0 or fr_week_ago[2] is False:
@@ -183,6 +180,7 @@ def download_realisation_info():
                                                 collected_data['fuel_realisation_week_ago'] = fr_week_ago[3]
                                     for fr_hour in query_hour:
                                         if fr_hour[2] is row[2]:
+
                                             collected_data['fuel_realisation_hour'] = fr_hour[3]
 
                                     collected_data['shop_id'] = i.number
@@ -297,19 +295,16 @@ def download_realisation_info():
                                     for fr_3_d in query_3:
                                         if fr_3_d[0] is row[0]:
                                             collected_data['fuel_realisation_3_days'] = fr_3_d[2]
-                                            collected_data['average_3_days'] = collected_data[
-                                                                                   'fuel_realisation_3_days'] / 3
+                                            collected_data['average_3_days'] = collected_data['fuel_realisation_3_days'] / 3
 
                                     for fr_7_d in query_7:
                                         if fr_7_d[0] is row[0]:
                                             collected_data['fuel_realisation_7_days'] = fr_7_d[2]
-                                            collected_data['average_7_days'] = collected_data[
-                                                                                   'fuel_realisation_7_days'] / 7
+                                            collected_data['average_7_days'] = collected_data['fuel_realisation_7_days'] / 7
                                     for fr_10_d in query_10:
                                         if fr_10_d[0] is row[0]:
                                             collected_data['fuel_realisation_10_days'] = fr_10_d[2]
-                                            collected_data['average_10_days'] = collected_data[
-                                                                                    'fuel_realisation_10_days'] / 10
+                                            collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
 
                                     for fr_week_ago in query_week_ago:
                                         if fr_week_ago[0] is row[0]:
@@ -419,7 +414,7 @@ def download_realisation_info():
                                     if fr_1_d[1] is row[1]:
                                         collected_data['fuel_realisation_1_days'] = fr_1_d[2]
                                         collected_data['average_1_days'] = collected_data[
-                                            'fuel_realisation_1_days']
+                                                                                'fuel_realisation_1_days']
                                 for fr_3_d in query_3:
                                     if fr_3_d[1] is row[1]:
                                         collected_data['fuel_realisation_3_days'] = fr_3_d[2]
@@ -431,8 +426,7 @@ def download_realisation_info():
                                 for fr_10_d in query_10:
                                     if fr_10_d[1] is row[1]:
                                         collected_data['fuel_realisation_10_days'] = fr_10_d[2]
-                                        collected_data['average_10_days'] = collected_data[
-                                                                                'fuel_realisation_10_days'] / 10
+                                        collected_data['average_10_days'] = collected_data['fuel_realisation_10_days'] / 10
                                 for fr_week_ago in query_week_ago:
                                     if fr_week_ago[1] is row[1]:
                                         collected_data['fuel_realisation_week_ago'] = fr_week_ago[2]
@@ -491,7 +485,6 @@ def day_stock(azs_id):
                             return x / y
                         except ZeroDivisionError:
                             return 0
-
                     # считаем запас суток по усредненной реалезации
 
                     days_stock_10 = round(devision_check(fuel.fuel_volume, average_day_stock_10), 1)
@@ -506,8 +499,7 @@ def day_stock(azs_id):
                             del days_stock_list[index]
                     print(data.shop_id)
                     print(days_stock_list)
-                    fuel_realisation_max_list = [average_day_stock_1, average_day_stock_3, average_day_stock_week_ago,
-                                                 average_day_stock_7, average_day_stock_10]
+                    fuel_realisation_max_list = [average_day_stock_1, average_day_stock_3, average_day_stock_week_ago, average_day_stock_7, average_day_stock_10]
                     fuel_realisation_max = max(fuel_realisation_max_list)
                     days_stock_min = min(days_stock_list)
                     add.day_stock_10 = days_stock_10
@@ -562,7 +554,7 @@ class QueryFromDb(object):
                                     tankid = Tanks.query.filter_by(azs_id=azsid.id, tank_number=row[1]).first()
                                     add = FuelResidue.query.filter_by(azs_id=azsid.id, tank_id=tankid.id).first()
 
-                                    percent = (100 * (float(row[4]) / tankid.corrected_capacity))
+                                    percent = (100*(float(row[4])/tankid.corrected_capacity))
 
                                     if add:
                                         add.fuel_level = row[3]
@@ -598,16 +590,14 @@ class QueryFromDb(object):
                                        + str(id.tank_number) +
                                        " ORDER BY optime DESC LIMIT 1;")
                                 cursor.execute(sql)
-                                print("SQL запрос Книжных остатков по резервуару " + str(
-                                    id.tank_number) + " на АЗС №" + str(
+                                print("SQL запрос Книжных остатков по резервуару " + str(id.tank_number) + " на АЗС №" + str(
                                     self.number) + " выполнен")
                                 query = cursor.fetchall()
 
                                 # и делаем выборку по реализации с начала смены
                                 realisation = (
                                         "SELECT pj_td.id_shop, pj_td.product, pj_td.tank, sum(pj_td.volume) as volume "
-                                        "FROM pj_td, sj_tranz WHERE pj_td.id_shop=" + str(
-                                    self.number) + " and pj_td.tank="
+                                        "FROM pj_td, sj_tranz WHERE pj_td.id_shop=" + str(self.number) + " and pj_td.tank="
                                         + str(id.tank_number) +
                                         "and pj_td.begtime between current_TIMESTAMP - interval '1 day' "
                                         "and current_TIMESTAMP and (pj_td.err=0 or pj_td.err=2) "
@@ -689,7 +679,7 @@ class QueryFromDb(object):
                         print("Подключение к базе " + str(azs_config.database) + " на сервере " + str(
                             azs_config.ip_address) + " успешно")
                         for id in tanks:  # перебераем резервуары
-                            if id.active and id.ams:
+                            if id.active == True and id.ams == True:
                                 # если активен и есть система автоматического измерения, то строим запрос к базе
                                 sql = ("SELECT id, calculatedvolume, comment, density, incomeactive, "
                                        "insideincomefillinglitres, level, lmsvolume, stamp, tank, temperature, volume, "
@@ -736,7 +726,7 @@ class QueryFromDb(object):
                                         db.session.add(add)
                                         db.session.commit()
 
-                            elif id.active and id.ams is False:
+                            elif id.active == True and id.ams is True:
                                 # если резервуар активен, но системы измерения нет, то получаем остаток
                                 sql = ("select code, startvolume"
                                        " from TankShiftInfo "
@@ -900,6 +890,16 @@ class QueryFromDb(object):
         return connection
 
 
+def sum_time(first, second):
+    sum = timedelta()
+    timeList = [str(first), str(second)]
+    for time in timeList:
+        (h, m, s) = time.split(':')
+        d = timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+        sum += d
+    return sum
+
+
 def priority_sort(sorted_list):
     counterX = 0
     priority_list = PriorityList.query.order_by('priority').all()
@@ -911,8 +911,8 @@ def priority_sort(sorted_list):
             if tbl_pr['table_priority'] == pl.id:
                 trip = Trip.query.filter_by(azs_id=int(tbl_pr['azs_id'])).first_or_404()
                 tbl_pr['distance'] = trip.distance
-                tbl_pr['time_before'] = trip.time_to_before_lunch + trip.time_from_before_lunch
-                tbl_pr['time_after'] = +trip.time_to + trip.time_from
+                tbl_pr['time_before'] = sum_time(trip.time_to_before_lunch, trip.time_from_before_lunch)
+                tbl_pr['time_after'] = sum_time(trip.time_to, trip.time_from)
                 temp_list.append(tbl_pr)
         try:
             if temp_list:
@@ -1041,16 +1041,18 @@ def azs_priority():
 
 def average_day_stock_by_tanks(azs_id):
     azs = AzsList.query.filter_by(id=azs_id).first()
+	
     if azs.active:
         realisation = FuelRealisation.query.filter_by(azs_id=azs_id).all()
-        tanks = Tanks.query.filter_by(azs_id=azs_id, active=True).all()
+        tanks = Tanks.query.filter_by(azs_id=azs_id).all()
         for tank in tanks:
-            if tank.active == True:
+            if tank.active:
                 stock_list = list()
                 for realis_stock in realisation:
                     if realis_stock.days_stock_min is not None and realis_stock.days_stock_min is not 0:
                         stock_list.append(realis_stock.days_stock_min)
                         add = Priority.query.filter_by(azs_id=azs_id).first()
+
             average_stock = sum(stock_list) / len(stock_list)
             print("Айди резервуара " + str(tank.id) + " запас суток " + str(average_stock))
             add.average_for_azs = round(average_stock, 1)

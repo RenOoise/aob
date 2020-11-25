@@ -17,24 +17,27 @@
                 {% if current_user.is_anonymous %}
                 {% else %}
                     <li class="nav-item {% if index %}active{% endif %}">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('Главная') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Главная</a>
                     </li>
                     <li class="nav-item {% if trip_creation %}active{% endif %}">
                         <a class="nav-link"
-                           href="{{ url_for('main.trip_creation') }}">{{ 'Расстановка бензовозов' }}</a>
+                           href="{{ url_for('main.trip_creation') }}">Расстановка бензовозов</a>
                     </li>
                     <li class="nav-item {% if online_active %}active{% endif %}">
-                        <a class="nav-link" href="{{ url_for('main.online') }}">{{ 'Online остатки' }}</a>
+                        <a class="nav-link" href="{{ url_for('main.online') }}">Online остатки</a>
                     </li>
                     <li class="nav-item {% if realisation_active %}active{% endif %}">
-                        <a class="nav-link" href="{{ url_for('main.realisation') }}">{{ _('Реализация') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.realisation') }}">Реализация</a>
                     </li>
                     <li class="nav-item {% if priority_active %} active{% endif %}">
-                        <a class="nav-link" href="{{ url_for('main.priority') }}">{{ _('Приоритеты') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.priority') }}">Приоритетность АЗС</a>
                     </li>
 
                     <li class="nav-item {% if azs_list_active %} active{% endif %}">
                         <a class="nav-link" href="{{ url_for('main.azs') }}">Список АЗС</a>
+                    </li>
+                                        <li class="nav-item {% if reports_active %} active{% endif %}">
+                        <a class="nav-link" href="{{ url_for('reports.index') }}">Отчеты</a>
                     </li>
                 {% endif %}
 
