@@ -867,3 +867,12 @@ class TripResult(db.Model):
     calculate_id = db.Column(db.Integer)  # порядковый номер расстановки
     trip_number = db.Column(db.Integer)  # порядковый номер рейса
     trip_end_time = db.Column(db.Time)  # время возвращения на нефтебазу
+
+
+class FuelReports(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fuel_type = db.Column(db.Integer)
+    fuel_volume = db.Column(db.Float)
+    free_volume = db.Column(db.Float)
+    fuel_realisation = db.Column(db.Float)
+    timestamp = db.Column(db.DateTime)

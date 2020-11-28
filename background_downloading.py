@@ -7,7 +7,7 @@ from time import sleep
 import fdb
 import pandas as pd
 import psycopg2
-
+from sqlalchemy import func
 from app import create_app, db
 from app.models import FuelResidue, CfgDbConnection, FuelRealisation, AzsList, Tanks, Priority, PriorityList, Trip
 
@@ -799,6 +799,7 @@ class QueryFromDb(object):
                                                                   auto=False)
                                             db.session.add(add)
                                             db.session.commit()
+
                     finally:
                         if (connection):
                             cursor.close()
