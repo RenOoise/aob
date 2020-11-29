@@ -55,7 +55,7 @@ def index():
         #residue = FuelResidue.query.with_entities(FuelResidue.product_code, func.sum(FuelResidue.free_volume), func.sum(FuelResidue.fuel_volume)).group_by(FuelResidue.product_code).all()
         for i in residue:
             test = test + int(i.fuel_volume)
-            
+
 
     tanks_info()
     return render_template('reports/index.html', title="Отчеты", reports_active=True)
