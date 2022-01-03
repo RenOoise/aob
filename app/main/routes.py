@@ -98,11 +98,16 @@ def index():
         return errors, errors_list
 
     trips = Trips.query.order_by(desc("date")).first()
-    if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y"):
-        trips_today = True
-    else:
-        trips_today = False
-
+    try:
+        if trips.date.strftime("%d.%m.%Y") == datetime.today().strftime("%d.%m.%Y"):
+            trips_today = True
+        else:
+            trips_today = False
+    except Exception as e:
+        print(e)
+        trips_today=0
+    finally:
+        pass
     priority = Priority.query.order_by('priority').all()
     azs_list = list()
     error_list = list()

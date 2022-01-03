@@ -42,3 +42,4 @@ microblog.log*
 /.idea/
 /mydatabase.db
 /db_old/
+migrations

@@ -3,7 +3,7 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 
 import os
 import rq
-from elasticsearch import Elasticsearch
+#from elasticsearch import Elasticsearch
 from flask import Flask, request, current_app
 from flask_babel import Babel, lazy_gettext as _l
 from flask_bootstrap import Bootstrap
@@ -38,8 +38,8 @@ def create_app(config_class=Config):
     bootstrap.init_app(app)
     moment.init_app(app)
     babel.init_app(app)
-    app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
-        if app.config['ELASTICSEARCH_URL'] else None
+    #app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
+        #if app.config['ELASTICSEARCH_URL'] else None
     app.redis = Redis.from_url(app.config['REDIS_URL'])
     app.task_queue = rq.Queue('aob-tasks', connection=app.redis)
 
@@ -85,7 +85,7 @@ def create_app(config_class=Config):
         else:
             if not os.path.exists('logs'):
                 os.mkdir('logs')
-            file_handler = RotatingFileHandler('logs/microblog.log',
+            file_handler = RotatingFileHandler('logs/aob .log',
                                                maxBytes=10240, backupCount=10)
             file_handler.setFormatter(logging.Formatter(
                 '%(asctime)s %(levelname)s: %(message)s '
