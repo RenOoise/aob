@@ -38,7 +38,7 @@ nosetests.xml
 .pydevproject
 .env
 venv
-microblog.log*
+aob.log*
 /.idea/
 /mydatabase.db
 /db_old/

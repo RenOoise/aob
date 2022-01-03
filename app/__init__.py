@@ -3,9 +3,8 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 
 import os
 import rq
-#from elasticsearch import Elasticsearch
+from app import models
 from flask import Flask, request, current_app
-from flask_babel import Babel, lazy_gettext as _l
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -24,7 +23,6 @@ login.login_message = _l('Пожалуйста авторизуйтесь для
 mail = Mail()
 bootstrap = Bootstrap()
 moment = Moment()
-babel = Babel()
 
 
 def create_app(config_class=Config):
@@ -37,7 +35,6 @@ def create_app(config_class=Config):
     mail.init_app(app)
     bootstrap.init_app(app)
     moment.init_app(app)
-    babel.init_app(app)
     #app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         #if app.config['ELASTICSEARCH_URL'] else None
     app.redis = Redis.from_url(app.config['REDIS_URL'])
@@ -73,7 +70,7 @@ def create_app(config_class=Config):
             mail_handler = SMTPHandler(
                 mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
                 fromaddr='no-reply@' + app.config['MAIL_SERVER'],
-                toaddrs=app.config['ADMINS'], subject='Microblog Failure',
+                toaddrs=app.config['ADMINS'], subject='AOB Failure',
                 credentials=auth, secure=secure)
             mail_handler.setLevel(logging.ERROR)
             app.logger.addHandler(mail_handler)
@@ -98,9 +95,5 @@ def create_app(config_class=Config):
     return app
 
 
-@babel.localeselector
 def get_locale():
     return request.accept_languages.best_match(current_app.config['LANGUAGES'])
-
-
-from app import models

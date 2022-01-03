@@ -9,7 +9,6 @@ import sqlalchemy as sa
 from StyleFrame import StyleFrame, Styler, utils
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, send_file, Response, send_from_directory
-from flask_babel import _, get_locale
 from flask_login import current_user, login_required
 from pygal.style import BlueStyle
 from sqlalchemy import desc
@@ -151,12 +150,12 @@ def edit_profile():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
         db.session.commit()
-        flash(_('Your changes have been saved.'))
+        flash('Your changes have been saved.')
         return redirect(url_for('main.edit_profile'))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', title=_('Edit Profile'),
+    return render_template('edit_profile.html', title='Edit Profile',
                            form=form)
 
 
@@ -165,14 +164,14 @@ def edit_profile():
 def follow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash(_('User %(username)s not found.', username=username))
+        flash('User %(username)s not found.', username=username)
         return redirect(url_for('main.index'))
     if user == current_user:
-        flash(_('You cannot follow yourself!'))
+        flash('You cannot follow yourself!')
         return redirect(url_for('main.user', username=username))
     current_user.follow(user)
     db.session.commit()
-    flash(_('You are following %(username)s!', username=username))
+    flash('You are following %(username)s!', username=username)
     return redirect(url_for('main.user', username=username))
 
 
@@ -181,14 +180,14 @@ def follow(username):
 def unfollow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash(_('User %(username)s not found.', username=username))
+        flash('User %(username)s not found.', username=username)
         return redirect(url_for('main.index'))
     if user == current_user:
-        flash(_('You cannot unfollow yourself!'))
+        flash('You cannot unfollow yourself!')
         return redirect(url_for('main.user', username=username))
     current_user.unfollow(user)
     db.session.commit()
-    flash(_('You are not following %(username)s.', username=username))
+    flash('You are not following %(username)s.', username=username)
     return redirect(url_for('main.user', username=username))
 
 
@@ -212,7 +211,7 @@ def search():
         if total > page * current_app.config['POSTS_PER_PAGE'] else None
     prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
         if page > 1 else None
-    return render_template('search.html', title=_('Search'), posts=posts,
+    return render_template('search.html', title='Search', posts=posts,
                            next_url=next_url, prev_url=prev_url)
 
 
@@ -227,9 +226,9 @@ def send_message(recipient):
         db.session.add(msg)
         user.add_notification('unread_message_count', user.new_messages())
         db.session.commit()
-        flash(_('Your message has been sent.'))
+        flash('Your message has been sent.')
         return redirect(url_for('main.user', username=recipient))
-    return render_template('send_message.html', title=_('Send Message'),
+    return render_template('send_message.html', title='Send Message',
                            form=form, recipient=recipient)
 
 
@@ -255,9 +254,9 @@ def messages():
 @login_required
 def export_posts():
     if current_user.get_task_in_progress('export_posts'):
-        flash(_('An export task is currently in progress'))
+        flash('An export task is currently in progress')
     else:
-        current_user.launch_task('export_posts', _('Exporting posts...'))
+        current_user.launch_task('export_posts', 'Exporting posts...')
         db.session.commit()
     return redirect(url_for('main.user', username=current_user.username))
 
@@ -492,9 +491,9 @@ def page_azs(id):
 @login_required
 def download_realisation_info():
     if current_user.get_task_in_progress('download_realisation_info'):
-        flash(_('Выгрузка данных уже выполняется!'))
+        flash('Выгрузка данных уже выполняется!')
     else:
-        current_user.launch_task('download_realisation_info', _('Выгружаю данные по реализации...'))
+        current_user.launch_task('download_realisation_info', 'Выгружаю данные по реализации...')
         db.session.commit()
     return redirect(url_for('main.realisation'))
 
@@ -6790,9 +6789,9 @@ def start_second_trip():
 @login_required
 def start_trip():
     if current_user.get_task_in_progress('prepare_tables'):
-        flash(_('Пересчет таблиц уже выполняется данных уже выполняется!'))
+        flash('Пересчет таблиц уже выполняется данных уже выполняется!')
     else:
-        current_user.launch_task('prepare_tables', _('Начат пересчет подготовительных таблиц...'))
+        current_user.launch_task('prepare_tables', 'Начат пересчет подготовительных таблиц...')
         db.session.commit()
     return redirect(url_for('main.trip_creation'))
 
@@ -6804,9 +6803,9 @@ def restart_trip():
     last_trip.incorrect = True
     db.session.commit()
     if current_user.get_task_in_progress('prepare_tables'):
-        flash(_('Пересчет таблиц уже выполняется данных уже выполняется!'))
+        flash('Пересчет таблиц уже выполняется данных уже выполняется!')
     else:
-        current_user.launch_task('prepare_tables', _('Начат пересчет подготовительных таблиц...'))
+        current_user.launch_task('prepare_tables', 'Начат пересчет подготовительных таблиц...')
         db.session.commit()
     return redirect(url_for('main.trip_creation'))
 
@@ -6830,7 +6829,7 @@ def trip_creation():
 @bp.route('/load', methods=['POST', 'GET'])
 @login_required
 def load():
-    # flash(_('Выполняется расстановка безовозов. Ожидайте завершения, страница будет перезагружена автоматически'))
+    # flash('Выполняется расстановка безовозов. Ожидайте завершения, страница будет перезагружена автоматически')
     return render_template('load.html', title='Выполняется расстановка бензовозов')
 
 

@@ -470,7 +470,6 @@ def truck(id):
                                        '5': None,
                                        '6': None
                                        }
-
     for i in truck_tanks_variant:
         for x in truck_tanks_list:
             if i.truck_tank_id == x.id:
